@@ -1,0 +1,37 @@
+/* src/styles/layout.css */
+
+/* The real classes used in MainLayout.jsx */
+.layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.layoutMain {
+  display: grid;
+  grid-template-rows: 64px 1fr;
+  min-width: 0;
+  min-height: 100vh;
+}
+
+.layoutContent {
+  padding: 22px;
+  min-width: 0;
+  background: var(--bg);
+}
+
+/* Card helper class (optional) */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+
+/* Responsive: collapse sidebar on small screens (basic) */
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 84px 1fr; /* mini sidebar */
+  }
+}
