@@ -6,7 +6,9 @@ import { EmployeeController } from './employee.controller';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Employee.name, schema: EmployeeSchema }])
+    MongooseModule.forFeature([
+      { name: Employee.name, schema: EmployeeSchema },
+    ]),
   ],
   providers: [EmployeeService],
   controllers: [EmployeeController],

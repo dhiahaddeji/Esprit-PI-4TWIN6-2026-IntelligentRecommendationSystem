@@ -3,7 +3,6 @@ import * as mongoose from 'mongoose';
 
 @Schema()
 export class Employee {
-
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
   user_id: mongoose.Types.ObjectId;
 }

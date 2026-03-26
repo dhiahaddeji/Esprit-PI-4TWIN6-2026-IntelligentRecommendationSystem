@@ -1,27 +1,40 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
+import { MailModule } from './mail/mail.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { HrModule } from './hr/hr.module';
 import { ManagerModule } from './manager/manager.module';
 import { EmployeeModule } from './employee/employee.module';
 import { SuperAdminModule } from './superadmin/superadmin.module';
+import { ActivityModule } from './activity/activity.module';
+import { RecommendationsModule } from './recommendations/recommendations.module';
+import { InvitationsModule } from './invitations/invitations.module';
+import { ParticipationsModule } from './participations/participations.module';
 
 @Module({
   imports: [
-
-    MongooseModule.forRoot('mongodb://localhost:27017/maghrebiya'),
-
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
+    MongooseModule.forRoot(
+      process.env.MONGODB_URI ||
+        'mongodb+srv://dhiahaddeji:dhia10@pi-db.0hzx0p2.mongodb.net/magharibeya?retryWrites=true&w=majority&appName=PI-DB',
+    ),
+    MailModule,
     AuthModule,
     UsersModule,
     HrModule,
     ManagerModule,
     EmployeeModule,
     SuperAdminModule,
+    ActivityModule,
+    RecommendationsModule,
+    InvitationsModule,
+    ParticipationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

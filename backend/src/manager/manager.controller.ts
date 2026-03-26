@@ -5,12 +5,10 @@ import { Roles } from '../common/decorators/roles.decorator';
 
 @Controller('manager')
 export class ManagerController {
-
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('MANAGER')
   @Get('dashboard')
   getDashboard(@Req() req) {
     return { message: 'Accès autorisé Manager', user: req.user };
   }
-
 }

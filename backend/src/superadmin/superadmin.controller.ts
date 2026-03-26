@@ -1,72 +1,100 @@
-import { Controller, Post, Delete, Patch, Body, Param, UseGuards, Request, Get } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Delete,
+  Patch,
+  Body,
+  Param,
+  UseGuards,
+  Get,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UsersService } from '../users/users.service';
+import { MailService } from '../mail/mail.service';
+
+function generatePassword(length = 12): string {
+  const chars =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$&*-_';
+  let pw = '';
+  for (let i = 0; i < length; i++) {
+    pw += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return pw;
+}
 
 @Controller('admin')
 export class SuperAdminController {
+  constructor(
+    private usersService: UsersService,
+    private mailService: MailService,
+  ) {}
 
-  constructor(private usersService: UsersService) {}
-
-  @Get('debug')
-  debug(@Request() req: any) {
-    console.log('🔍 DEBUG /admin/debug - Headers:', req.headers);
-    console.log('🔍 DEBUG /admin/debug - Auth header:', req.headers.authorization);
-    return {
-      message: 'Debug endpoint',
-      authHeader: req.headers.authorization ? 'Present' : 'Missing',
-      user: req.user || 'No user',
-    };
-  }
-
-  @Get('create-user')
-  getCreateUserPage() {
-    return { message: "Page de création autorisée (GET)" };
-  }
-
-  // ✅ Endpoint pour récupérer tous les utilisateurs
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles('SUPERADMIN')
   @Get('users')
   async getAllUsers() {
     return this.usersService.findAll();
   }
 
-  // ✅ Endpoint pour récupérer un utilisateur par ID
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles('SUPERADMIN')
   @Get('user/:id')
   async getUserById(@Param('id') id: string) {
     return this.usersService.findById(id);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles('SUPERADMIN')
   @Post('create-user')
   async createUser(@Body() body: any) {
-    return this.usersService.create(body);
+    const tempPassword = generatePassword();
+    const passwordExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    const user = await this.usersService.create({
+      ...body,
+      password: tempPassword,
+      mustChangePassword: true,
+      passwordExpiresAt,
+      isProfileComplete: false,
+      status: 'ACTIVE',
+      en_ligne: false,
+    });
+
+    await this.mailService.sendWelcomeWithCredentials({
+      to: body.email,
+      name: body.name,
+      role: body.role,
+      password: tempPassword,
+    });
+
+    return {
+      message: 'Compte créé et email envoyé.',
+      userId: user._id,
+      email: user.email,
+    };
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles('SUPERADMIN')
   @Patch('update-user/:id')
   async updateUser(@Param('id') id: string, @Body() body: any) {
     return this.usersService.update(id, body);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles('SUPERADMIN')
   @Delete('delete-user/:id')
   async deleteUser(@Param('id') id: string) {
     return this.usersService.delete(id);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SUPERADMIN')
   @Get('check-matricule/:matricule')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('ADMIN')
-async checkMatricule(@Param('matricule') matricule: string) {
-  const exists = await this.usersService.findByMatricule(matricule);
-  return { exists: !!exists };
-}
+  async checkMatricule(@Param('matricule') matricule: string) {
+    const exists = await this.usersService.findByMatricule(matricule);
+    return { exists: !!exists };
+  }
 }

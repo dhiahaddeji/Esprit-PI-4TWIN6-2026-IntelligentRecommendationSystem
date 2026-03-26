@@ -6,17 +6,19 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { JwtStrategy } from './jwt.strategy';
+import { GithubStrategy } from './github.strategy';
 
 @Module({
   imports: [
     UsersModule,
-    PassportModule,
+    PassportModule.register({ session: false }),
     JwtModule.register({
-      secret: 'SECRET_KEY', // 🔹 À remplacer par process.env.JWT_SECRET
-      signOptions: { expiresIn: '1h' },
+      secret: process.env.JWT_SECRET || 'SECRET_KEY',
+      signOptions: { expiresIn: '8h' },
     }),
   ],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, GithubStrategy],
   controllers: [AuthController],
+  exports: [AuthService],
 })
 export class AuthModule {}

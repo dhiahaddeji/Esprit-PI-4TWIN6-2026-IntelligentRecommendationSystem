@@ -12,7 +12,6 @@ export enum UserRole {
 
 @Schema({ timestamps: true })
 export class User {
-
   @Prop({ required: true })
   name: string;
 
@@ -45,6 +44,36 @@ export class User {
 
   @Prop({ required: true, enum: UserRole })
   role: UserRole;
+
+  // ── Onboarding flags ──────────────────────────────────────────────
+  /** L'utilisateur doit changer son mot de passe temporaire */
+  @Prop({ default: false })
+  mustChangePassword: boolean;
+
+  /** Date d'expiration du mot de passe temporaire (24 h) */
+  @Prop()
+  passwordExpiresAt: Date;
+
+  /** Le profil a été complété (photo, prénom/nom, CV) */
+  @Prop({ default: false })
+  isProfileComplete: boolean;
+
+  // ── GitHub OAuth ───────────────────────────────────────────────────
+  @Prop()
+  githubId: string;
+
+  // ── Profil étendu ─────────────────────────────────────────────────
+  @Prop()
+  firstName: string;
+
+  @Prop()
+  lastName: string;
+
+  @Prop()
+  photoUrl: string;
+
+  @Prop()
+  cvUrl: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

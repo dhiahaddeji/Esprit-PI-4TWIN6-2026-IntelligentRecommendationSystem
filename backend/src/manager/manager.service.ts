@@ -5,7 +5,6 @@ import { Manager } from './schemas/manager.schema';
 
 @Injectable()
 export class ManagerService {
-
   constructor(
     @InjectModel(Manager.name) private managerModel: Model<Manager>,
   ) {}
@@ -13,5 +12,4 @@ export class ManagerService {
   async create(userId: string) {
     return this.managerModel.create({ user_id: userId });
   }
-
 }

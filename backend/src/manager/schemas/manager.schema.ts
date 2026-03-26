@@ -3,7 +3,6 @@ import * as mongoose from 'mongoose';
 
 @Schema()
 export class Manager {
-
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
   user_id: mongoose.Types.ObjectId;
 }

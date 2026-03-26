@@ -5,9 +5,7 @@ import { HrService } from './hr.service';
 import { HrController } from './hr.controller';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: HR.name, schema: HRSchema }])
-  ],
+  imports: [MongooseModule.forFeature([{ name: HR.name, schema: HRSchema }])],
   providers: [HrService],
   controllers: [HrController],
 })

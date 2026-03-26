@@ -5,12 +5,10 @@ import { Roles } from '../common/decorators/roles.decorator';
 
 @Controller('employee')
 export class EmployeeController {
-
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('EMPLOYEE')
   @Get('tasks')
   getTasks(@Req() req) {
     return { message: 'Accès autorisé Employee', user: req.user };
   }
-
 }

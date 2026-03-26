@@ -5,7 +5,6 @@ import { Roles } from '../common/decorators/roles.decorator';
 
 @Controller('hr')
 export class HrController {
-
   // Route protégée pour tester JWT + rôle
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('HR')
@@ -13,5 +12,4 @@ export class HrController {
   getProfile(@Req() req) {
     return { message: 'Accès autorisé HR', user: req.user };
   }
-
 }

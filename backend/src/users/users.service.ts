@@ -6,13 +6,18 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-
-  constructor(
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
-  ) {}
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
   async findByEmail(email: string) {
     return this.userModel.findOne({ email });
+  }
+
+  async findByGithubId(githubId: string) {
+    return this.userModel.findOne({ githubId });
+  }
+
+  async findSuperAdmin() {
+    return this.userModel.findOne({ role: 'SUPERADMIN' });
   }
 
   async updateOnlineStatus(userId: string, status: boolean) {
@@ -20,30 +25,25 @@ export class UsersService {
   }
 
   async create(data: any) {
+    // Le mot de passe est hashé ici (sauf si déjà hashé)
     const hashed = await bcrypt.hash(data.password, 10);
-    const user = new this.userModel({
-      ...data,
-      password: hashed
-    });
+    const user = new this.userModel({ ...data, password: hashed });
     return user.save();
   }
 
   async update(id: string, data: any) {
-    // Si le mot de passe est fourni, on le hashe
-    if (data.password) {
+    // Hasher le mot de passe uniquement s'il est fourni en clair
+    if (data.password && !data.password.startsWith('$2')) {
       data.password = await bcrypt.hash(data.password, 10);
     }
-    
-    const updatedUser = await this.userModel
+
+    const updated = await this.userModel
       .findByIdAndUpdate(id, data, { new: true })
-      .select('-password')
       .exec();
-    
-    if (!updatedUser) {
-      throw new NotFoundException('Utilisateur non trouvé');
-    }
-    
-    return updatedUser;
+
+    if (!updated) throw new NotFoundException('Utilisateur introuvable');
+
+    return updated;
   }
 
   async delete(id: string) {
@@ -51,25 +51,24 @@ export class UsersService {
   }
 
   async findAll() {
-    // Exclure les mots de passe de la réponse
     return this.userModel.find().select('-password').exec();
   }
 
-  // ✅ NOUVELLE MÉTHODE : findById
   async findById(id: string) {
-    const user = await this.userModel
-      .findById(id)
-      .select('-password')
-      .exec();
-    
-    if (!user) {
-      throw new NotFoundException('Utilisateur non trouvé');
-    }
-    
+    const user = await this.userModel.findById(id).select('-password').exec();
+    if (!user) throw new NotFoundException('Utilisateur introuvable');
     return user;
   }
 
   async findByMatricule(matricule: string) {
-  return this.userModel.findOne({ matricule });
-}
+    return this.userModel.findOne({ matricule });
+  }
+
+  async findByRole(role: string) {
+    return this.userModel.find({ role }).select('-password').exec();
+  }
+
+  async findRoles(roles: string[]) {
+    return this.userModel.find({ role: { $in: roles } }).select('-password').exec();
+  }
 }

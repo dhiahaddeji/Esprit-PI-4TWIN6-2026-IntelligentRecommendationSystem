@@ -6,7 +6,7 @@ import { ManagerController } from './manager.controller';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Manager.name, schema: ManagerSchema }])
+    MongooseModule.forFeature([{ name: Manager.name, schema: ManagerSchema }]),
   ],
   providers: [ManagerService],
   controllers: [ManagerController],

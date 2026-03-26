@@ -5,7 +5,6 @@ import { Employee } from './schemas/employee.schema';
 
 @Injectable()
 export class EmployeeService {
-
   constructor(
     @InjectModel(Employee.name) private employeeModel: Model<Employee>,
   ) {}
@@ -13,5 +12,4 @@ export class EmployeeService {
   async create(userId: string) {
     return this.employeeModel.create({ user_id: userId });
   }
-
 }
