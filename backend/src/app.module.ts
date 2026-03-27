@@ -16,14 +16,13 @@ import { ActivityModule } from './activity/activity.module';
 import { RecommendationsModule } from './recommendations/recommendations.module';
 import { InvitationsModule } from './invitations/invitations.module';
 import { ParticipationsModule } from './participations/participations.module';
+import { SkillsModule } from './skills/skills.module';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
-    MongooseModule.forRoot(
-      process.env.MONGODB_URI ||
-        'mongodb+srv://dhiahaddeji:dhia10@pi-db.0hzx0p2.mongodb.net/magharibeya?retryWrites=true&w=majority&appName=PI-DB',
-    ),
+    MongooseModule.forRoot(process.env.MONGODB_URI!),
     MailModule,
     AuthModule,
     UsersModule,
@@ -35,6 +34,8 @@ import { ParticipationsModule } from './participations/participations.module';
     RecommendationsModule,
     InvitationsModule,
     ParticipationsModule,
+    SkillsModule,
+    AiModule,
   ],
   controllers: [AppController],
   providers: [AppService],

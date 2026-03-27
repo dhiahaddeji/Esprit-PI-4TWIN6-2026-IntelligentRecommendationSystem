@@ -1,6 +1,19 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
+// Skill level enum
+export enum SkillLevel {
+  LOW    = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH   = 'HIGH',
+  EXPERT = 'EXPERT',
+}
+
+// Numeric score by level (for dynamic scoring)
+export const LEVEL_SCORE: Record<string, number> = {
+  LOW: 25, MEDIUM: 50, HIGH: 75, EXPERT: 100,
+};
+
 export type UserDocument = User & Document;
 
 export enum UserRole {
@@ -74,6 +87,28 @@ export class User {
 
   @Prop()
   cvUrl: string;
+
+  // ── Compétences approuvées (avec niveaux) ───────────────────────────
+  // Each item: { name: string, level: LOW|MEDIUM|HIGH|EXPERT, score: number }
+  @Prop({ type: [{ name: String, level: String, score: Number }], default: [] })
+  savoir: { name: string; level: string; score: number }[];
+
+  @Prop({ type: [{ name: String, level: String, score: Number }], default: [] })
+  savoir_faire: { name: string; level: string; score: number }[];
+
+  @Prop({ type: [{ name: String, level: String, score: Number }], default: [] })
+  savoir_etre: { name: string; level: string; score: number }[];
+
+  // ── Score global dynamique (calculé) ─────────────────────────────
+  @Prop({ default: 0 })
+  globalScore: number;
+
+  // ── Poste / expérience ────────────────────────────────────────────
+  @Prop()
+  poste: string;
+
+  @Prop({ default: 0 })
+  yearsExperience: number;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

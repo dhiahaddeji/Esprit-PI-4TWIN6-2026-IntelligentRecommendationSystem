@@ -32,14 +32,14 @@ export class SuperAdminController {
   ) {}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('SUPERADMIN')
+  @Roles('SUPERADMIN', 'HR', 'MANAGER')
   @Get('users')
   async getAllUsers() {
     return this.usersService.findAll();
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('SUPERADMIN')
+  @Roles('SUPERADMIN', 'HR', 'MANAGER')
   @Get('user/:id')
   async getUserById(@Param('id') id: string) {
     return this.usersService.findById(id);
