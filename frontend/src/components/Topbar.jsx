@@ -8,36 +8,49 @@ export default function Topbar() {
   const [a11yOpen, setA11yOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
-  const a11yRef = useRef(null);
   const profileRef = useRef(null);
-
   const navigate = useNavigate();
 
+  // Fermer profil au clic dehors
   useEffect(() => {
     const onDocClick = (e) => {
-      if (a11yRef.current && !a11yRef.current.contains(e.target)) setA11yOpen(false);
-      if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false);
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
     };
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
-  const user = getStoredUser() || { name: "Invité", role: null };
+  // Bloquer scroll quand popup accessibilité ouvert
+  useEffect(() => {
+    if (!a11yOpen) return;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [a11yOpen]);
 
-  // Correction : affichage correct du rôle
+  const user = getStoredUser() || { name: "—", role: null };
+
   const getRoleLabel = (role) => {
     switch (role) {
-      case "ADMIN": return "Admin";
-      case "HR": return "RH";
-      case "MANAGER": return "Manager";
-      case "EMPLOYEE": return "Employé";
-      default: return "Invité";
+      case "SUPERADMIN": return "Super Admin";
+      case "HR":         return "Responsable RH";
+      case "MANAGER":    return "Manager";
+      case "EMPLOYEE":   return "Employé";
+      default:           return role || "—";
     }
   };
 
   const roleLabel = getRoleLabel(user.role);
 
-  const initials = (user.name || "U")
+  const displayName =
+    user.firstName && user.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : user.name || "—";
+
+  const initials = displayName
     .split(" ")
     .filter(Boolean)
     .slice(0, 2)
@@ -50,70 +63,87 @@ export default function Topbar() {
   };
 
   return (
-    <header className="topbar">
-      <div className="searchWrap">
-        <input className="searchInput" placeholder="Rechercher employés, activités..." />
-      </div>
+    <>
+      <header className="topbar">
+        <div className="searchWrap">
+          <input
+            className="searchInput"
+            placeholder="Rechercher employés, activités..."
+          />
+        </div>
 
-      <div className="topRight">
-        <div className="menuWrap" ref={a11yRef}>
+        <div className="topRight">
+
+          {/* ACCESSIBILITÉ */}
           <button
             className="iconBtn"
             type="button"
-            onClick={() => setA11yOpen((v) => !v)}
+            onClick={() => setA11yOpen(true)}
             aria-label="Accessibilité"
             title="Accessibilité"
           >
             ♿
           </button>
 
-          {a11yOpen && (
-            <div className="popover">
-              <AccessibilityMenu open={a11yOpen} onClose={() => setA11yOpen(false)} />
-            </div>
-          )}
-        </div>
+          {/* NOTIF */}
+          <div className="notif" title="Notifications">
+            🔔 <span className="badge">2</span>
+          </div>
 
-        <div className="notif" title="Notifications">
-          🔔 <span className="badge">2</span>
-        </div>
+          {/* PROFIL */}
+          <div className="menuWrap" ref={profileRef}>
+            <button
+              type="button"
+              className="profileBtn"
+              onClick={() => setProfileOpen((v) => !v)}
+            >
+              <div className="avatar">{initials}</div>
+              <div className="profileText">
+                <div className="name">{displayName}</div>
+                <div className="role">{roleLabel}</div>
+              </div>
+            </button>
 
-        <div className="menuWrap" ref={profileRef}>
-          <button
-            type="button"
-            className="profileBtn"
-            onClick={() => setProfileOpen((v) => !v)}
-            aria-haspopup="menu"
-            aria-expanded={profileOpen}
-          >
-            <div className="avatar">{initials}</div>
-            <div className="profileText">
-              <div className="name">{user.name}</div>
-              <div className="role">{roleLabel}</div> {/* ← CORRECTION ICI */}
-            </div>
-          </button>
-
-          {profileOpen && (
-            <div className="profileMenu" role="menu">
-              <button type="button" onClick={() => navigate("/me")} role="menuitem">
-                👤 Mon profil
-              </button>
-              {user.role === "EMPLOYEE" && (
-                <button
-                  type="button"
-                  onClick={() => navigate("/employee/invitations")}
-                  role="menuitem"
-                >
-                  🔔 Notifications
+            {profileOpen && (
+              <div className="profileMenu">
+                <button onClick={() => navigate("/me")}>
+                  👤 Mon profil
                 </button>
-              )}
-              <button type="button" className="danger" onClick={handleLogout} role="menuitem">
-                ⎋ Déconnexion
-              </button>
-            </div>
-          )}
+
+                {user.role === "EMPLOYEE" && (
+                  <button onClick={() => navigate("/employee/invitations")}>
+                    🔔 Notifications
+                  </button>
+                )}
+
+                <button className="danger" onClick={handleLogout}>
+                  ⎋ Déconnexion
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* POPUP ACCESSIBILITÉ (FIXED + OVERLAY) */}
+      {a11yOpen && (
+        <>
+          <div
+            className="a11yOverlay"
+            onClick={() => setA11yOpen(false)}
+          />
+
+          <div
+            className="a11yPopover"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <AccessibilityMenu
+              open={a11yOpen}
+              onClose={() => setA11yOpen(false)}
+            />
+          </div>
+        </>
+      )}
+    </>
   );
 }

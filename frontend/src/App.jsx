@@ -1,99 +1,313 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+
 import RequireAuth from "./auth/RequireAuth";
 import RequireRole from "./auth/RequireRole";
 
 import MainLayout from "./layout/MainLayout";
+
+// ✅ navigation clavier
+import useKeyboardNavigation from "./hooks/useKeyboardNavigation";
+
+// Public pages
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import NotAuthorized from "./pages/NotAuthorized";
+import GitHubCallback from "./pages/GitHubCallback";
+import ChangePassword from "./pages/ChangePassword";
+import CompleteProfile from "./pages/CompleteProfile";
+
+// Common pages
 import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
 import Roles from "./pages/Roles";
 import Teams from "./pages/Teams";
 import MyProfile from "./pages/MyProfile";
 import MyActivities from "./pages/MyActivities";
-import NotAuthorized from "./pages/NotAuthorized";
+import Skills from "./pages/skills";
 
+// HR pages
 import HRActivities from "./pages/hr/HRActivities";
 import HRCreateActivity from "./pages/hr/HRCreateActivity";
 import HRActivityWorkflow from "./pages/hr/HRActivityWorkflow";
 import HREmployees from "./pages/hr/HREmployees";
 import HREmployeeDetail from "./pages/hr/HREmployeeDetail";
+import HRDepartments from "./pages/hr/HRDepartments";
+import HRChat from "./pages/hr/HRChat";
+import HRSkillsDashboard from "./pages/hr/HRSkillsDashboard";
 
+// Manager pages
 import ManagerInbox from "./pages/manager/ManagerInbox";
 import ManagerReviewActivity from "./pages/manager/ManagerReviewActivity";
+import ManagerSkillApproval from "./pages/manager/ManagerSkillApproval";
 
+// Employee pages
 import EmployeeInvitations from "./pages/employee/EmployeeInvitations";
 import EmployeeInvitationDetail from "./pages/employee/EmployeeInvitationDetail";
 import MyParticipationStatus from "./pages/employee/MyParticipationStatus";
+import EmployeeSkills from "./pages/employee/EmployeeSkills";
 
-import Skills from "./pages/skills";
-
-// Pages admin
+// Admin pages
 import CreateUser from "./pages/superadmin/CreateUser";
 import UsersList from "./pages/superadmin/UsersList";
-import EditUser from "./pages/superadmin/EditUser"; // ✅ NOUVEAU : Import du composant EditUser
+import EditUser from "./pages/superadmin/EditUser";
 
 export default function App() {
+
+  // ✅ activation navigation clavier globale
+  useKeyboardNavigation();
+
   return (
     <Routes>
-      {/* Routes publiques */}
+
+      {/* ---------------- PUBLIC ROUTES ---------------- */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/not-authorized" element={<NotAuthorized />} />
 
-      {/* Routes protégées */}
-      <Route element={<RequireAuth><MainLayout /></RequireAuth>}>
+      {/* GitHub OAuth callback (public — pas de layout) */}
+      <Route path="/auth/callback" element={<GitHubCallback />} />
+
+      {/* Onboarding — nécessite un token mais pas le layout complet */}
+      <Route path="/change-password" element={<ChangePassword />} />
+      <Route path="/complete-profile" element={<CompleteProfile />} />
+
+      {/* ---------------- PROTECTED ROUTES ---------------- */}
+      <Route
+        element={
+          <RequireAuth>
+            <MainLayout />
+          </RequireAuth>
+        }
+      >
+
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+        {/* Dashboard */}
         <Route path="dashboard" element={<Dashboard />} />
 
-        <Route path="users" element={<RequireRole allowed={["ADMIN", "HR", "MANAGER"]}><Users /></RequireRole>} />
-        <Route path="teams" element={<RequireRole allowed={["ADMIN", "HR", "MANAGER"]}><Teams /></RequireRole>} />
-        <Route path="roles" element={<RequireRole allowed={["ADMIN"]}><Roles /></RequireRole>} />
-        
+        {/* Shared (HR/ADMIN/MANAGER) */}
+        <Route
+          path="users"
+          element={
+            <RequireRole allowed={["SUPERADMIN", "HR", "MANAGER"]}>
+              <Users />
+            </RequireRole>
+          }
+        />
+
+        <Route
+          path="teams"
+          element={
+            <RequireRole allowed={["SUPERADMIN", "HR", "MANAGER"]}>
+              <Teams />
+            </RequireRole>
+          }
+        />
+
+        {/* Admin-only */}
+        <Route
+          path="roles"
+          element={
+            <RequireRole allowed={["SUPERADMIN"]}>
+              <Roles />
+            </RequireRole>
+          }
+        />
+
+        {/* Personal */}
         <Route path="me" element={<MyProfile />} />
         <Route path="my-activities" element={<MyActivities />} />
-        <Route path="skills" element={<RequireRole allowed={["EMPLOYEE"]}><Skills /></RequireRole>} />
 
-        {/* Routes HR */}
-        <Route path="hr/activities" element={<RequireRole allowed={["HR", "ADMIN", "MANAGER"]}><HRActivities /></RequireRole>} />
-        <Route path="hr/activities/new" element={<RequireRole allowed={["HR", "ADMIN", "MANAGER"]}><HRCreateActivity /></RequireRole>} />
-        <Route path="hr/activities/:id" element={<RequireRole allowed={["HR", "ADMIN", "MANAGER"]}><HRActivityWorkflow /></RequireRole>} />
-        <Route path="hr/employees" element={<RequireRole allowed={["HR", "ADMIN", "MANAGER"]}><HREmployees /></RequireRole>} />
-        <Route path="hr/employees/:id" element={<RequireRole allowed={["HR", "ADMIN", "MANAGER"]}><HREmployeeDetail /></RequireRole>} />
+        {/* Employee skills */}
+        <Route
+          path="skills"
+          element={
+            <RequireRole allowed={["EMPLOYEE"]}>
+              <Skills />
+            </RequireRole>
+          }
+        />
 
-        {/* Routes Manager */}
-        <Route path="manager/inbox" element={<RequireRole allowed={["MANAGER", "ADMIN"]}><ManagerInbox /></RequireRole>} />
-        <Route path="manager/activities/:id" element={<RequireRole allowed={["MANAGER", "ADMIN"]}><ManagerReviewActivity /></RequireRole>} />
+        {/* ---------------- HR ROUTES ---------------- */}
 
-        {/* Routes Employee */}
-        <Route path="employee/invitations" element={<RequireRole allowed={["EMPLOYEE", "ADMIN", "MANAGER"]}><EmployeeInvitations /></RequireRole>} />
-        <Route path="employee/invitations/:id" element={<RequireRole allowed={["EMPLOYEE", "ADMIN", "MANAGER"]}><EmployeeInvitationDetail /></RequireRole>} />
-        <Route path="employee/participations" element={<RequireRole allowed={["EMPLOYEE", "ADMIN", "MANAGER"]}><MyParticipationStatus /></RequireRole>} />
+        <Route
+          path="hr/activities"
+          element={
+            <RequireRole allowed={["HR", "SUPERADMIN"]}>
+              <HRActivities />
+            </RequireRole>
+          }
+        />
 
-        {/* ✅ CORRECTION : Routes ADMIN avec la bonne syntaxe */}
-        <Route path="admin/create-user" element={
-          <RequireRole allowed={["ADMIN"]}>
-            <CreateUser />
-          </RequireRole>
-        } />
-        
-        <Route path="admin/users" element={
-          <RequireRole allowed={["ADMIN"]}>
-            <UsersList />
-          </RequireRole>
-        } />
+        <Route
+          path="hr/activities/new"
+          element={
+            <RequireRole allowed={["HR", "SUPERADMIN"]}>
+              <HRCreateActivity />
+            </RequireRole>
+          }
+        />
 
-        {/* ✅ NOUVEAU : Route pour modifier un utilisateur */}
-        <Route path="admin/edit-user/:id" element={
-          <RequireRole allowed={["ADMIN"]}>
-            <EditUser />
-          </RequireRole>
-        } />
+        <Route
+          path="hr/activities/:id"
+          element={
+            <RequireRole allowed={["HR", "SUPERADMIN"]}>
+              <HRActivityWorkflow />
+            </RequireRole>
+          }
+        />
 
+        <Route
+          path="hr/employees"
+          element={
+            <RequireRole allowed={["HR", "SUPERADMIN"]}>
+              <HREmployees />
+            </RequireRole>
+          }
+        />
+
+        <Route
+          path="hr/employees/:id"
+          element={
+            <RequireRole allowed={["HR", "SUPERADMIN"]}>
+              <HREmployeeDetail />
+            </RequireRole>
+          }
+        />
+
+        <Route
+          path="hr/departments"
+          element={
+            <RequireRole allowed={["HR", "SUPERADMIN"]}>
+              <HRDepartments />
+            </RequireRole>
+          }
+        />
+
+        {/* ---------------- HR ROUTES (AI + Skills Dashboard) ---------------- */}
+
+        <Route
+          path="hr/ai-chat"
+          element={
+            <RequireRole allowed={["HR", "SUPERADMIN"]}>
+              <HRChat />
+            </RequireRole>
+          }
+        />
+
+        <Route
+          path="hr/skills-dashboard"
+          element={
+            <RequireRole allowed={["HR", "SUPERADMIN", "MANAGER"]}>
+              <HRSkillsDashboard />
+            </RequireRole>
+          }
+        />
+
+        {/* ---------------- MANAGER ROUTES ---------------- */}
+
+        <Route
+          path="manager/inbox"
+          element={
+            <RequireRole allowed={["MANAGER", "SUPERADMIN"]}>
+              <ManagerInbox />
+            </RequireRole>
+          }
+        />
+
+        <Route
+          path="manager/activities/:id"
+          element={
+            <RequireRole allowed={["MANAGER", "SUPERADMIN"]}>
+              <ManagerReviewActivity />
+            </RequireRole>
+          }
+        />
+
+        <Route
+          path="manager/skills"
+          element={
+            <RequireRole allowed={["MANAGER", "SUPERADMIN"]}>
+              <ManagerSkillApproval />
+            </RequireRole>
+          }
+        />
+
+        {/* ---------------- EMPLOYEE ROUTES ---------------- */}
+
+        <Route
+          path="employee/invitations"
+          element={
+            <RequireRole allowed={["EMPLOYEE"]}>
+              <EmployeeInvitations />
+            </RequireRole>
+          }
+        />
+
+        <Route
+          path="employee/invitations/:id"
+          element={
+            <RequireRole allowed={["EMPLOYEE"]}>
+              <EmployeeInvitationDetail />
+            </RequireRole>
+          }
+        />
+
+        <Route
+          path="employee/participations"
+          element={
+            <RequireRole allowed={["EMPLOYEE"]}>
+              <MyParticipationStatus />
+            </RequireRole>
+          }
+        />
+
+        <Route
+          path="employee/skills"
+          element={
+            <RequireRole allowed={["EMPLOYEE"]}>
+              <EmployeeSkills />
+            </RequireRole>
+          }
+        />
+
+        {/* ---------------- ADMIN ROUTES ---------------- */}
+
+        <Route
+          path="admin/create-user"
+          element={
+            <RequireRole allowed={["SUPERADMIN"]}>
+              <CreateUser />
+            </RequireRole>
+          }
+        />
+
+        <Route
+          path="admin/users"
+          element={
+            <RequireRole allowed={["SUPERADMIN", "HR", "MANAGER"]}>
+              <UsersList />
+            </RequireRole>
+          }
+        />
+
+        <Route
+          path="admin/edit-user/:id"
+          element={
+            <RequireRole allowed={["SUPERADMIN"]}>
+              <EditUser />
+            </RequireRole>
+          }
+        />
+
+        {/* fallback inside protected layout */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
+
       </Route>
 
+      {/* fallback global */}
       <Route path="*" element={<Navigate to="/login" replace />} />
+
     </Routes>
   );
 }

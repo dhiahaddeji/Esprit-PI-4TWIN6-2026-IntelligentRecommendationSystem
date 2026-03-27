@@ -1,5 +1,4 @@
 import { Outlet } from "react-router-dom";
-
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 
@@ -8,6 +7,12 @@ import "../styles/layout.css";
 export default function MainLayout() {
   return (
     <div className="layout">
+
+      {/* Skip link pour navigation clavier */}
+      <a href="#mainContent" className="skipLink">
+        Aller au contenu principal
+      </a>
+
       {/* Sidebar */}
       <Sidebar />
 
@@ -15,7 +20,11 @@ export default function MainLayout() {
       <div className="layoutMain">
         <Topbar />
 
-        <main className="layoutContent">
+        <main
+          id="mainContent"
+          className="layoutContent"
+          tabIndex={-1}
+        >
           <Outlet />
         </main>
       </div>

@@ -1,5 +1,8 @@
+import { useAuth } from "../auth/AuthContext";
+import { Navigate } from "react-router-dom";
+
 function RoleRoute({ allowed, children }) {
-  const user = getUser();
+  const { user } = useAuth();
 
   if (!user) return <Navigate to="/login" replace />;
 
@@ -8,3 +11,5 @@ function RoleRoute({ allowed, children }) {
 
   return children;
 }
+
+export default RoleRoute;

@@ -1,12 +1,36 @@
 import { Link } from "react-router-dom";
-import { getStoredUser } from "../../auth/authService";
-import { listActivitiesForRole, getUserById } from "../../services/workflowService";
+import { useEffect, useMemo, useState } from "react";
+import { fetchActivities, } from "../../services/activityService";
+import { getManagers } from "../../services/workflowService";
 
 export default function HRActivities() {
-  const user = getStoredUser();
-  const role = user?.role;
+  const [activities, setActivities] = useState([]);
+  const [managers, setManagers] = useState([]);
+  const [error, setError] = useState("");
 
-  const activities = listActivitiesForRole(role, user?.id);
+  useEffect(() => {
+    (async () => {
+      try {
+        setError("");
+
+        const acts = await fetchActivities(); // GET /activities
+        setActivities(Array.isArray(acts) ? acts : []);
+
+        const mgrs = await getManagers(); // GET /users/managers
+        setManagers(Array.isArray(mgrs) ? mgrs : []);
+      } catch (e) {
+        setError(e?.message || "Erreur de chargement");
+        setActivities([]);
+        setManagers([]);
+      }
+    })();
+  }, []);
+
+  const managersById = useMemo(() => {
+    const map = new Map();
+    managers.forEach((u) => map.set(String(u._id || u.id), u));
+    return map;
+  }, [managers]);
 
   return (
     <div style={{ padding: 18 }}>
@@ -16,6 +40,21 @@ export default function HRActivities() {
           <p style={{ margin: "6px 0 0", color: "#667085" }}>
             Créer une activité, lancer l’IA, valider la liste, puis transmettre au manager.
           </p>
+
+          {error && (
+            <div
+              style={{
+                marginTop: 10,
+                background: "#fffbfa",
+                border: "1px solid #fecdca",
+                padding: 10,
+                borderRadius: 12,
+                color: "#b42318",
+              }}
+            >
+              {error}
+            </div>
+          )}
         </div>
 
         <Link
@@ -40,10 +79,12 @@ export default function HRActivities() {
           </div>
         ) : (
           activities.map((a) => {
-            const manager = getUserById(a.managerId);
+            const id = a._id || a.id;
+            const manager = managersById.get(String(a.managerId));
+
             return (
               <div
-                key={a.id}
+                key={String(id)}
                 style={{
                   background: "#fff",
                   border: "1px solid #eef0f4",
@@ -57,10 +98,12 @@ export default function HRActivities() {
               >
                 <div>
                   <div style={{ fontWeight: 900, fontSize: 16 }}>{a.title}</div>
+
                   <div style={{ color: "#667085", marginTop: 4, fontSize: 13 }}>
                     Manager: <b>{manager?.name || "—"}</b> • {a.date || "date —"} • {a.location || "lieu —"} • places:{" "}
                     {a.seats || 0}
                   </div>
+
                   <div style={{ marginTop: 8 }}>
                     <span
                       style={{
@@ -78,7 +121,7 @@ export default function HRActivities() {
                 </div>
 
                 <Link
-                  to={`/hr/activities/${a.id}`}
+                  to={`/hr/activities/${id}`}
                   style={{
                     textDecoration: "none",
                     fontWeight: 800,

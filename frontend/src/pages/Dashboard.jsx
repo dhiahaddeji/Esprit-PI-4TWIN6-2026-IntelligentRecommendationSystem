@@ -20,7 +20,7 @@ import { getStoredUser, LS_USER } from "../auth/authService";
 export default function Dashboard() {
   const storedUser = getStoredUser();
   const [user, setUser] = useState(storedUser);
-  const [loading, setLoading] = useState(!storedUser); // false si déjà dans localStorage
+  const loading = !storedUser; // derived, not state
 
   // Mock data (inchangé)
   const stats = [
@@ -45,7 +45,7 @@ export default function Dashboard() {
     { name: "Savoir-être", value: 25 },
   ];
 
-  const donutColors = ["#0b2b4b", "#2f978a", "#f6a700"];
+  const donutColors = ["#3b6fd4", "#f47c20", "#10b981"];
 
   const recents = [
     { pct: 94, name: "Sarah Benali", activity: "Formation Solvabilité II", status: "Accepté" },
@@ -108,7 +108,7 @@ export default function Dashboard() {
                 <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                 <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <Bar dataKey="value" radius={[10, 10, 0, 0]} />
+                <Bar dataKey="value" radius={[10, 10, 0, 0]} fill="#3b6fd4" />
               </BarChart>
             </ResponsiveContainer>
           </div>

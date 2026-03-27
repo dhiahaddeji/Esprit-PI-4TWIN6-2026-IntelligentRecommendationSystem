@@ -1,41 +1,51 @@
-import { getStoredUser } from "../../auth/authService";
-import { employeeParticipationStatus, getActivityById } from "../../services/workflowService";
-
+import { useEffect, useState } from "react";
+import { fetchMyParticipations } from "../../services/participationService";
+import { fetchActivityById } from "../../services/activityService"; // (si tu as)
+ 
 export default function MyParticipationStatus() {
-  const user = getStoredUser();
-  const list = employeeParticipationStatus(user?.id);
+  const [list, setList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await fetchMyParticipations();
+        setList(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.error(e);
+        setList([]);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  if (loading) return <div style={{ padding: 18 }}>Chargement...</div>;
 
   return (
     <div style={{ padding: 18 }}>
       <h1 style={{ margin: 0 }}>Statut de participation</h1>
-      <p style={{ marginTop: 6, color: "#667085" }}>Historique de tes réponses aux invitations.</p>
 
       <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
         {list.length === 0 ? (
           <div style={card()}>Aucun statut pour le moment.</div>
         ) : (
-          list.map((p) => {
-            const act = getActivityById(p.activityId);
-            return (
-              <div key={p.id} style={card()}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-                  <div>
-                    <div style={{ fontWeight: 900 }}>{act?.title || "Activité"}</div>
-                    <div style={{ color: "#667085", marginTop: 4, fontSize: 13 }}>
-                      {act?.date} • {act?.location}
-                    </div>
-                  </div>
-                  <span style={pill(p.status)}>{p.status}</span>
+          list.map((p) => (
+            <div key={p._id || p.id} style={card()}>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <div>
+                  <div style={{ fontWeight: 900 }}>Activity: {p.activityId}</div>
                 </div>
-
-                {p.status === "DECLINED" && (
-                  <div style={{ marginTop: 10, color: "#b42318" }}>
-                    <b>Justification:</b> {p.justification || "—"}
-                  </div>
-                )}
+                <span style={pill(p.status)}>{p.status}</span>
               </div>
-            );
-          })
+
+              {p.status === "DECLINED" && (
+                <div style={{ marginTop: 10, color: "#b42318" }}>
+                  <b>Justification:</b> {p.justification || "—"}
+                </div>
+              )}
+            </div>
+          ))
         )}
       </div>
     </div>

@@ -1,79 +1,103 @@
 .sidebar {
-  background: linear-gradient(180deg, #0b2b4b 0%, #081b33 100%);
-  color: #eaf2ff;
-  padding: 16px;
-  border-right: 1px solid rgba(226, 232, 240, 0.12);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 240px;
+  height: 100vh;
+  background: #1a2340;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 100;
+  box-shadow: 4px 0 20px rgba(0,0,0,0.15);
 }
 
 .brand {
   display: flex;
-  gap: 12px;
   align-items: center;
-  margin-bottom: 18px;
+  gap: 12px;
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
 .brandLogo {
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
-  background: #0ea5a0;
-  display: grid;
-  place-items: center;
-  font-size: 18px;
-  color: #072d2c;
-  font-weight: 900;
+  font-size: 28px;
+  line-height: 1;
 }
 
 .brandName {
-  font-weight: 900;
-  font-size: 16px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.3px;
 }
 
 .brandSub {
-  opacity: 0.85;
-  font-size: 12px;
+  font-size: 10px;
+  color: #f47c20;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 2px;
 }
 
 .menu {
-  display: grid;
-  gap: 8px;
-  margin-top: 12px;
+  flex: 1;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.menuSection {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  padding: 16px 10px 6px;
 }
 
 .menuItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: rgba(255,255,255,0.70);
   text-decoration: none;
-  color: #eaf2ff;
-  padding: 11px 12px;
-  border-radius: 12px;
-  font-weight: 800;
-  font-size: 13px;
-  opacity: 0.92;
-  border: 1px solid transparent;
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: background 0.18s, color 0.18s;
 }
 
 .menuItem:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255,255,255,0.08);
+  color: #ffffff;
 }
 
 .menuItem.active {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.16);
+  background: #3b6fd4;
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 2px 12px rgba(59,111,212,0.35);
 }
 
 .sidebarFooter {
-  margin-top: 18px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(226, 232, 240, 0.12);
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255,255,255,0.08);
 }
 
 .roleTag {
   display: inline-block;
-  background: rgba(14, 165, 160, 0.18);
-  border: 1px solid rgba(14, 165, 160, 0.35);
-  color: #b9fff8;
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-weight: 900;
-  font-size: 12px;
+  background: rgba(244,124,32,0.15);
+  color: #f47c20;
+  border: 1px solid rgba(244,124,32,0.30);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
 }

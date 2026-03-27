@@ -6,7 +6,7 @@ export default function ManagerInbox() {
   const user = getStoredUser();
   const role = user?.role;
 
-  const activities = listActivitiesForRole(role, user?.id);
+  const activities = listActivitiesForRole();
 
   const forwarded = activities.filter((a) => a.status === "SENT_TO_MANAGER" || a.status === "MANAGER_CONFIRMED" || a.status === "NOTIFIED");
 

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   getActivityById,
@@ -12,63 +12,139 @@ import {
 
 export default function HRActivityWorkflow() {
   const { id } = useParams();
-  const [refreshKey, setRefreshKey] = useState(0);
+
+  const [activity, setActivity] = useState(null);
+  const [rec, setRec] = useState(null);
+  const [employees, setEmployees] = useState([]);
+  const [manager, setManager] = useState(null);
+
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const activity = useMemo(() => getActivityById(id), [id, refreshKey]);
-  const rec = useMemo(() => getRecommendation(id), [id, refreshKey]);
-  const employees = useMemo(() => getEmployees(), []);
+  /* ---------------- FETCH DATA ---------------- */
+  useEffect(() => {
+    fetchAll();
+  }, [id]);
 
+  const fetchAll = async () => {
+    try {
+      setLoading(true);
+
+      const activityData = await getActivityById(id);
+      setActivity(activityData);
+
+      const recData = await getRecommendation(id);
+      setRec(recData);
+
+      const employeesData = await getEmployees();
+      setEmployees(Array.isArray(employeesData) ? employeesData : []);
+
+      if (activityData?.managerId) {
+        const managerData = await getUserById(activityData.managerId);
+        setManager(managerData);
+      }
+
+    } catch (err) {
+      console.error(err);
+      setError("Erreur lors du chargement des données");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ---------------- HELPERS ---------------- */
   const recommendedIds = rec?.list?.map((x) => x.employeeId) || [];
 
-  const onRunAI = () => {
-    setError("");
+  /* ---------------- ACTIONS ---------------- */
+
+  const onRunAI = async () => {
     try {
-      hrRunAI(id);
-      setRefreshKey((k) => k + 1);
+      setLoading(true);
+      setError("");
+
+      await hrRunAI(id);
+      await fetchAll();
+
     } catch (e) {
       setError(e.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const removeFromList = (empId) => {
-    setError("");
+  const removeFromList = async (empId) => {
     try {
+      setError("");
+
       const newList = rec.list.filter((x) => x.employeeId !== empId);
-      hrUpdateRecommendationList(id, newList);
-      setRefreshKey((k) => k + 1);
+
+      await hrUpdateRecommendationList(id, newList);
+      await fetchAll();
+
     } catch (e) {
       setError(e.message);
     }
   };
 
-  const addToList = (empId) => {
-    setError("");
+  const addToList = async (empId) => {
     try {
+      setError("");
+
       if (!rec) throw new Error("Lance l’IA d’abord.");
       if (recommendedIds.includes(empId)) return;
 
       const newList = [
-        ...rec.list,
-        { employeeId: empId, score: Math.round(80 + Math.random() * 20), rank: rec.list.length + 1 },
+        ...(rec.list || []),
+        {
+          employeeId: empId,
+          score: Math.round(80 + Math.random() * 20),
+          rank: (rec.list?.length || 0) + 1,
+        },
       ];
 
-      hrUpdateRecommendationList(id, newList);
-      setRefreshKey((k) => k + 1);
+      await hrUpdateRecommendationList(id, newList);
+      await fetchAll();
+
     } catch (e) {
       setError(e.message);
     }
   };
 
-  const onValidateForward = () => {
+  const onValidateForward = async () => {
+  try {
+    setLoading(true);
     setError("");
-    try {
-      hrValidateAndForward(id);
-      setRefreshKey((k) => k + 1);
-    } catch (e) {
-      setError(e.message);
+
+    // 🔴 Sécurité : vérifier qu'il y a une liste
+    if (!rec?.list || rec.list.length === 0) {
+      throw new Error("Aucune recommandation à envoyer.");
     }
-  };
+
+    // 🟢 1. Sauvegarder la liste actuelle (IMPORTANT)
+    await hrUpdateRecommendationList(id, rec.list);
+
+    // 🟢 2. Valider + envoyer au manager
+    await hrValidateAndForward(id);
+
+    // 🟢 3. Feedback utilisateur
+    alert("✅ Liste validée et envoyée au manager !");
+
+    // 🟢 4. Refresh UI
+    await fetchAll();
+
+  } catch (e) {
+    console.error(e);
+    setError(e.message || "Erreur lors de la validation");
+  } finally {
+    setLoading(false);
+  }
+};
+
+  /* ---------------- UI ---------------- */
+
+  if (loading) {
+    return <div style={{ padding: 20 }}>⏳ Chargement...</div>;
+  }
 
   if (!activity) {
     return (
@@ -79,134 +155,99 @@ export default function HRActivityWorkflow() {
     );
   }
 
-  const manager = getUserById(activity.managerId);
-
   return (
     <div style={{ padding: 18 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "start" }}>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
         <div>
-          <h1 style={{ margin: 0 }}>{activity.title}</h1>
-          <div style={{ marginTop: 6, color: "#667085" }}>
-            Manager: <b>{manager?.name}</b> • {activity.date} • {activity.location} • places: {activity.seats}
-          </div>
-          <div style={{ marginTop: 10 }}>
-            <span style={pill()}>{activity.status}</span>
-            {rec?.hrValidated && <span style={{ ...pill(), marginLeft: 8, background: "#ecfdf3" }}>HR Validé</span>}
-          </div>
+          <h1>{activity.title}</h1>
+          <p style={{ color: "#667085" }}>
+            Manager: <b>{manager?.name || "—"}</b> • {activity.date} • {activity.location}
+          </p>
         </div>
-
-        <Link to="/hr/activities" style={{ textDecoration: "none", fontWeight: 800, color: "#0b2b4b" }}>
-          ← Retour activités
-        </Link>
+        <Link to="/hr/activities">← Retour</Link>
       </div>
 
-      {error && (
-        <div style={{ ...card(), borderColor: "#fecdca", background: "#fffbfa", color: "#b42318", marginTop: 14 }}>
-          {error}
-        </div>
-      )}
+      {error && <div style={{ color: "red" }}>{error}</div>}
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr", gap: 16, marginTop: 14 }}>
-        {/* Left: recommended list */}
+      {/* LEFT */}
+      <div style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr", gap: 16 }}>
+
+        {/* RECOMMENDATIONS */}
         <div style={card()}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-            <div>
-              <div style={{ fontWeight: 900 }}>1) Liste recommandée (IA)</div>
-              <div style={{ color: "#667085", fontSize: 13, marginTop: 4 }}>
-                Lance l’IA, puis ajuste la liste si besoin.
-              </div>
-            </div>
-            <button onClick={onRunAI} style={btnPrimary()}>
-              Lancer IA
-            </button>
-          </div>
+          <h3>Recommandations IA</h3>
 
-          <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-            {!rec?.list?.length ? (
-              <div style={{ color: "#667085" }}>Pas encore de recommandations.</div>
-            ) : (
-              rec.list
-                .slice()
-                .sort((a, b) => b.score - a.score)
-                .map((r) => {
-                  const emp = getUserById(r.employeeId);
-                  return (
-                    <div key={r.employeeId} style={row()}>
-                      <div>
-                        <div style={{ fontWeight: 900 }}>{emp?.name}</div>
-                        <div style={{ color: "#667085", fontSize: 12 }}>{emp?.dept || "—"}</div>
-                      </div>
-                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                        <span style={scoreTag()}>{r.score}%</span>
-                        <button onClick={() => removeFromList(r.employeeId)} style={btnGhost()}>
-                          Retirer
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })
-            )}
-          </div>
+          <button onClick={onRunAI} style={btnPrimary()}>
+            🤖 Lancer IA
+          </button>
 
-          <div style={{ marginTop: 14, display: "flex", gap: 10, justifyContent: "flex-end" }}>
-            <button onClick={onValidateForward} style={btnPrimary()} disabled={!rec?.list?.length}>
-              Valider & Transmettre au manager
-            </button>
-          </div>
-        </div>
+          <div style={{ marginTop: 12 }}>
+            {(rec?.list || []).map((r) => {
+              const emp = employees.find((e) => e.id === r.employeeId);
 
-        {/* Right: add employees */}
-        <div style={card()}>
-          <div style={{ fontWeight: 900 }}>2) Ajouter / Modifier</div>
-          <div style={{ color: "#667085", fontSize: 13, marginTop: 6 }}>
-            (Optionnel) Ajouter manuellement un employé.
-          </div>
-
-          <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-            {employees.map((e) => {
-              const inList = recommendedIds.includes(e.id);
               return (
-                <div key={e.id} style={row()}>
+                <div key={r.employeeId} style={row()}>
                   <div>
-                    <div style={{ fontWeight: 900 }}>{e.name}</div>
-                    <div style={{ color: "#667085", fontSize: 12 }}>{e.dept || "—"}</div>
+                    <strong>{emp?.name || "Unknown"}</strong>
                   </div>
-                  <button onClick={() => addToList(e.id)} style={inList ? btnDisabled() : btnGhost()} disabled={inList}>
-                    {inList ? "Ajouté" : "Ajouter"}
-                  </button>
+
+                  <div>
+                    <span style={scoreTag()}>{r.score}%</span>
+
+                    <button onClick={() => removeFromList(r.employeeId)}>
+                      ❌
+                    </button>
+                  </div>
                 </div>
               );
             })}
           </div>
 
-          <div style={{ marginTop: 14, color: "#667085", fontSize: 12 }}>
-            ✅ HR peut valider et transmettre. ❌ L’approbation finale participation est faite par le manager.
-          </div>
+          <button
+            onClick={onValidateForward}
+            disabled={!rec?.list?.length}
+            style={btnPrimary()}
+          >
+            ✅ Valider & envoyer
+          </button>
         </div>
+
+        {/* EMPLOYEES */}
+        <div style={card()}>
+          <h3>Ajouter employés</h3>
+
+          {employees.map((e) => {
+            const inList = recommendedIds.includes(e.id);
+
+            return (
+              <div key={e.id} style={row()}>
+                <div>{e.name}</div>
+
+                <button
+                  onClick={() => addToList(e.id)}
+                  disabled={inList}
+                >
+                  {inList ? "Ajouté" : "Ajouter"}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
       </div>
     </div>
   );
 }
 
-/* tiny UI helpers */
+/* UI helpers */
 function card() {
-  return { background: "#fff", border: "1px solid #eef0f4", borderRadius: 16, padding: 16 };
-}
-function pill() {
-  return { fontSize: 12, padding: "4px 10px", borderRadius: 999, border: "1px solid #eef0f4", background: "#f8fafc", fontWeight: 900 };
+  return { background: "#fff", padding: 16, borderRadius: 12 };
 }
 function btnPrimary() {
-  return { background: "#0b2b4b", color: "white", padding: "10px 12px", borderRadius: 12, border: "none", fontWeight: 900, cursor: "pointer" };
-}
-function btnGhost() {
-  return { background: "#fff", border: "1px solid #eef0f4", padding: "8px 10px", borderRadius: 12, fontWeight: 900, cursor: "pointer" };
-}
-function btnDisabled() {
-  return { ...btnGhost(), opacity: 0.6, cursor: "not-allowed" };
+  return { background: "#0b2b4b", color: "#fff", padding: 10, border: "none" };
 }
 function row() {
-  return { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: 12, borderRadius: 14, border: "1px solid #eef0f4", background: "#fff" };
+  return { display: "flex", justifyContent: "space-between", marginBottom: 10 };
 }
 function scoreTag() {
-  return { fontSize: 12, fontWeight: 900, padding: "4px 10px", borderRadius: 999, background: "#ecfdf3", border: "1px solid #abefc6" };
+  return { background: "#ecfdf3", padding: "4px 8px", borderRadius: 8 };
 }

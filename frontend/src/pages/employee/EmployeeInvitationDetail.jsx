@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { employeeGetInvitation, employeeRespond, getActivityById } from "../../services/workflowService";
 
@@ -6,11 +6,34 @@ export default function EmployeeInvitationDetail() {
   const { id } = useParams();
   const nav = useNavigate();
 
-  const inv = employeeGetInvitation(id);
-  const act = inv ? getActivityById(inv.activityId) : null;
-
+  const [inv, setInv] = useState(null);
+  const [act, setAct] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [justification, setJustification] = useState("");
   const [error, setError] = useState("");
+
+  // fetch invitation and related activity
+  useEffect(() => {
+    async function load() {
+      try {
+        const invitation = await employeeGetInvitation(id);
+        setInv(invitation);
+        if (invitation?.activityId) {
+          const activity = await getActivityById(invitation.activityId);
+          setAct(activity);
+        }
+      } catch (e) {
+        setError(e.message || "Erreur de chargement");
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [id]);
+
+  if (loading) {
+    return <div style={{ padding: 18 }}>Chargement...</div>;
+  }
 
   if (!inv) {
     return (
