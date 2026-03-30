@@ -7,7 +7,7 @@ export default function RoleSwitcher() {
 
   return (
     <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-      <span style={{ fontSize: 12, color: "#667085" }}>Role:</span>
+      <span style={{ fontSize: 12, color: "var(--text-2)" }}>Role:</span>
       <select
         value={user?.role || "EMPLOYEE"}
         onChange={(e) => setDevRole(e.target.value)}

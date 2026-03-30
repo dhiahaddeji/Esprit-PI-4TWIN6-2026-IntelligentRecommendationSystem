@@ -4,21 +4,17 @@ import { HydratedDocument } from 'mongoose';
 export type RecommendationDocument = HydratedDocument<Recommendation>;
 
 @Schema({ timestamps: true })
-export class RecommendationItem {
-  @Prop({ required: true }) employeeId: string;
-  @Prop({ required: true }) score: number;
-  @Prop({ required: true }) rank: number;
-}
-
-@Schema({ timestamps: true })
 export class Recommendation {
   @Prop({ required: true, index: true }) activityId: string;
 
-  @Prop({ type: [RecommendationItem], default: [] })
-  list: RecommendationItem[];
+  /**
+   * Liste enrichie par le vrai matching IA:
+   * { employeeId, employeeName, score (0-100%), rank, details[], totalCompetences, meetsAll, meetsCount }
+   */
+  @Prop({ type: [Object], default: [] })
+  list: any[];
 
   @Prop({ default: false }) hrValidated: boolean;
 }
 
-export const RecommendationSchema =
-  SchemaFactory.createForClass(Recommendation);
+export const RecommendationSchema = SchemaFactory.createForClass(Recommendation);

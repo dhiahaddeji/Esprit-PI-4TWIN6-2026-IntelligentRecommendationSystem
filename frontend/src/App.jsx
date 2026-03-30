@@ -17,6 +17,7 @@ import ChangePassword from "./pages/ChangePassword";
 import CompleteProfile from "./pages/CompleteProfile";
 
 // Common pages
+import Inbox from "./pages/Inbox";
 import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
 import Roles from "./pages/Roles";
@@ -113,6 +114,9 @@ export default function App() {
             </RequireRole>
           }
         />
+
+        {/* Messaging — all roles */}
+        <Route path="inbox" element={<Inbox />} />
 
         {/* Personal */}
         <Route path="me" element={<MyProfile />} />

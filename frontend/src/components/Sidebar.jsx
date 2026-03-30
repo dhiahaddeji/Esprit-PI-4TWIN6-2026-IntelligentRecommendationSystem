@@ -1,7 +1,35 @@
 // src/components/Sidebar.jsx
 import { NavLink } from "react-router-dom";
-import { getStoredUser } from "../auth/authService";
+import { useState, useEffect } from "react";
+import { getStoredUser, getStoredToken } from "../auth/authService";
 import "../styles/sidebar.css";
+
+function useUnreadCount() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchUnread() {
+      try {
+        const token = getStoredToken();
+        if (!token) return;
+        const res = await fetch("http://localhost:3000/messaging/unread", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled) setCount(data.total ?? 0);
+      } catch {}
+    }
+
+    fetchUnread();
+    const id = setInterval(fetchUnread, 10000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, []);
+
+  return count;
+}
 
 const ROLE_LABELS = {
   SUPERADMIN: "Super Admin",
@@ -14,8 +42,9 @@ export default function Sidebar() {
   let user = null;
   try { user = getStoredUser(); } catch {}
 
-  const role = user?.role || null;
-  const cls  = ({ isActive }) => "menuItem" + (isActive ? " active" : "");
+  const role    = user?.role || null;
+  const cls     = ({ isActive }) => "menuItem" + (isActive ? " active" : "");
+  const unread  = useUnreadCount();
 
   return (
     <aside className="sidebar">
@@ -78,6 +107,19 @@ export default function Sidebar() {
         )}
 
         {/* ── Common ────────────────────────────── */}
+        <div className="menuSection">Messagerie</div>
+        <NavLink className={cls} to="/inbox" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span>💬 Messagerie</span>
+          {unread > 0 && (
+            <span style={{
+              background: "#e74c3c", color: "#fff", borderRadius: "10px",
+              fontSize: "11px", fontWeight: 700, padding: "1px 7px", minWidth: "18px", textAlign: "center"
+            }}>
+              {unread > 99 ? "99+" : unread}
+            </span>
+          )}
+        </NavLink>
+
         <div className="menuSection">Mon compte</div>
         <NavLink className={cls} to="/me">👤 Mon profil</NavLink>
       </nav>

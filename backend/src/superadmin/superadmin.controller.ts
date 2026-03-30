@@ -97,4 +97,12 @@ export class SuperAdminController {
     const exists = await this.usersService.findByMatricule(matricule);
     return { exists: !!exists };
   }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SUPERADMIN')
+  @Get('next-matricule/:role')
+  async nextMatricule(@Param('role') role: string) {
+    const matricule = await this.usersService.nextMatricule(role);
+    return { matricule };
+  }
 }

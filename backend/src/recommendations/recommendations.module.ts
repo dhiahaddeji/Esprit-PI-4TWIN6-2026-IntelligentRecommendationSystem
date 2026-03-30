@@ -2,7 +2,9 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { UsersModule } from '../users/users.module';
-import { ActivityModule } from '../activity/activity.module'; // ✅ FIX
+import { ActivityModule } from '../activity/activity.module';
+import { CompetencesModule } from '../competences/competences.module';
+import { InvitationsModule } from '../invitations/invitations.module';
 
 import { Recommendation, RecommendationSchema } from './recommendation.schema';
 import { Activity, ActivitySchema } from '../activity/activity.schema';
@@ -18,7 +20,9 @@ import { RecommendationsController } from './recommendations.controller';
     ]),
 
     UsersModule,
-    ActivityModule, // ✅ maintenant reconnu
+    ActivityModule,
+    CompetencesModule,
+    InvitationsModule,
   ],
   controllers: [RecommendationsController],
   providers: [RecommendationsService],

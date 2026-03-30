@@ -19,13 +19,13 @@ export class SkillRequest {
   @Prop({ required: true })
   employeeName: string;
 
-  @Prop({ type: [{ name: String, level: String, score: Number }], default: [] })
+  @Prop({ type: [Object], default: [] })
   savoir: SkillItem[];
 
-  @Prop({ type: [{ name: String, level: String, score: Number }], default: [] })
+  @Prop({ type: [Object], default: [] })
   savoir_faire: SkillItem[];
 
-  @Prop({ type: [{ name: String, level: String, score: Number }], default: [] })
+  @Prop({ type: [Object], default: [] })
   savoir_etre: SkillItem[];
 
   @Prop({ default: 'PENDING' })

@@ -18,6 +18,9 @@ import { InvitationsModule } from './invitations/invitations.module';
 import { ParticipationsModule } from './participations/participations.module';
 import { SkillsModule } from './skills/skills.module';
 import { AiModule } from './ai/ai.module';
+import { CompetencesModule } from './competences/competences.module';
+import { DepartmentsModule } from './departments/departments.module';
+import { MessagingModule } from './messaging/messaging.module';
 
 @Module({
   imports: [
@@ -36,6 +39,9 @@ import { AiModule } from './ai/ai.module';
     ParticipationsModule,
     SkillsModule,
     AiModule,
+    CompetencesModule,
+    DepartmentsModule,
+    MessagingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

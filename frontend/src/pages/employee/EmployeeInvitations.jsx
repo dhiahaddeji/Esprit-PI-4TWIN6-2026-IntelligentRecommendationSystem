@@ -57,7 +57,7 @@ export default function EmployeeInvitations() {
     return (
       <div style={{ padding: 18 }}>
         <h1 style={{ margin: 0 }}>Notifications</h1>
-        <p style={{ marginTop: 6, color: "#667085" }}>Chargement...</p>
+        <p style={{ marginTop: 6, color: "var(--text-2)" }}>Chargement...</p>
       </div>
     );
   }
@@ -75,7 +75,7 @@ export default function EmployeeInvitations() {
   return (
     <div style={{ padding: 18 }}>
       <h1 style={{ margin: 0 }}>Notifications</h1>
-      <p style={{ marginTop: 6, color: "#667085" }}>
+      <p style={{ marginTop: 6, color: "var(--text-2)" }}>
         Invitations à participer à des activités.
       </p>
 
@@ -100,7 +100,7 @@ export default function EmployeeInvitations() {
               >
                 <div>
                   <div style={{ fontWeight: 900 }}>{act?.title || "Activité"}</div>
-                  <div style={{ color: "#667085", marginTop: 4, fontSize: 13 }}>
+                  <div style={{ color: "var(--text-2)", marginTop: 4, fontSize: 13 }}>
                     {act?.date || "—"} • {act?.location || "—"}
                   </div>
                   <div style={{ marginTop: 8 }}>
@@ -122,7 +122,7 @@ export default function EmployeeInvitations() {
 
 function card() {
   return {
-    background: "#fff",
+    background: "var(--surface)",
     border: "1px solid #eef0f4",
     borderRadius: 16,
     padding: 16,
@@ -134,7 +134,7 @@ function btnLink() {
     fontWeight: 900,
     color: "#0b2b4b",
     border: "1px solid #eef0f4",
-    background: "#fff",
+    background: "var(--surface)",
     padding: "8px 10px",
     borderRadius: 12,
   };

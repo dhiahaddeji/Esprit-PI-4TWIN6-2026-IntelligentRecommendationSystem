@@ -1,6 +1,5 @@
 /* src/styles/layout.css */
 
-/* The real classes used in MainLayout.jsx */
 .layout {
   display: flex;
   min-height: 100vh;
@@ -15,6 +14,7 @@
   min-height: 100vh;
   min-width: 0;
   background: var(--bg);
+  transition: background 0.2s;
 }
 
 .layoutContent {
@@ -22,6 +22,7 @@
   padding: 22px;
   min-width: 0;
   background: var(--bg);
+  transition: background 0.2s;
 }
 
 /* Skip link */
@@ -42,7 +43,6 @@
   transform: translateY(0);
 }
 
-/* Card helper class (optional) */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -50,7 +50,6 @@
   box-shadow: var(--shadow);
 }
 
-/* Responsive: shift content on small screens */
 @media (max-width: 900px) {
   .layoutMain {
     margin-left: 84px;

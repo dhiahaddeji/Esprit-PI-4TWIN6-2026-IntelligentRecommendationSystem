@@ -3,7 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { SkillRequest, SkillRequestDocument, SkillItem } from './skill-request.schema';
 import { UsersService } from '../users/users.service';
-import { LEVEL_SCORE } from '../users/schemas/user.schema';
+
+const LEVEL_SCORE: Record<string, number> = { LOW: 25, MEDIUM: 50, HIGH: 75, EXPERT: 100 };
 
 function computeGlobalScore(skills: SkillItem[]): number {
   if (!skills.length) return 0;
@@ -21,7 +22,7 @@ export class SkillsService {
 
   // ── Employee: get my approved skills + pending request ──────────────
   async getMySkills(employeeId: string) {
-    const user = await this.usersService.findById(employeeId);
+    const user = await this.usersService.findById(employeeId) as any;
     const pending = await this.skillRequestModel.findOne({
       employeeId,
       status: 'PENDING',
@@ -108,7 +109,7 @@ export class SkillsService {
     employeeId: string,
     skillUpdates: { skillName: string; newLevel: string }[],
   ) {
-    const user = await this.usersService.findById(employeeId);
+    const user = await this.usersService.findById(employeeId) as any;
     const levelMap: Record<string, string> = {};
     for (const u of skillUpdates) levelMap[u.skillName.toLowerCase()] = u.newLevel;
 
@@ -137,7 +138,7 @@ export class SkillsService {
 
   // ── HR: get one employee's skills ────────────────────────────────────
   async getEmployeeSkills(employeeId: string) {
-    const user = await this.usersService.findById(employeeId);
+    const user = await this.usersService.findById(employeeId) as any;
     return {
       savoir:       user.savoir       || [],
       savoir_faire: user.savoir_faire || [],

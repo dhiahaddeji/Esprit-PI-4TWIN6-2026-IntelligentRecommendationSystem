@@ -33,7 +33,7 @@ export default function Register() {
   return (
     <div style={{ maxWidth: 420, margin: "60px auto", padding: 16 }}>
       <h1 style={{ marginBottom: 6 }}>Create account</h1>
-      <p style={{ marginTop: 0, color: "#667085" }}>Sign up and choose your role</p>
+      <p style={{ marginTop: 0, color: "var(--text-2)" }}>Sign up and choose your role</p>
 
       <form onSubmit={onSubmit} style={{ display: "grid", gap: 10 }}>
         <input

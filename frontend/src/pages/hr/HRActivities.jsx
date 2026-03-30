@@ -37,7 +37,7 @@ export default function HRActivities() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
         <div>
           <h1 style={{ margin: 0 }}>Activités</h1>
-          <p style={{ margin: "6px 0 0", color: "#667085" }}>
+          <p style={{ margin: "6px 0 0", color: "var(--text-2)" }}>
             Créer une activité, lancer l’IA, valider la liste, puis transmettre au manager.
           </p>
 
@@ -74,7 +74,7 @@ export default function HRActivities() {
 
       <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
         {activities.length === 0 ? (
-          <div style={{ background: "#fff", border: "1px solid #eef0f4", borderRadius: 14, padding: 14 }}>
+          <div style={{ background: "var(--surface)", border: "1px solid #eef0f4", borderRadius: 14, padding: 14 }}>
             Aucune activité pour le moment.
           </div>
         ) : (
@@ -86,7 +86,7 @@ export default function HRActivities() {
               <div
                 key={String(id)}
                 style={{
-                  background: "#fff",
+                  background: "var(--surface)",
                   border: "1px solid #eef0f4",
                   borderRadius: 14,
                   padding: 14,
@@ -99,7 +99,7 @@ export default function HRActivities() {
                 <div>
                   <div style={{ fontWeight: 900, fontSize: 16 }}>{a.title}</div>
 
-                  <div style={{ color: "#667085", marginTop: 4, fontSize: 13 }}>
+                  <div style={{ color: "var(--text-2)", marginTop: 4, fontSize: 13 }}>
                     Manager: <b>{manager?.name || "—"}</b> • {a.date || "date —"} • {a.location || "lieu —"} • places:{" "}
                     {a.seats || 0}
                   </div>
@@ -111,7 +111,7 @@ export default function HRActivities() {
                         padding: "4px 10px",
                         borderRadius: 999,
                         border: "1px solid #eef0f4",
-                        background: "#f8fafc",
+                        background: "var(--surface-2)",
                         fontWeight: 800,
                       }}
                     >
@@ -129,7 +129,7 @@ export default function HRActivities() {
                     padding: "8px 10px",
                     borderRadius: 10,
                     border: "1px solid #eef0f4",
-                    background: "#fff",
+                    background: "var(--surface)",
                   }}
                 >
                   Ouvrir workflow →

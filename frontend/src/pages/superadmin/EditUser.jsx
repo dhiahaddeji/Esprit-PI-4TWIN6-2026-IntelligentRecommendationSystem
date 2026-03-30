@@ -72,7 +72,7 @@ export default function EditUser() {
   if (loading) {
     return (
       <div style={{ padding: "40px", textAlign: "center" }}>
-        <p style={{ fontSize: "18px", color: "#667085" }}>Chargement...</p>
+        <p style={{ fontSize: "18px", color: "var(--text-2)" }}>Chargement...</p>
       </div>
     );
   }

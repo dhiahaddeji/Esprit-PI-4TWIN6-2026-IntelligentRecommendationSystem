@@ -3,18 +3,22 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./index.css";
+import "./styles/themes.css";
 
 import { AccessibilityProvider } from "./contexts/AccessibilityContext";
 import { AuthProvider } from "./auth/AuthContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
-      <AccessibilityProvider>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </AccessibilityProvider>
+      <ThemeProvider>
+        <AccessibilityProvider>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </AccessibilityProvider>
+      </ThemeProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

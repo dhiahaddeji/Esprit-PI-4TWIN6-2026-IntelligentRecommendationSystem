@@ -73,7 +73,7 @@ export default function EmployeeInvitationDetail() {
 
       <div style={{ ...card(), marginTop: 12 }}>
         <h1 style={{ margin: 0 }}>{act?.title}</h1>
-        <div style={{ marginTop: 6, color: "#667085" }}>
+        <div style={{ marginTop: 6, color: "var(--text-2)" }}>
           {act?.date} • {act?.location}
         </div>
 
@@ -117,7 +117,7 @@ export default function EmployeeInvitationDetail() {
 }
 
 function card() {
-  return { background: "#fff", border: "1px solid #eef0f4", borderRadius: 16, padding: 16 };
+  return { background: "var(--surface)", border: "1px solid #eef0f4", borderRadius: 16, padding: 16 };
 }
 function btnPrimary() {
   return { background: "#0b2b4b", color: "white", padding: "10px 14px", borderRadius: 12, border: "none", fontWeight: 900, cursor: "pointer" };

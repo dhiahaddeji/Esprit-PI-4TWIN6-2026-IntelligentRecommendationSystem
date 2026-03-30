@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AccessibilityMenu from "./AccessibilityMenu";
 import { getStoredUser, logout } from "../auth/authService";
+import { useTheme } from "../contexts/ThemeContext";
 import "../styles/topbar.css";
 
 export default function Topbar() {
+  const { isDark, toggle } = useTheme();
   const [a11yOpen, setA11yOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
@@ -73,6 +75,21 @@ export default function Topbar() {
         </div>
 
         <div className="topRight">
+
+          {/* DARK / LIGHT MODE */}
+          <button
+            type="button"
+            className={`themeToggle ${isDark ? "dark" : "light"}`}
+            onClick={toggle}
+            aria-label={isDark ? "Passer en mode clair" : "Passer en mode sombre"}
+            title={isDark ? "Mode clair" : "Mode sombre"}
+            aria-pressed={isDark}
+          >
+            <span className="themeToggleIcon" aria-hidden="true">
+              <span className="sun">☀️</span>
+              <span className="moon">🌙</span>
+            </span>
+          </button>
 
           {/* ACCESSIBILITÉ */}
           <button

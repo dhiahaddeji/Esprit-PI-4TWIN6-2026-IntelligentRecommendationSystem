@@ -51,12 +51,12 @@ function MessageBubble({ msg }) {
           <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
             {msg.employees.map((emp, i) => (
               <div key={emp.employee_id || i} style={{
-                background: "#fff", borderRadius: "12px", padding: "12px 16px",
-                border: "1px solid #dde3f0",
+                background: "var(--surface)", borderRadius: "12px", padding: "12px 16px",
+                border: "1px solid var(--border)",
                 boxShadow: "0 2px 8px rgba(59,111,212,0.07)",
               }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div style={{ fontWeight: 700, color: "#1a2340", fontSize: "14px" }}>
+                  <div style={{ fontWeight: 700, color: "var(--text-1)", fontSize: "14px" }}>
                     #{i + 1} {emp.name}
                   </div>
                   {emp.score !== undefined && (
@@ -75,9 +75,9 @@ function MessageBubble({ msg }) {
                     .map(skill => (
                       <span key={skill} style={{
                         padding: "2px 8px", borderRadius: "999px",
-                        background: "#f5f7ff", color: "#3d4f7c",
+                        background: "var(--surface-2)", color: "#3d4f7c",
                         fontSize: "11.5px", fontWeight: 600,
-                        border: "1px solid #dde3f0",
+                        border: "1px solid var(--border)",
                       }}>{skill}</span>
                     ))
                   }
@@ -167,11 +167,11 @@ export default function HRChat() {
       padding: "0 24px 24px",
     }}>
       {/* Header */}
-      <div style={{ padding: "20px 0 16px", borderBottom: "1px solid #dde3f0", marginBottom: "16px", flexShrink: 0 }}>
-        <h1 style={{ margin: "0 0 4px 0", fontSize: "22px", fontWeight: 800, color: "#1a2340" }}>
+      <div style={{ padding: "20px 0 16px", borderBottom: "1px solid var(--border)", marginBottom: "16px", flexShrink: 0 }}>
+        <h1 style={{ margin: "0 0 4px 0", fontSize: "22px", fontWeight: 800, color: "var(--text-1)" }}>
           🤖 Assistant RH IA
         </h1>
-        <p style={{ margin: 0, color: "#6b7a99", fontSize: "13.5px" }}>
+        <p style={{ margin: 0, color: "var(--text-2)", fontSize: "13.5px" }}>
           Recommandations d'employés basées sur leurs compétences (savoir, savoir-faire, savoir-être)
         </p>
       </div>
@@ -197,9 +197,9 @@ export default function HRChat() {
             }}>IA</div>
             <div style={{
               padding: "12px 16px", borderRadius: "4px 16px 16px 16px",
-              background: "#fff", border: "1px solid #dde3f0",
+              background: "var(--surface)", border: "1px solid var(--border)",
               boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
-              color: "#6b7a99", fontSize: "14px",
+              color: "var(--text-2)", fontSize: "14px",
             }}>
               <span style={{ animation: "pulse 1.4s ease-in-out infinite" }}>Analyse en cours…</span>
             </div>
@@ -212,7 +212,7 @@ export default function HRChat() {
       {/* Suggestions */}
       {messages.length <= 1 && (
         <div style={{ flexShrink: 0, marginBottom: "12px" }}>
-          <div style={{ fontSize: "12px", fontWeight: 600, color: "#6b7a99", marginBottom: "8px" }}>
+          <div style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-2)", marginBottom: "8px" }}>
             Suggestions :
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
@@ -236,9 +236,9 @@ export default function HRChat() {
         display: "flex",
         gap: "10px",
         padding: "12px",
-        background: "#fff",
+        background: "var(--surface)",
         borderRadius: "16px",
-        border: "1.5px solid #dde3f0",
+        border: "1.5px solid var(--border)",
         boxShadow: "0 4px 20px rgba(59,111,212,0.08)",
       }}>
         <input
@@ -250,7 +250,7 @@ export default function HRChat() {
           disabled={loading}
           style={{
             flex: 1, border: "none", outline: "none",
-            background: "transparent", fontSize: "14px", color: "#1a2340",
+            background: "transparent", fontSize: "14px", color: "var(--text-1)",
           }}
         />
         <button

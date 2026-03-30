@@ -7,12 +7,12 @@
   font-size: 34px;
   font-weight: 900;
   letter-spacing: -0.02em;
-  color: #101828;
+  color: var(--text-1);
 }
 
 .skillsSubtitle {
   margin: 6px 0 18px;
-  color: #667085;
+  color: var(--text-2);
 }
 
 /* 3 columns like the screenshot */
@@ -25,8 +25,8 @@
 
 /* Card */
 .skillCard {
-  background: #fff;
-  border: 1px solid #eef0f4;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 16px;
   padding: 16px;
   box-shadow: 0 1px 0 rgba(16, 24, 40, 0.02);
@@ -58,7 +58,7 @@
 
 .skillCardTitle {
   font-weight: 900;
-  color: #101828;
+  color: var(--text-1);
 }
 
 /* Count bubble */
@@ -67,7 +67,7 @@
   height: 32px;
   border-radius: 999px;
   background: #2f978a;
-  color: #fff;
+  color: var(--surface);
   display: grid;
   place-items: center;
   font-weight: 900;
@@ -87,12 +87,12 @@
   gap: 12px;
   padding: 12px 12px;
   border-radius: 14px;
-  background: #f8fafc;
-  border: 1px solid #eef0f4;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
 }
 
 .skillName {
-  color: #101828;
+  color: var(--text-1);
   font-weight: 600;
   font-size: 14px;
 }
@@ -103,7 +103,7 @@
   border-radius: 999px;
   background: #f2f4f7;
   border: 1px solid #e4e7ec;
-  color: #101828;
+  color: var(--text-1);
   font-weight: 700;
   font-size: 12px;
   white-space: nowrap;

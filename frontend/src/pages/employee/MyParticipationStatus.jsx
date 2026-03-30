@@ -53,7 +53,7 @@ export default function MyParticipationStatus() {
 }
 
 function card() {
-  return { background: "#fff", border: "1px solid #eef0f4", borderRadius: 16, padding: 16 };
+  return { background: "var(--surface)", border: "1px solid #eef0f4", borderRadius: 16, padding: 16 };
 }
 function pill(status) {
   const map = {

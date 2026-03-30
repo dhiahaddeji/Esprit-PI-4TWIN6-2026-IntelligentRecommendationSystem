@@ -100,7 +100,7 @@ export default function CompleteProfile() {
               onClick={() => photoRef.current.click()}
               style={{
                 width: 90, height: 90, borderRadius: "50%",
-                background: "#f1f5f9",
+                background: "var(--bg)",
                 border: "2px dashed #cbd5e1",
                 cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",

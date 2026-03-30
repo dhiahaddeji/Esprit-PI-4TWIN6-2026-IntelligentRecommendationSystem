@@ -20,7 +20,7 @@ const ROLE_COLORS = {
 
 const STATUS_COLORS = {
   ACTIVE:    { bg: "#d1fae5", color: "#065f46" },
-  INACTIVE:  { bg: "#f1f5f9", color: "#64748b" },
+  INACTIVE:  { bg: "#f1f5f9", color: "var(--text-2)" },
   SUSPENDED: { bg: "#fee2e2", color: "#991b1b" },
 };
 
@@ -71,10 +71,10 @@ export default function UsersList() {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px" }}>
         <div>
-          <h1 style={{ margin: "0 0 4px 0", fontSize: "26px", fontWeight: 800, color: "#1a2340" }}>
+          <h1 style={{ margin: "0 0 4px 0", fontSize: "26px", fontWeight: 800, color: "var(--text-1)" }}>
             👥 Liste des comptes
           </h1>
-          <p style={{ margin: 0, color: "#6b7a99", fontSize: "14px" }}>
+          <p style={{ margin: 0, color: "var(--text-2)", fontSize: "14px" }}>
             {users.length} utilisateur{users.length !== 1 ? "s" : ""} enregistré{users.length !== 1 ? "s" : ""}
           </p>
         </div>
@@ -107,10 +107,10 @@ export default function UsersList() {
           style={{
             flex: "1 1 240px",
             padding: "9px 14px",
-            border: "1.5px solid #dde3f0",
+            border: "1.5px solid var(--border)",
             borderRadius: "10px",
-            background: "#f5f7ff",
-            color: "#1a2340",
+            background: "var(--surface-2)",
+            color: "var(--text-1)",
             fontSize: "14px",
             outline: "none",
           }}
@@ -120,10 +120,10 @@ export default function UsersList() {
           onChange={e => setRoleFilter(e.target.value)}
           style={{
             padding: "9px 14px",
-            border: "1.5px solid #dde3f0",
+            border: "1.5px solid var(--border)",
             borderRadius: "10px",
-            background: "#f5f7ff",
-            color: "#1a2340",
+            background: "var(--surface-2)",
+            color: "var(--text-1)",
             fontSize: "14px",
             outline: "none",
             cursor: "pointer",
@@ -139,7 +139,7 @@ export default function UsersList() {
 
       {/* States */}
       {loading && (
-        <div style={{ textAlign: "center", padding: "60px", color: "#6b7a99" }}>
+        <div style={{ textAlign: "center", padding: "60px", color: "var(--text-2)" }}>
           Chargement…
         </div>
       )}
@@ -160,11 +160,11 @@ export default function UsersList() {
       {!loading && !error && filtered.length === 0 && (
         <div style={{
           padding: "60px",
-          background: "#fff",
+          background: "var(--surface)",
           borderRadius: "16px",
           textAlign: "center",
-          color: "#6b7a99",
-          border: "1px solid #dde3f0",
+          color: "var(--text-2)",
+          border: "1px solid var(--border)",
           fontSize: "16px",
         }}>
           {users.length === 0
@@ -176,16 +176,16 @@ export default function UsersList() {
       {/* Table */}
       {!loading && !error && filtered.length > 0 && (
         <div style={{
-          background: "#fff",
+          background: "var(--surface)",
           borderRadius: "16px",
-          border: "1px solid #dde3f0",
+          border: "1px solid var(--border)",
           overflow: "hidden",
           boxShadow: "0 4px 20px rgba(59,111,212,0.08)",
         }}>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
-                <tr style={{ background: "#f5f7ff", borderBottom: "2px solid #dde3f0" }}>
+                <tr style={{ background: "var(--surface-2)", borderBottom: "2px solid #dde3f0" }}>
                   {["Utilisateur", "Email", "Matricule", "Rôle", "Statut", ...(isSuperAdmin ? ["Actions"] : [])].map(h => (
                     <th key={h} style={{
                       padding: "12px 16px",
@@ -201,7 +201,7 @@ export default function UsersList() {
               </thead>
               <tbody>
                 {filtered.map((user, i) => {
-                  const rc = ROLE_COLORS[user.role] || { bg: "#f1f5f9", color: "#64748b" };
+                  const rc = ROLE_COLORS[user.role] || { bg: "#f1f5f9", color: "var(--text-2)" };
                   const sc = STATUS_COLORS[user.status] || STATUS_COLORS.INACTIVE;
                   const displayName = user.firstName && user.lastName
                     ? `${user.firstName} ${user.lastName}`
@@ -226,15 +226,15 @@ export default function UsersList() {
                             justifyContent: "center", fontWeight: 700, fontSize: "13px",
                             flexShrink: 0,
                           }}>{initials}</div>
-                          <span style={{ fontWeight: 600, color: "#1a2340", fontSize: "14px" }}>
+                          <span style={{ fontWeight: 600, color: "var(--text-1)", fontSize: "14px" }}>
                             {displayName}
                           </span>
                         </div>
                       </td>
-                      <td style={{ padding: "14px 16px", color: "#6b7a99", fontSize: "13.5px" }}>
+                      <td style={{ padding: "14px 16px", color: "var(--text-2)", fontSize: "13.5px" }}>
                         {user.email}
                       </td>
-                      <td style={{ padding: "14px 16px", color: "#6b7a99", fontSize: "13px", fontFamily: "monospace" }}>
+                      <td style={{ padding: "14px 16px", color: "var(--text-2)", fontSize: "13px", fontFamily: "monospace" }}>
                         {user.matricule || "—"}
                       </td>
                       <td style={{ padding: "14px 16px" }}>

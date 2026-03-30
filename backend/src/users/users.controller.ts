@@ -91,6 +91,16 @@ export class UsersController {
     return safe;
   }
 
+  // ── HR: assign employee to a department ─────────────────────────────
+  @Roles('HR', 'SUPERADMIN')
+  @Patch(':id/department')
+  async assignDepartment(
+    @Param('id') id: string,
+    @Body() body: { departement_id: string | null },
+  ) {
+    return this.usersService.update(id, { departement_id: body.departement_id ?? null });
+  }
+
   @Roles('HR', 'SUPERADMIN', 'MANAGER', 'EMPLOYEE')
   @Get(':id')
   async byId(@Param('id') id: string) {

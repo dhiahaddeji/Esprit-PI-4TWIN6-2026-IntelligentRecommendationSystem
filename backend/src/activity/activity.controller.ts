@@ -30,13 +30,13 @@ export class ActivitiesController {
     });
   }
 
-  @Roles('HR', 'MANAGER', 'EMPLOYEE')
+  @Roles('HR', 'MANAGER', 'EMPLOYEE', 'SUPERADMIN')
   @Get()
   list() {
     return this.service.findAll();
   }
 
-  @Roles('HR', 'MANAGER', 'EMPLOYEE')
+  @Roles('HR', 'MANAGER', 'EMPLOYEE', 'SUPERADMIN')
   @Get(':id')
   get(@Param('id') id: string) {
     return this.service.findById(id);

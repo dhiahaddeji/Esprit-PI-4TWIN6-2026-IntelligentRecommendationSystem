@@ -14,7 +14,12 @@ export class AiController {
   async chat(
     @Body() body: {
       message: string;
-      context?: { requiredSkills?: string[]; prioritization?: string };
+      context?: {
+        requiredSkills?: string[];
+        prioritization?: string;
+        recommendedList?: any[];
+        activityTitle?: string;
+      };
     },
   ) {
     return this.aiService.chat(body.message, body.context);

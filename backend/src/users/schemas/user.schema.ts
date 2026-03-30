@@ -1,32 +1,26 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-// Skill level enum
-export enum SkillLevel {
-  LOW    = 'LOW',
-  MEDIUM = 'MEDIUM',
-  HIGH   = 'HIGH',
-  EXPERT = 'EXPERT',
-}
-
-// Numeric score by level (for dynamic scoring)
-export const LEVEL_SCORE: Record<string, number> = {
-  LOW: 25, MEDIUM: 50, HIGH: 75, EXPERT: 100,
-};
-
 export type UserDocument = User & Document;
 
 export enum UserRole {
   SUPERADMIN = 'SUPERADMIN',
-  HR = 'HR',
-  MANAGER = 'MANAGER',
-  EMPLOYEE = 'EMPLOYEE',
+  HR         = 'HR',
+  MANAGER    = 'MANAGER',
+  EMPLOYEE   = 'EMPLOYEE',
 }
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, collection: 'users' })
 export class User {
+  // ── Identité ──────────────────────────────────────────────────────────
   @Prop({ required: true })
   name: string;
+
+  @Prop()
+  firstName: string;
+
+  @Prop()
+  lastName: string;
 
   @Prop({ required: true, unique: true })
   matricule: string;
@@ -34,81 +28,58 @@ export class User {
   @Prop()
   telephone: string;
 
+  // ── Auth ──────────────────────────────────────────────────────────────
   @Prop({ required: true, unique: true })
   email: string;
 
   @Prop({ required: true })
   password: string;
 
-  @Prop()
-  date_embauche: Date;
+  @Prop({ default: false })
+  mustChangePassword: boolean;
 
   @Prop()
-  departement_id: string;
+  passwordExpiresAt: Date;
+
+  @Prop({ default: false })
+  isProfileComplete: boolean;
 
   @Prop()
-  manager_id: string;
+  githubId: string;
+
+  // ── Rôle & statut ─────────────────────────────────────────────────────
+  @Prop({ required: true, enum: UserRole })
+  role: UserRole;
 
   @Prop({ default: 'ACTIVE' })
-  status: string;
+  status: string; // ACTIVE | INACTIVE | SUSPENDED
 
   @Prop({ default: false })
   en_ligne: boolean;
 
-  @Prop({ required: true, enum: UserRole })
-  role: UserRole;
-
-  // ── Onboarding flags ──────────────────────────────────────────────
-  /** L'utilisateur doit changer son mot de passe temporaire */
-  @Prop({ default: false })
-  mustChangePassword: boolean;
-
-  /** Date d'expiration du mot de passe temporaire (24 h) */
+  // ── Infos professionnelles ─────────────────────────────────────────────
   @Prop()
-  passwordExpiresAt: Date;
+  date_embauche: Date;
 
-  /** Le profil a été complété (photo, prénom/nom, CV) */
-  @Prop({ default: false })
-  isProfileComplete: boolean;
-
-  // ── GitHub OAuth ───────────────────────────────────────────────────
-  @Prop()
-  githubId: string;
-
-  // ── Profil étendu ─────────────────────────────────────────────────
-  @Prop()
-  firstName: string;
-
-  @Prop()
-  lastName: string;
-
-  @Prop()
-  photoUrl: string;
-
-  @Prop()
-  cvUrl: string;
-
-  // ── Compétences approuvées (avec niveaux) ───────────────────────────
-  // Each item: { name: string, level: LOW|MEDIUM|HIGH|EXPERT, score: number }
-  @Prop({ type: [{ name: String, level: String, score: Number }], default: [] })
-  savoir: { name: string; level: string; score: number }[];
-
-  @Prop({ type: [{ name: String, level: String, score: Number }], default: [] })
-  savoir_faire: { name: string; level: string; score: number }[];
-
-  @Prop({ type: [{ name: String, level: String, score: Number }], default: [] })
-  savoir_etre: { name: string; level: string; score: number }[];
-
-  // ── Score global dynamique (calculé) ─────────────────────────────
-  @Prop({ default: 0 })
-  globalScore: number;
-
-  // ── Poste / expérience ────────────────────────────────────────────
   @Prop()
   poste: string;
 
   @Prop({ default: 0 })
   yearsExperience: number;
+
+  // ── Relations ─────────────────────────────────────────────────────────
+  @Prop()
+  departement_id: string; // ref → Department._id
+
+  @Prop()
+  manager_id: string; // ref → User._id (manager)
+
+  // ── Médias ────────────────────────────────────────────────────────────
+  @Prop()
+  photoUrl: string;
+
+  @Prop()
+  cvUrl: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

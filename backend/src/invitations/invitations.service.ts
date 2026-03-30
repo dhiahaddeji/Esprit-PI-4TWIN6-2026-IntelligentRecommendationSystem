@@ -17,6 +17,16 @@ export class InvitationsService {
     return this.model.insertMany(docs, { ordered: false });
   }
 
+  /** Recrée proprement les invitations PENDING (supprime les anciennes PENDING d'abord) */
+  async bulkUpsert(activityId: string, employeeIds: string[]) {
+    await this.model.deleteMany({ activityId, status: 'PENDING' });
+    if (!employeeIds.length) return [];
+    const docs = employeeIds.map((employeeId) => ({
+      activityId, employeeId, status: 'PENDING', justification: '',
+    }));
+    return this.model.insertMany(docs, { ordered: false });
+  }
+
   listForEmployee(employeeId: string) {
     return this.model.find({ employeeId }).sort({ createdAt: -1 });
   }

@@ -71,4 +71,29 @@ export class UsersService {
   async findRoles(roles: string[]) {
     return this.userModel.find({ role: { $in: roles } }).select('-password').exec();
   }
+
+  async nextMatricule(role: string): Promise<string> {
+    const prefixMap: Record<string, string> = {
+      EMPLOYEE:   'EMP',
+      HR:         'RH',
+      MANAGER:    'MGR',
+      SUPERADMIN: 'ADM',
+    };
+    const prefix = prefixMap[role] ?? 'USR';
+    const regex  = new RegExp(`^${prefix}(\\d+)$`);
+    const users  = await this.userModel
+      .find({ matricule: { $regex: regex } })
+      .select('matricule')
+      .exec();
+
+    let max = 0;
+    for (const u of users) {
+      const m = u.matricule?.match(regex);
+      if (m) {
+        const n = parseInt(m[1], 10);
+        if (n > max) max = n;
+      }
+    }
+    return `${prefix}${max + 1}`;
+  }
 }

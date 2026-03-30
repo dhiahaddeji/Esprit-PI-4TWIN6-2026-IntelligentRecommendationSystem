@@ -18,9 +18,10 @@ export class AuthService {
 
   private buildToken(user: any) {
     return this.jwtService.sign({
-      sub: user._id,
+      sub:  user._id,
+      name: user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
       email: user.email,
-      role: user.role,
+      role:  user.role,
     });
   }
 
