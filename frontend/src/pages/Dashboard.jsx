@@ -1,5 +1,5 @@
 // src/pages/Dashboard.jsx  — dashboards réels par rôle
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, PieChart, Pie, Cell, Legend,
@@ -136,6 +136,7 @@ function SuperAdminDash() {
   const [users,      setUsers]      = useState([]);
   const [activities, setActivities] = useState([]);
   const [loading,    setLoading]    = useState(true);
+  const dataReady = !loading && (users.length > 0 || activities.length > 0);
 
   useEffect(() => {
     Promise.all([
@@ -270,6 +271,12 @@ function SuperAdminDash() {
           )}
         </Panel>
       </div>
+
+      <AiInsightsWidget role="SUPERADMIN" ready={dataReady} payload={{
+        totalUsers: users.length,
+        usersByRole: countBy(users, "role"),
+        totalActivities: activities.length,
+      }} />
     </div>
   );
 }
@@ -283,6 +290,7 @@ function HRDash() {
   const [pending,    setPending]    = useState([]);
   const [departments,setDepartments]= useState([]);
   const [loading,    setLoading]    = useState(true);
+  const dataReady = !loading;
 
   useEffect(() => {
     Promise.all([
@@ -439,6 +447,13 @@ function HRDash() {
           </div>
         )}
       </Panel>
+
+      <AiInsightsWidget role="HR" ready={dataReady} payload={{
+        totalEmployees: users.filter(u => u.role === "EMPLOYEE").length,
+        validatedFiches: analytics?.totalValidated || 0,
+        pendingFiches: pending.length,
+        activities,
+      }} />
     </div>
   );
 }
@@ -450,6 +465,7 @@ function ManagerDash({ me }) {
   const [activities, setActivities] = useState([]);
   const [pending,    setPending]    = useState([]);
   const [loading,    setLoading]    = useState(true);
+  const dataReady = !loading;
 
   useEffect(() => {
     Promise.all([
@@ -555,6 +571,12 @@ function ManagerDash({ me }) {
           })
         )}
       </Panel>
+
+      <AiInsightsWidget role="MANAGER" ready={dataReady} payload={{
+        pendingFiches: pending.length,
+        teamSize: activities.length,
+        activities,
+      }} />
     </div>
   );
 }
@@ -566,6 +588,7 @@ function EmployeeDash() {
   const [participations, setParticipations] = useState([]);
   const [skills,         setSkills]         = useState(null);
   const [loading,        setLoading]        = useState(true);
+  const dataReady = !loading;
 
   useEffect(() => {
     Promise.all([
@@ -722,6 +745,111 @@ function EmployeeDash() {
           })
         )}
       </Panel>
+
+      <AiInsightsWidget role="EMPLOYEE" ready={dataReady} payload={{
+        competences: skills?.approved ? [
+          ...(skills.approved.savoir || []),
+          ...(skills.approved.savoir_faire || []),
+          ...(skills.approved.savoir_etre || []),
+        ] : [],
+        ficheEtat: skills?.pending ? "submitted" : "draft",
+        invitations,
+      }} />
+    </div>
+  );
+}
+
+// ─── AI Insights Widget (powered by Claude) ──────────────────────────────────
+
+function AiInsightsWidget({ role, payload, ready }) {
+  const [insight, setInsight] = useState(null);
+  const [tips,    setTips]    = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [open,    setOpen]    = useState(true);
+  const fetched = useRef(false);
+
+  useEffect(() => {
+    if (!ready || fetched.current) return;
+    fetched.current = true;
+    setLoading(true);
+    http.post("/ai/dashboard-insights", { data: payload })
+      .then(r => { setInsight(r.data.insight); setTips(r.data.tips || []); })
+      .catch(() => setInsight(null))
+      .finally(() => setLoading(false));
+  }, [ready, payload]);
+
+  const ROLE_GRADIENT = {
+    SUPERADMIN: "linear-gradient(135deg,#0b1e3d 0%,#1a3a6b 100%)",
+    HR:         "linear-gradient(135deg,#1e3a8a 0%,#2563eb 100%)",
+    MANAGER:    "linear-gradient(135deg,#0c4a6e 0%,#0891b2 100%)",
+    EMPLOYEE:   "linear-gradient(135deg,#064e3b 0%,#059669 100%)",
+  };
+
+  return (
+    <div style={{
+      background: ROLE_GRADIENT[role] || "linear-gradient(135deg,#1a2340,#2d3f6b)",
+      borderRadius: 16, padding: "20px 24px",
+      boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+      color: "#fff", position: "relative", overflow: "hidden",
+    }}>
+      {/* Decorative blob */}
+      <div style={{
+        position: "absolute", top: -30, right: -30, width: 120, height: 120,
+        borderRadius: "50%", background: "rgba(255,255,255,0.06)", pointerEvents: "none",
+      }} />
+      <div style={{
+        position: "absolute", bottom: -20, right: 60, width: 70, height: 70,
+        borderRadius: "50%", background: "rgba(255,255,255,0.04)", pointerEvents: "none",
+      }} />
+
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 22 }}>🤖</span>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: 15, letterSpacing: 0.3 }}>Assistant IA · GPT-4o</div>
+            <div style={{ fontSize: 11, opacity: 0.7, marginTop: 1 }}>Analyse personnalisée en temps réel</div>
+          </div>
+        </div>
+        <button onClick={() => setOpen(o => !o)} style={{
+          background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8,
+          color: "#fff", cursor: "pointer", padding: "4px 10px", fontSize: 12, fontWeight: 600,
+        }}>{open ? "Réduire" : "Afficher"}</button>
+      </div>
+
+      {open && (
+        loading ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, opacity: 0.8 }}>
+            <div style={{
+              width: 16, height: 16, border: "2px solid rgba(255,255,255,0.4)",
+              borderTopColor: "#fff", borderRadius: "50%",
+              animation: "spin 0.8s linear infinite",
+            }} />
+            <span style={{ fontSize: 13 }}>Claude analyse vos données…</span>
+          </div>
+        ) : insight ? (
+          <>
+            <p style={{ margin: "0 0 16px 0", fontSize: 14, lineHeight: 1.6, opacity: 0.95 }}>
+              {insight}
+            </p>
+            {tips.length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {tips.map((tip, i) => (
+                  <div key={i} style={{
+                    display: "flex", alignItems: "flex-start", gap: 10,
+                    background: "rgba(255,255,255,0.10)", borderRadius: 10, padding: "10px 14px",
+                  }}>
+                    <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>
+                      {["💡", "🎯", "🚀"][i] || "✅"}
+                    </span>
+                    <span style={{ fontSize: 13, lineHeight: 1.5, opacity: 0.92 }}>{tip}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        ) : null
+      )}
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

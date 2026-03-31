@@ -8,6 +8,7 @@ import "./styles/themes.css";
 import { AccessibilityProvider } from "./contexts/AccessibilityContext";
 import { AuthProvider } from "./auth/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { NotificationsProvider } from "./contexts/NotificationsContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -15,7 +16,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <ThemeProvider>
         <AccessibilityProvider>
           <AuthProvider>
-            <App />
+            <NotificationsProvider>
+              <App />
+            </NotificationsProvider>
           </AuthProvider>
         </AccessibilityProvider>
       </ThemeProvider>

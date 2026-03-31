@@ -4,13 +4,15 @@ import { Model } from 'mongoose';
 import { Competence, CompetenceDocument, EVAL_TO_SCORE } from './competence.schema';
 import { FicheCompetence, FicheCompetenceDocument } from './fiche-competence.schema';
 import { QuestionCompetence, QuestionCompetenceDocument } from './question-competence.schema';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class CompetencesService {
   constructor(
-    @InjectModel(Competence.name)       private compModel: Model<CompetenceDocument>,
-    @InjectModel(FicheCompetence.name)  private ficheModel: Model<FicheCompetenceDocument>,
+    @InjectModel(Competence.name)         private compModel: Model<CompetenceDocument>,
+    @InjectModel(FicheCompetence.name)    private ficheModel: Model<FicheCompetenceDocument>,
     @InjectModel(QuestionCompetence.name) private questionModel: Model<QuestionCompetenceDocument>,
+    private readonly notifSvc: NotificationsService,
   ) {}
 
   // ── Catalogue (HR) ────────────────────────────────────────────────────
@@ -79,7 +81,7 @@ export class CompetencesService {
 
   // ── Soumettre pour validation manager ────────────────────────────────
 
-  async submit(employeeId: string) {
+  async submit(employeeId: string, employeeName: string) {
     const fiche = await this.ficheModel.findOne({ employee_id: employeeId });
     if (!fiche) throw new NotFoundException('Fiche introuvable');
 
@@ -88,7 +90,13 @@ export class CompetencesService {
       { etat: 'submitted' },
     );
     fiche.etat = 'submitted';
+    if (employeeName) fiche.employee_name = employeeName;
     await fiche.save();
+
+    // Notify all managers
+    const name = fiche.employee_name || employeeName || 'Un employé';
+    this.notifSvc.notifyManagersSkillSubmitted(employeeId, name, fiche._id.toString()).catch(() => {});
+
     return this.getMyFiche(employeeId);
   }
 
@@ -216,6 +224,12 @@ export class CompetencesService {
     fiche.validated_by = managerId;
     fiche.validated_at = new Date();
     await fiche.save();
+
+    // Notify employee
+    this.notifSvc.notifyEmployeeValidated(
+      fiche.employee_id, fiche.employee_name || '', ficheId, managerId,
+    ).catch(() => {});
+
     return this.getFicheById(ficheId);
   }
 
@@ -231,6 +245,12 @@ export class CompetencesService {
     fiche.validated_by = managerId;
     fiche.rejection_note = note || '';
     await fiche.save();
+
+    // Notify employee
+    this.notifSvc.notifyEmployeeRejected(
+      fiche.employee_id, fiche.employee_name || '', ficheId, managerId, note,
+    ).catch(() => {});
+
     return fiche;
   }
 

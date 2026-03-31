@@ -1,25 +1,37 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private readonly usersService: UsersService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: 'SECRET_KEY',
+      secretOrKey: process.env.JWT_SECRET || 'SECRET_KEY',
     });
   }
 
   async validate(payload: any) {
-    console.log('🔑 JwtStrategy.validate - Payload received:', payload);
-    const result = {
+    // Always fetch fresh role from DB — handles missing/stale role in token
+    let role = payload.role;
+    let name = payload.name || payload.email;
+
+    if (!role && payload.sub) {
+      try {
+        const user = await this.usersService.findById(payload.sub);
+        if (user) {
+          role = (user as any).role;
+          name = (user as any).name || name;
+        }
+      } catch { /* keep token values as fallback */ }
+    }
+
+    return {
       userId: payload.sub,
-      name:   payload.name  || payload.email,
-      email:  payload.email,
-      role:   payload.role,
+      name,
+      email: payload.email,
+      role,
     };
-    console.log('🔑 JwtStrategy.validate - User object:', result);
-    return result;
   }
 }

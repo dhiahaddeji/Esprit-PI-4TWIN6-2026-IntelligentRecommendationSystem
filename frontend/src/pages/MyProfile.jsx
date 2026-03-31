@@ -42,6 +42,8 @@ export default function MyProfile() {
   const [photoFile, setPhotoFile] = useState(null);
   const [cvFile, setCvFile] = useState(null);
   const [cvName, setCvName] = useState("");
+  const [cvAnalyzing, setCvAnalyzing] = useState(false);
+  const [cvExtracted, setCvExtracted] = useState(null); // { skills, summary, total }
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
@@ -99,6 +101,32 @@ export default function MyProfile() {
     if (!file) return;
     setCvFile(file);
     setCvName(file.name);
+    setCvExtracted(null);
+  };
+
+  const handleAnalyzeCv = async () => {
+    if (!cvFile) return;
+    setCvAnalyzing(true);
+    try {
+      const fd = new FormData();
+      fd.append("cv", cvFile);
+      const res = await http.post("/ai/analyze-cv", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      const result = res.data;
+      setCvExtracted(result);
+      if (result.skills?.length > 0) {
+        localStorage.setItem("cvExtractedSkills", JSON.stringify(result));
+        const label = result.mode === "openai" ? "par OpenAI GPT-4o" : "par analyse locale";
+        showToast(`✨ ${result.total} compétence(s) détectée(s) ${label} !`);
+      } else {
+        showToast("Aucune compétence détectée dans ce CV.", "error");
+      }
+    } catch {
+      showToast("Erreur lors de l'analyse du CV.", "error");
+    } finally {
+      setCvAnalyzing(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -278,7 +306,7 @@ export default function MyProfile() {
         {/* SECTION: CV — EMPLOYEE and HR only */}
         {canUploadCv && (
           <div style={styles.card}>
-            <h2 style={styles.cardTitle}>CV</h2>
+            <h2 style={styles.cardTitle}>CV &amp; Analyse IA</h2>
             <div style={styles.uploadArea}>
               <button
                 type="button"
@@ -306,6 +334,63 @@ export default function MyProfile() {
                 onChange={handleCvChange}
               />
             </div>
+
+            {/* AI analysis button — visible only when a new CV is selected */}
+            {cvFile && (
+              <div style={{ marginTop: "1rem", padding: "1rem", background: "var(--surface-2)", borderRadius: 12, border: "1px solid var(--border)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: "1.2rem" }}>🤖</span>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ margin: 0, fontWeight: 700, fontSize: "0.9rem", color: "var(--text-1)" }}>
+                      Analyse IA des compétences
+                    </p>
+                    <p style={{ margin: "0.15rem 0 0 0", fontSize: "0.78rem", color: "var(--text-2)" }}>
+                      L'IA extrait automatiquement vos compétences depuis le CV
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAnalyzeCv}
+                    disabled={cvAnalyzing}
+                    style={{
+                      padding: "0.5rem 1.1rem", borderRadius: 8, border: "none",
+                      background: cvAnalyzing ? "var(--border)" : "linear-gradient(135deg,#7c3aed,#6d28d9)",
+                      color: "#fff", fontWeight: 700, fontSize: "0.85rem",
+                      cursor: cvAnalyzing ? "not-allowed" : "pointer",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {cvAnalyzing ? "Analyse en cours…" : "✨ Analyser le CV"}
+                  </button>
+                </div>
+
+                {/* Results */}
+                {cvExtracted && cvExtracted.total > 0 && (
+                  <div style={{ marginTop: "0.85rem" }}>
+                    <p style={{ margin: "0 0 0.5rem 0", fontSize: "0.82rem", color: "var(--text-2)", fontStyle: "italic" }}>
+                      {cvExtracted.summary}
+                    </p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
+                      {cvExtracted.skills.map((s, i) => {
+                        const typeColors = { savoir: "#3b6fd4", savoir_faire: "#0891b2", savoir_etre: "#7c3aed" };
+                        return (
+                          <span key={i} style={{
+                            padding: "2px 10px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600,
+                            background: "var(--surface)", border: `1px solid ${typeColors[s.type] || "#ccc"}`,
+                            color: typeColors[s.type] || "var(--text-1)",
+                          }}>
+                            {s.intitule}
+                          </span>
+                        );
+                      })}
+                    </div>
+                    <p style={{ margin: "0.6rem 0 0 0", fontSize: "0.78rem", color: "#059669", fontWeight: 600 }}>
+                      ✅ {cvExtracted.total} compétence(s) prêtes {cvExtracted.mode === "openai" ? "(OpenAI GPT-4o)" : "(analyse locale)"} — rendez-vous dans "Mes Compétences" pour les importer.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 

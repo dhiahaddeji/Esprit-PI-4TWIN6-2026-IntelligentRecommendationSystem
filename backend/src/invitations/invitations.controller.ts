@@ -14,6 +14,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { InvitationsService } from './invitations.service';
 import { ActivitiesService } from '../activity/activity.service';
 import { ParticipationsService } from '../participations/participations.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Controller('invitations')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -22,6 +23,7 @@ export class InvitationsController {
     private readonly invService: InvitationsService,
     private readonly activitiesService: ActivitiesService,
     private readonly participationsService: ParticipationsService,
+    private readonly notifSvc: NotificationsService,
   ) {}
 
   // Manager notifies participants => create invitations
@@ -36,6 +38,14 @@ export class InvitationsController {
 
     await this.invService.bulkCreate(activityId, body.employeeIds || []);
     await this.activitiesService.update(activityId, { status: 'NOTIFIED' });
+
+    // Notify each invited employee in real-time
+    const title = (activity as any).title || 'une activité';
+    Promise.all(
+      (body.employeeIds || []).map(eid =>
+        this.notifSvc.notifyActivityInvitation(eid, title, activityId),
+      ),
+    ).catch(() => {});
 
     return { ok: true };
   }
@@ -90,6 +100,18 @@ export class InvitationsController {
       status: updated.status,
       justification: updated.justification,
     });
+
+    // Notify managers of the response
+    const activity = await this.activitiesService.findById(inv.activityId);
+    if (activity) {
+      this.notifSvc.notifyManagerActivityResponse(
+        req.user.userId,
+        req.user.name || 'Un employé',
+        (activity as any).title || 'une activité',
+        inv.activityId,
+        updated.status as 'ACCEPTED' | 'DECLINED',
+      ).catch(() => {});
+    }
 
     return updated;
   }

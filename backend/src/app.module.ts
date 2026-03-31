@@ -21,6 +21,7 @@ import { AiModule } from './ai/ai.module';
 import { CompetencesModule } from './competences/competences.module';
 import { DepartmentsModule } from './departments/departments.module';
 import { MessagingModule } from './messaging/messaging.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { MessagingModule } from './messaging/messaging.module';
     CompetencesModule,
     DepartmentsModule,
     MessagingModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

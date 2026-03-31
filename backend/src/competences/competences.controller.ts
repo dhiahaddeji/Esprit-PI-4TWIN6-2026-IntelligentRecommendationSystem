@@ -62,7 +62,7 @@ export class CompetencesController {
   @Roles('EMPLOYEE')
   @Post('mine/submit')
   submit(@Request() req: any) {
-    return this.svc.submit(req.user.userId);
+    return this.svc.submit(req.user.userId, req.user.name || '');
   }
 
   @Roles('EMPLOYEE')

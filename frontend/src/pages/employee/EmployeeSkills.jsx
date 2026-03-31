@@ -199,6 +199,134 @@ function AddCompForm({ catalog, onAdded, onCancel }) {
   );
 }
 
+// ── CV Import Banner ─────────────────────────────────────────────────────────
+function CvImportBanner({ onImported }) {
+  const raw = localStorage.getItem("cvExtractedSkills");
+  const [data, setData] = useState(() => {
+    try { return raw ? JSON.parse(raw) : null; } catch { return null; }
+  });
+  const [importing, setImporting] = useState(false);
+  const [selected, setSelected]   = useState(() => {
+    try {
+      const parsed = raw ? JSON.parse(raw) : null;
+      return parsed?.skills?.map((_, i) => i) || [];
+    } catch { return []; }
+  });
+
+  if (!data || !data.skills?.length) return null;
+
+  const toggleSkill = (i) =>
+    setSelected(s => s.includes(i) ? s.filter(x => x !== i) : [...s, i]);
+
+  const importSelected = async () => {
+    const toAdd = data.skills.filter((_, i) => selected.includes(i));
+    if (!toAdd.length) return;
+    setImporting(true);
+    try {
+      for (const skill of toAdd) {
+        await http.post("/competences/mine/add", {
+          intitule: skill.intitule,
+          type: skill.type,
+          auto_eval: skill.auto_eval,
+        });
+      }
+      localStorage.removeItem("cvExtractedSkills");
+      setData(null);
+      onImported(toAdd.length);
+    } catch (e) {
+      alert(e.response?.data?.message || "Erreur lors de l'import");
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const dismiss = () => {
+    localStorage.removeItem("cvExtractedSkills");
+    setData(null);
+  };
+
+  const typeColors = { savoir: "#3b6fd4", savoir_faire: "#0891b2", savoir_etre: "#7c3aed" };
+  const typeLabels = { savoir: "📚 Savoir", savoir_faire: "🛠️ Savoir-faire", savoir_etre: "🤝 Savoir-être" };
+
+  return (
+    <div style={{
+      background: "linear-gradient(135deg, #f5f3ff 0%, #eff6ff 100%)",
+      border: "1.5px solid #c4b5fd", borderRadius: 16,
+      padding: "20px 24px", marginBottom: 24,
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+            <span style={{ fontSize: 20 }}>🤖</span>
+            <span style={{ fontWeight: 800, fontSize: 15, color: "#5b21b6" }}>
+              Compétences extraites de votre CV
+              {data.mode === "openai" ? " · OpenAI GPT-4o" : " · Analyse locale"}
+            </span>
+          </div>
+          <p style={{ margin: 0, fontSize: 12, color: "#6d28d9", fontStyle: "italic" }}>
+            {data.summary}
+          </p>
+        </div>
+        <button onClick={dismiss} style={{
+          background: "none", border: "none", cursor: "pointer",
+          color: "#9ca3af", fontSize: 18, lineHeight: 1, padding: "0 4px",
+        }} title="Ignorer">×</button>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
+        {data.skills.map((s, i) => {
+          const checked = selected.includes(i);
+          return (
+            <label key={i} style={{
+              display: "flex", alignItems: "center", gap: 10, cursor: "pointer",
+              padding: "7px 12px", borderRadius: 9,
+              background: checked ? "rgba(124,58,237,0.08)" : "rgba(255,255,255,0.6)",
+              border: `1px solid ${checked ? "#a78bfa" : "transparent"}`,
+              transition: "all 0.15s",
+            }}>
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={() => toggleSkill(i)}
+                style={{ accentColor: "#7c3aed", width: 15, height: 15, cursor: "pointer" }}
+              />
+              <span style={{
+                fontSize: 11, fontWeight: 700, padding: "1px 7px", borderRadius: 999,
+                background: typeColors[s.type] + "22", color: typeColors[s.type],
+                whiteSpace: "nowrap",
+              }}>{typeLabels[s.type] || s.type}</span>
+              <span style={{ flex: 1, fontWeight: 600, fontSize: 13, color: "var(--text-1)" }}>{s.intitule}</span>
+              <span style={{ fontSize: 11, color: "var(--text-2)" }}>
+                {["", "Notions", "Pratique", "Maîtrise", "Expert"][s.auto_eval] || "—"}
+              </span>
+            </label>
+          );
+        })}
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        <button onClick={importSelected} disabled={importing || selected.length === 0} style={{
+          padding: "9px 20px", borderRadius: 10, border: "none",
+          background: selected.length === 0 ? "var(--border)" : "linear-gradient(135deg,#7c3aed,#6d28d9)",
+          color: "#fff", fontWeight: 700, fontSize: 13,
+          cursor: (importing || selected.length === 0) ? "not-allowed" : "pointer",
+          opacity: importing ? 0.7 : 1,
+        }}>
+          {importing ? "Import en cours…" : `⬇️ Importer ${selected.length} compétence(s)`}
+        </button>
+        <button onClick={() => setSelected(data.skills.map((_, i) => i))} style={{
+          padding: "7px 14px", borderRadius: 9, border: "1px solid #a78bfa",
+          background: "transparent", color: "#7c3aed", fontSize: 12, fontWeight: 600, cursor: "pointer",
+        }}>Tout sélectionner</button>
+        <button onClick={() => setSelected([])} style={{
+          padding: "7px 14px", borderRadius: 9, border: "1px solid var(--border)",
+          background: "transparent", color: "var(--text-2)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+        }}>Tout désélectionner</button>
+      </div>
+    </div>
+  );
+}
+
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function EmployeeSkills() {
   const [fiche, setFiche]         = useState(null);
@@ -313,6 +441,12 @@ export default function EmployeeSkills() {
           <strong>Note du manager :</strong> {fiche.rejection_note}
         </div>
       )}
+
+      {/* CV Import Banner */}
+      <CvImportBanner onImported={(n) => {
+        load();
+        setMsg({ type: "success", text: `✨ ${n} compétence(s) importée(s) depuis votre CV !` });
+      }} />
 
       {/* Formulaire ajout rapide */}
       {showAdd && (

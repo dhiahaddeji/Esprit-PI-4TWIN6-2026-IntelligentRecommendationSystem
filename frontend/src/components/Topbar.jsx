@@ -3,38 +3,54 @@ import { useNavigate } from "react-router-dom";
 import AccessibilityMenu from "./AccessibilityMenu";
 import { getStoredUser, logout } from "../auth/authService";
 import { useTheme } from "../contexts/ThemeContext";
+import { useNotifications, NOTIF_META } from "../contexts/NotificationsContext";
 import "../styles/topbar.css";
 
 export default function Topbar() {
-  const { isDark, toggle } = useTheme();
-  const [a11yOpen, setA11yOpen] = useState(false);
+  const { isDark, toggle }                          = useTheme();
+  const { notifications, unread, markRead, markAllRead } = useNotifications();
+  const [a11yOpen,    setA11yOpen]    = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [notifOpen,   setNotifOpen]   = useState(false);
 
   const profileRef = useRef(null);
-  const navigate = useNavigate();
+  const notifRef   = useRef(null);
+  const navigate   = useNavigate();
 
-  // Fermer profil au clic dehors
+  const user = getStoredUser() || { name: "—", role: null };
+
+  // ── Close dropdowns on outside click ──────────────────────────────────
   useEffect(() => {
     const onDocClick = (e) => {
-      if (profileRef.current && !profileRef.current.contains(e.target)) {
+      if (profileRef.current && !profileRef.current.contains(e.target))
         setProfileOpen(false);
-      }
+      if (notifRef.current && !notifRef.current.contains(e.target))
+        setNotifOpen(false);
     };
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
-  // Bloquer scroll quand popup accessibilité ouvert
+  // ── Block scroll when accessibility popup open ─────────────────────────
   useEffect(() => {
     if (!a11yOpen) return;
     document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-    };
+    return () => { document.body.style.overflow = ""; };
   }, [a11yOpen]);
 
-  const user = getStoredUser() || { name: "—", role: null };
+  // ── Click on a notification: mark read + navigate ─────────────────────
+  const handleNotifClick = (notif) => {
+    if (!notif.read) markRead(notif._id);
+    setNotifOpen(false);
+    if (notif.link) navigate(notif.link);
+  };
 
+  const handleMarkAllRead = (e) => {
+    e.stopPropagation();
+    markAllRead();
+  };
+
+  // ── Helpers ────────────────────────────────────────────────────────────
   const getRoleLabel = (role) => {
     switch (role) {
       case "SUPERADMIN": return "Super Admin";
@@ -45,7 +61,15 @@ export default function Topbar() {
     }
   };
 
-  const roleLabel = getRoleLabel(user.role);
+  const timeAgo = (dateStr) => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1)  return "À l'instant";
+    if (m < 60) return `Il y a ${m} min`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `Il y a ${h}h`;
+    return `Il y a ${Math.floor(h / 24)}j`;
+  };
 
   const displayName =
     user.firstName && user.lastName
@@ -53,25 +77,16 @@ export default function Topbar() {
       : user.name || "—";
 
   const initials = displayName
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0].toUpperCase())
-    .join("");
+    .split(" ").filter(Boolean).slice(0, 2)
+    .map((p) => p[0].toUpperCase()).join("");
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
+  const handleLogout = () => { logout(); navigate("/login"); };
 
   return (
     <>
       <header className="topbar">
         <div className="searchWrap">
-          <input
-            className="searchInput"
-            placeholder="Rechercher employés, activités..."
-          />
+          <input className="searchInput" placeholder="Rechercher employés, activités..." />
         </div>
 
         <div className="topRight">
@@ -92,19 +107,71 @@ export default function Topbar() {
           </button>
 
           {/* ACCESSIBILITÉ */}
-          <button
-            className="iconBtn"
-            type="button"
-            onClick={() => setA11yOpen(true)}
-            aria-label="Accessibilité"
-            title="Accessibilité"
-          >
+          <button className="iconBtn" type="button" onClick={() => setA11yOpen(true)} aria-label="Accessibilité" title="Accessibilité">
             ♿
           </button>
 
-          {/* NOTIF */}
-          <div className="notif" title="Notifications">
-            🔔 <span className="badge">2</span>
+          {/* ── NOTIFICATION BELL ─────────────────────────────────────── */}
+          <div className="notifWrap" ref={notifRef}>
+            <button
+              className="notifBtn"
+              onClick={() => setNotifOpen((v) => !v)}
+              title="Notifications"
+              aria-label="Notifications"
+            >
+              🔔
+              {unread > 0 && (
+                <span className="badge">{unread > 99 ? "99+" : unread}</span>
+              )}
+            </button>
+
+            {notifOpen && (
+              <div className="notifPanel">
+                {/* Header */}
+                <div className="notifHeader">
+                  <span className="notifTitle">Notifications</span>
+                  {unread > 0 && (
+                    <button className="notifMarkAll" onClick={handleMarkAllRead}>
+                      Tout lire
+                    </button>
+                  )}
+                </div>
+
+                {/* List */}
+                <div className="notifList">
+                  {notifications.length === 0 ? (
+                    <div className="notifEmpty">
+                      <span>🔕</span>
+                      <p>Aucune notification</p>
+                    </div>
+                  ) : (
+                    notifications.map((n) => (
+                      <button
+                        key={n._id}
+                        className={`notifItem ${n.read ? "read" : "unread"}`}
+                        onClick={() => handleNotifClick(n)}
+                      >
+                        <span
+                          className="notifIcon"
+                          style={{
+                            background: (NOTIF_META[n.type]?.color ?? "#3b6fd4") + "1a",
+                            color:      NOTIF_META[n.type]?.color ?? "#3b6fd4",
+                          }}
+                        >
+                          {NOTIF_META[n.type]?.icon ?? "🔔"}
+                        </span>
+                        <div className="notifBody">
+                          <div className="notifItemTitle">{n.title}</div>
+                          <div className="notifItemMsg">{n.message}</div>
+                          <div className="notifItemTime">{timeAgo(n.createdAt)}</div>
+                        </div>
+                        {!n.read && <span className="notifDot" />}
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* PROFIL */}
@@ -117,47 +184,27 @@ export default function Topbar() {
               <div className="avatar">{initials}</div>
               <div className="profileText">
                 <div className="name">{displayName}</div>
-                <div className="role">{roleLabel}</div>
+                <div className="role">{getRoleLabel(user.role)}</div>
               </div>
             </button>
 
             {profileOpen && (
               <div className="profileMenu">
-                <button onClick={() => navigate("/me")}>
-                  👤 Mon profil
-                </button>
-
-                {user.role === "EMPLOYEE" && (
-                  <button onClick={() => navigate("/employee/invitations")}>
-                    🔔 Notifications
-                  </button>
-                )}
-
-                <button className="danger" onClick={handleLogout}>
-                  ⎋ Déconnexion
-                </button>
+                <button onClick={() => navigate("/me")}>👤 Mon profil</button>
+                <button className="danger" onClick={handleLogout}>⎋ Déconnexion</button>
               </div>
             )}
           </div>
+
         </div>
       </header>
 
-      {/* POPUP ACCESSIBILITÉ (FIXED + OVERLAY) */}
+      {/* POPUP ACCESSIBILITÉ */}
       {a11yOpen && (
         <>
-          <div
-            className="a11yOverlay"
-            onClick={() => setA11yOpen(false)}
-          />
-
-          <div
-            className="a11yPopover"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <AccessibilityMenu
-              open={a11yOpen}
-              onClose={() => setA11yOpen(false)}
-            />
+          <div className="a11yOverlay" onClick={() => setA11yOpen(false)} />
+          <div className="a11yPopover" onClick={(e) => e.stopPropagation()}>
+            <AccessibilityMenu open={a11yOpen} onClose={() => setA11yOpen(false)} />
           </div>
         </>
       )}

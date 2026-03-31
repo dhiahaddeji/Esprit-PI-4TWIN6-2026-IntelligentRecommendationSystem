@@ -5,6 +5,7 @@ import { InvitationsService } from './invitations.service';
 import { InvitationsController } from './invitations.controller';
 import { ActivityModule } from '../activity/activity.module';
 import { ParticipationsModule } from '../participations/participations.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { ParticipationsModule } from '../participations/participations.module';
     ]),
     ActivityModule,
     ParticipationsModule,
+    NotificationsModule,
   ],
   providers: [InvitationsService],
   controllers: [InvitationsController],

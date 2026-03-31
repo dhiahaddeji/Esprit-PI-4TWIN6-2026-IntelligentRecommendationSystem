@@ -4,13 +4,15 @@ import { Model } from 'mongoose';
 import { Conversation, ConversationDocument } from './conversation.schema';
 import { Message, MessageDocument } from './message.schema';
 import { UsersService } from '../users/users.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class MessagingService {
   constructor(
     @InjectModel(Conversation.name) private convModel: Model<ConversationDocument>,
     @InjectModel(Message.name)      private msgModel:  Model<MessageDocument>,
-    private readonly usersService: UsersService,
+    private readonly usersService:  UsersService,
+    private readonly notifSvc:      NotificationsService,
   ) {}
 
   // ── User directory: everyone a given user can contact ─────────────────
@@ -146,6 +148,15 @@ export class MessagingService {
       },
       $inc: unreadIncrement,
     });
+
+    // Real-time notification to other participants
+    this.notifSvc.notifyNewMessage(
+      userName,
+      userId,
+      conv.participants,
+      conversationId,
+      content.trim(),
+    ).catch(() => {});
 
     return msg;
   }
