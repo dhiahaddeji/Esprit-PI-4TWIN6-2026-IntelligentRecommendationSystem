@@ -12,22 +12,37 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { ActivitiesService } from './activity.service';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { AuditAction } from '../audit-logs/audit-log.schema';
 
 @Controller('activities')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ActivitiesController {
-  constructor(private readonly service: ActivitiesService) {}
+  constructor(
+    private readonly service: ActivitiesService,
+    private readonly auditLogsService: AuditLogsService,
+  ) {}
 
   @Roles('HR')
   @Post()
-  create(@Body() body: any, @Request() req: any) {
-    return this.service.create({
+  async create(@Body() body: any, @Request() req: any) {
+    const result = await this.service.create({
       ...body,
       seats: Number(body.seats || 0),
       createdBy: req.user.userId,
       status: 'DRAFT',
       participants: [],
     });
+    this.auditLogsService.log({
+      action: AuditAction.ACTIVITY_CREATED,
+      userId: req.user.userId,
+      userName: req.user.name,
+      userRole: req.user.role,
+      targetId: (result as any)._id?.toString(),
+      targetName: body.title,
+      details: { type: body.type, date: body.date, seats: body.seats },
+    }).catch(() => {});
+    return result;
   }
 
   @Roles('HR', 'MANAGER', 'EMPLOYEE', 'SUPERADMIN')
@@ -44,22 +59,52 @@ export class ActivitiesController {
 
   @Roles('MANAGER')
   @Patch(':id/confirm')
-  confirm(@Param('id') id: string, @Body() body: { participants: string[] }) {
-    return this.service.update(id, {
+  async confirm(@Param('id') id: string, @Body() body: { participants: string[] }, @Request() req: any) {
+    const result = await this.service.update(id, {
       participants: body.participants || [],
       status: 'MANAGER_CONFIRMED',
     });
+    this.auditLogsService.log({
+      action: AuditAction.ACTIVITY_STATUS_CHANGED,
+      userId: req.user.userId,
+      userName: req.user.name,
+      userRole: req.user.role,
+      targetId: id,
+      targetName: (result as any)?.title,
+      details: { newStatus: 'MANAGER_CONFIRMED', participantsCount: (body.participants || []).length },
+    }).catch(() => {});
+    return result;
   }
 
   @Roles('MANAGER')
   @Patch(':id/notified')
-  notified(@Param('id') id: string) {
-    return this.service.update(id, { status: 'NOTIFIED' });
+  async notified(@Param('id') id: string, @Request() req: any) {
+    const result = await this.service.update(id, { status: 'NOTIFIED' });
+    this.auditLogsService.log({
+      action: AuditAction.ACTIVITY_STATUS_CHANGED,
+      userId: req.user.userId,
+      userName: req.user.name,
+      userRole: req.user.role,
+      targetId: id,
+      targetName: (result as any)?.title,
+      details: { newStatus: 'NOTIFIED' },
+    }).catch(() => {});
+    return result;
   }
 
   @Roles('HR')
   @Patch(':id/status')
-  setStatus(@Param('id') id: string, @Body() body: { status: string }) {
-    return this.service.update(id, { status: body.status as any });
+  async setStatus(@Param('id') id: string, @Body() body: { status: string }, @Request() req: any) {
+    const result = await this.service.update(id, { status: body.status as any });
+    this.auditLogsService.log({
+      action: AuditAction.ACTIVITY_STATUS_CHANGED,
+      userId: req.user.userId,
+      userName: req.user.name,
+      userRole: req.user.role,
+      targetId: id,
+      targetName: (result as any)?.title,
+      details: { newStatus: body.status },
+    }).catch(() => {});
+    return result;
   }
 }

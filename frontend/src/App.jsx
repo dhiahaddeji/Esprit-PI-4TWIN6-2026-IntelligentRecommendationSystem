@@ -51,6 +51,7 @@ import EmployeeSkills from "./pages/employee/EmployeeSkills";
 import CreateUser from "./pages/superadmin/CreateUser";
 import UsersList from "./pages/superadmin/UsersList";
 import EditUser from "./pages/superadmin/EditUser";
+import AdminLogs from "./pages/superadmin/AdminLogs";
 
 export default function App() {
 
@@ -300,6 +301,15 @@ export default function App() {
           element={
             <RequireRole allowed={["SUPERADMIN"]}>
               <EditUser />
+            </RequireRole>
+          }
+        />
+
+        <Route
+          path="admin/logs"
+          element={
+            <RequireRole allowed={["SUPERADMIN"]}>
+              <AdminLogs />
             </RequireRole>
           }
         />

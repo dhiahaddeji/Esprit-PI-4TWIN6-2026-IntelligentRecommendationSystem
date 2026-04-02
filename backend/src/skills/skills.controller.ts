@@ -12,11 +12,16 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { SkillsService } from './skills.service';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { AuditAction } from '../audit-logs/audit-log.schema';
 
 @Controller('skills')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class SkillsController {
-  constructor(private readonly skillsService: SkillsService) {}
+  constructor(
+    private readonly skillsService: SkillsService,
+    private readonly auditLogsService: AuditLogsService,
+  ) {}
 
   // ── Employee: get my skills ──────────────────────────────────────────
   @Roles('EMPLOYEE')
@@ -36,13 +41,26 @@ export class SkillsController {
     const name = user.firstName && user.lastName
       ? `${user.firstName} ${user.lastName}`
       : user.name || user.email;
-    return this.skillsService.submitRequest(
+    const result = await this.skillsService.submitRequest(
       user.userId,
       name,
       body.savoir || [],
       body.savoir_faire || [],
       body.savoir_etre || [],
     );
+    this.auditLogsService.log({
+      action: AuditAction.SKILL_SUBMITTED,
+      userId: user.userId,
+      userName: name,
+      userRole: user.role,
+      targetId: (result as any)._id?.toString(),
+      details: {
+        savoirCount: (body.savoir || []).length,
+        savoirFaireCount: (body.savoir_faire || []).length,
+        savoirEtreCount: (body.savoir_etre || []).length,
+      },
+    }).catch(() => {});
+    return result;
   }
 
   // ── Manager / HR: get all pending requests ───────────────────────────
@@ -74,7 +92,17 @@ export class SkillsController {
     @Request() req: any,
     @Body() body: { note?: string },
   ) {
-    return this.skillsService.approve(id, req.user.userId, body.note);
+    const result = await this.skillsService.approve(id, req.user.userId, body.note);
+    this.auditLogsService.log({
+      action: AuditAction.SKILL_APPROVED,
+      userId: req.user.userId,
+      userName: req.user.name,
+      userRole: req.user.role,
+      targetId: id,
+      targetName: (result as any)?.employeeName,
+      details: { note: body.note, employeeId: (result as any)?.employeeId },
+    }).catch(() => {});
+    return result;
   }
 
   // ── Manager: reject ──────────────────────────────────────────────────
@@ -85,7 +113,17 @@ export class SkillsController {
     @Request() req: any,
     @Body() body: { note?: string },
   ) {
-    return this.skillsService.reject(id, req.user.userId, body.note);
+    const result = await this.skillsService.reject(id, req.user.userId, body.note);
+    this.auditLogsService.log({
+      action: AuditAction.SKILL_REJECTED,
+      userId: req.user.userId,
+      userName: req.user.name,
+      userRole: req.user.role,
+      targetId: id,
+      targetName: (result as any)?.employeeName,
+      details: { note: body.note, employeeId: (result as any)?.employeeId },
+    }).catch(() => {});
+    return result;
   }
 
   // ── HR Analytics: skills coverage by department ─────────────────────

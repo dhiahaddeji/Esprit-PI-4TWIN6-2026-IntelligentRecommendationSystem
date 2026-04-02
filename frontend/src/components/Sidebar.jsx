@@ -65,6 +65,7 @@ export default function Sidebar() {
             <div className="menuSection">Administration</div>
             <NavLink className={cls} to="/admin/create-user">➕ Créer un compte</NavLink>
             <NavLink className={cls} to="/admin/users">👥 Liste des comptes</NavLink>
+            <NavLink className={cls} to="/admin/logs">📋 Journal d'audit</NavLink>
           </>
         )}
 

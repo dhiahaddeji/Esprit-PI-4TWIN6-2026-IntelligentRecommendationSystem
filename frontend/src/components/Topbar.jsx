@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AccessibilityMenu from "./AccessibilityMenu";
+import FingerScrollController from "./FingerScrollController";
 import { getStoredUser, logout } from "../auth/authService";
 import { useTheme } from "../contexts/ThemeContext";
 import { useNotifications, NOTIF_META } from "../contexts/NotificationsContext";
@@ -9,9 +10,10 @@ import "../styles/topbar.css";
 export default function Topbar() {
   const { isDark, toggle }                          = useTheme();
   const { notifications, unread, markRead, markAllRead } = useNotifications();
-  const [a11yOpen,    setA11yOpen]    = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [notifOpen,   setNotifOpen]   = useState(false);
+  const [a11yOpen,      setA11yOpen]      = useState(false);
+  const [profileOpen,   setProfileOpen]   = useState(false);
+  const [notifOpen,     setNotifOpen]     = useState(false);
+  const [fingerActive,  setFingerActive]  = useState(false);
 
   const profileRef = useRef(null);
   const notifRef   = useRef(null);
@@ -106,6 +108,18 @@ export default function Topbar() {
             </span>
           </button>
 
+          {/* FINGER SCROLL */}
+          <button
+            className="iconBtn"
+            type="button"
+            onClick={() => setFingerActive(v => !v)}
+            aria-label="Contrôle par geste"
+            title={fingerActive ? "Désactiver le contrôle par geste" : "Activer le contrôle par geste"}
+            style={fingerActive ? { color: "#00e676", filter: "drop-shadow(0 0 6px #00e676)" } : {}}
+          >
+            🖐️
+          </button>
+
           {/* ACCESSIBILITÉ */}
           <button className="iconBtn" type="button" onClick={() => setA11yOpen(true)} aria-label="Accessibilité" title="Accessibilité">
             ♿
@@ -198,6 +212,12 @@ export default function Topbar() {
 
         </div>
       </header>
+
+      {/* FINGER SCROLL CONTROLLER */}
+      <FingerScrollController
+        active={fingerActive}
+        onDeactivate={() => setFingerActive(false)}
+      />
 
       {/* POPUP ACCESSIBILITÉ */}
       {a11yOpen && (

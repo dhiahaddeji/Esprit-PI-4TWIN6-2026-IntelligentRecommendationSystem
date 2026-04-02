@@ -108,12 +108,7 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="authFooter">
-          <span>Pas de compte ?</span>
-          <Link className="authLink" to="/register">
-            Créer un compte
-          </Link>
-        </div>
+        
 
         <p className="authSmall">
           En vous connectant, vous acceptez nos{" "}

@@ -6,12 +6,15 @@ import {
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { AuditAction } from '../audit-logs/audit-log.schema';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private auditLogsService: AuditLogsService,
   ) {}
 
   // ── Helpers ────────────────────────────────────────────────────────
@@ -63,6 +66,25 @@ export class AuthService {
     const user = await this.validateUser(email, password);
     await this.usersService.updateOnlineStatus(user._id.toString(), true);
 
+    const firstName = (user as any).firstName || '';
+    const lastName  = (user as any).lastName  || '';
+    const userName  = (user as any).name
+      || (firstName && lastName ? `${firstName} ${lastName}` : '')
+      || email;
+
+    this.auditLogsService.log({
+      action: AuditAction.USER_LOGIN,
+      userId: user._id.toString(),
+      userName,
+      userRole: (user as any).role,
+      targetName: (user as any).matricule || email,
+      details: {
+        email: (user as any).email,
+        matricule: (user as any).matricule || null,
+        loginTime: new Date().toISOString(),
+      },
+    }).catch(() => {});
+
     return {
       accessToken: this.buildToken(user),
       user: this.buildUserPayload(user),
@@ -107,6 +129,21 @@ export class AuthService {
 
     await this.usersService.updateOnlineStatus(user._id.toString(), true);
 
+    const ghUserName = (user as any).name || (user as any).email;
+    this.auditLogsService.log({
+      action: AuditAction.GITHUB_LOGIN,
+      userId: user._id.toString(),
+      userName: ghUserName,
+      userRole: (user as any).role,
+      targetName: (user as any).matricule || (user as any).email,
+      details: {
+        email: (user as any).email,
+        matricule: (user as any).matricule || null,
+        githubId: profile.githubId,
+        loginTime: new Date().toISOString(),
+      },
+    }).catch(() => {});
+
     return {
       accessToken: this.buildToken(user),
       user: this.buildUserPayload(user),
@@ -117,11 +154,21 @@ export class AuthService {
 
   async changePassword(userId: string, newPassword: string) {
     const hashed = await bcrypt.hash(newPassword, 10);
+    const user = await this.usersService.findById(userId) as any;
     await this.usersService.update(userId, {
       password: hashed,
       mustChangePassword: false,
       passwordExpiresAt: null,
     });
+
+    const userName = user?.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.email || userId;
+    this.auditLogsService.log({
+      action: AuditAction.PASSWORD_CHANGED,
+      userId,
+      userName,
+      userRole: user?.role,
+    }).catch(() => {});
+
     return { message: 'Mot de passe mis à jour avec succès.' };
   }
 }
