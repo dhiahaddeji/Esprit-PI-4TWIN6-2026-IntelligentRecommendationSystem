@@ -91,7 +91,7 @@ export default function EditUser() {
           style={{
             background: "none",
             border: "none",
-            color: "#0b2b4b",
+            color: "#0B2D38",
             fontSize: "16px",
             cursor: "pointer",
             marginRight: "20px",
@@ -102,15 +102,15 @@ export default function EditUser() {
         >
           ← Retour à la liste
         </button>
-        <h1 style={{ color: "#111827", fontSize: "36px", margin: 0 }}>
+        <h1 style={{ color: "#0B2D38", fontSize: "36px", margin: 0 }}>
           Modifier l'utilisateur
         </h1>
       </div>
 
       {error && (
         <div style={{
-          background: "#fee2e2",
-          color: "#991b1b",
+          background: "#FBE9E9",
+          color: "#8B1A1A",
           padding: "16px",
           borderRadius: "8px",
           marginBottom: "24px",
@@ -122,8 +122,8 @@ export default function EditUser() {
 
       {success && (
         <div style={{
-          background: "#ecfdf5",
-          color: "#065f46",
+          background: "#E8F5ED",
+          color: "#145C2B",
           padding: "16px",
           borderRadius: "8px",
           marginBottom: "24px",
@@ -267,7 +267,7 @@ export default function EditUser() {
             style={{
               flex: 1,
               padding: "14px",
-              background: submitting ? "#9ca3af" : "#0b2b4b",
+              background: submitting ? "#638899" : "#0B2D38",
               color: "white",
               border: "none",
               borderRadius: "8px",
@@ -285,7 +285,7 @@ export default function EditUser() {
             style={{
               padding: "14px 30px",
               background: "white",
-              color: "#4b5563",
+              color: "#456070",
               border: "1px solid #d1d5db",
               borderRadius: "8px",
               fontSize: "18px",

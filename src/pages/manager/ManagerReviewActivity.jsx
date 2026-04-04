@@ -96,18 +96,18 @@ export default function ManagerReviewActivity() {
             <span style={pill()}>{activity.status}</span>
           </div>
         </div>
-        <Link to="/manager/inbox" style={{ textDecoration: "none", fontWeight: 900, color: "#0b2b4b" }}>
+        <Link to="/manager/inbox" style={{ textDecoration: "none", fontWeight: 900, color: "#0B2D38" }}>
           ← Retour inbox
         </Link>
       </div>
 
       {error && (
-        <div style={{ ...card(), borderColor: "#fecdca", background: "#fffbfa", color: "#b42318", marginTop: 14 }}>
+        <div style={{ ...card(), borderColor: "#F28080", background: "#FDF8EE", color: "#8B1A1A", marginTop: 14 }}>
           {error}
         </div>
       )}
       {success && (
-        <div style={{ ...card(), borderColor: "#abefc6", background: "#ecfdf3", color: "#065f46", marginTop: 14 }}>
+        <div style={{ ...card(), borderColor: "#A8D8E3", background: "#E8F5ED", color: "#145C2B", marginTop: 14 }}>
           {success}
         </div>
       )}
@@ -144,8 +144,8 @@ export default function ManagerReviewActivity() {
                             {r.details.slice(0, 3).map((d, i) => (
                               <span key={i} style={{
                                 fontSize: 10, padding: "1px 6px", borderRadius: 6,
-                                background: d.meets_minimum ? "#d1fae5" : "#fee2e2",
-                                color: d.meets_minimum ? "#065f46" : "#b42318",
+                                background: d.meets_minimum ? "#E8F5ED" : "#FBE9E9",
+                                color: d.meets_minimum ? "#145C2B" : "#8B1A1A",
                               }}>
                                 {d.intitule}: {EVAL_LABELS[d.employee_level] ?? "—"} / {EVAL_LABELS[d.required_level] ?? "—"}
                               </span>
@@ -206,7 +206,7 @@ export default function ManagerReviewActivity() {
                 {activity.competences_requises.map((c, i) => (
                   <span key={i} style={{
                     fontSize: 11, padding: "2px 8px", borderRadius: 6,
-                    background: "#eff6ff", color: "#3b6fd4", border: "1px solid #bfdbfe",
+                    background: "#EEF7FA", color: "#1D7A91", border: "1px solid #D6EEF3",
                   }}>
                     {c.intitule} (min: {EVAL_LABELS[c.niveau_min] ?? c.niveau_min})
                   </span>
@@ -227,7 +227,7 @@ function pill() {
   return { fontSize: 12, padding: "4px 10px", borderRadius: 999, border: "1px solid #eef0f4", background: "var(--surface-2)", fontWeight: 900 };
 }
 function btnPrimary() {
-  return { background: "#0b2b4b", color: "white", padding: "10px 12px", borderRadius: 12, border: "none", fontWeight: 900, cursor: "pointer" };
+  return { background: "#0B2D38", color: "white", padding: "10px 12px", borderRadius: 12, border: "none", fontWeight: 900, cursor: "pointer" };
 }
 function btnGhost() {
   return { background: "var(--surface)", border: "1px solid #eef0f4", padding: "10px 12px", borderRadius: 12, fontWeight: 900, cursor: "pointer" };
@@ -236,5 +236,5 @@ function row() {
   return { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, padding: 12, borderRadius: 14, border: "1px solid #eef0f4", background: "var(--surface)" };
 }
 function scoreTag() {
-  return { fontSize: 12, fontWeight: 900, padding: "4px 10px", borderRadius: 999, background: "#ecfdf3", border: "1px solid #abefc6" };
+  return { fontSize: 12, fontWeight: 900, padding: "4px 10px", borderRadius: 999, background: "#E8F5ED", border: "1px solid #A8D8E3" };
 }

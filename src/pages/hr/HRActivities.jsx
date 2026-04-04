@@ -45,11 +45,11 @@ export default function HRActivities() {
             <div
               style={{
                 marginTop: 10,
-                background: "#fffbfa",
-                border: "1px solid #fecdca",
+                background: "#FDF8EE",
+                border: "1px solid #F28080",
                 padding: 10,
                 borderRadius: 12,
-                color: "#b42318",
+                color: "#8B1A1A",
               }}
             >
               {error}
@@ -60,7 +60,7 @@ export default function HRActivities() {
         <Link
           to="/hr/activities/new"
           style={{
-            background: "#0b2b4b",
+            background: "#0B2D38",
             color: "white",
             padding: "10px 14px",
             borderRadius: 12,
@@ -125,7 +125,7 @@ export default function HRActivities() {
                   style={{
                     textDecoration: "none",
                     fontWeight: 800,
-                    color: "#0b2b4b",
+                    color: "#0B2D38",
                     padding: "8px 10px",
                     borderRadius: 10,
                     border: "1px solid #eef0f4",

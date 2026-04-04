@@ -1,0 +1,149 @@
+.hrEmpPage { padding: 6px 0 24px; }
+
+.hrEmpTitle { margin: 0; font-size: 34px; font-weight: 900; color:var(--text-1); }
+.hrEmpSubtitle { margin: 6px 0 18px; color:var(--text-2); }
+
+.hrEmpToolbar { margin-bottom: 14px; }
+.hrEmpSearch{
+  width: 100%;
+  max-width: 560px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  outline: none;
+}
+
+.hrEmpList { display: grid; gap: 10px; }
+
+.hrEmpRow{
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+.hrEmpRow:hover{ background:var(--surface-2); }
+
+.hrEmpAvatar{
+  width: 42px; height: 42px;
+  border-radius: 999px;
+  background:#eef2f6;
+  display:grid; place-items:center;
+  font-weight: 900; color:#0b2b4b;
+  flex: 0 0 auto;
+}
+
+.hrEmpInfo { flex: 1; min-width: 0; }
+.hrEmpName { font-weight: 900; color:var(--text-1); }
+.hrEmpMeta { margin-top: 2px; color:var(--text-2); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.hrEmpChevron { color:#98a2b3; font-size: 22px; padding-right: 6px; }
+
+.hrEmpHeaderRow { margin-bottom: 10px; }
+.hrBackBtn{
+  border: 1px solid var(--border);
+  background:var(--surface);
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor:pointer;
+}
+.hrBackBtn:hover{ background:#f6f7fb; }
+
+/* Employee card */
+.hrEmpCard{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.hrEmpCardTop{ display:flex; align-items:center; gap: 14px; }
+.hrEmpBigAvatar{
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  background:#0b2b4b;
+  color:var(--surface);
+  display:grid; place-items:center;
+  font-weight: 900;
+}
+.hrEmpCardName{ font-weight: 900; font-size: 18px; color:var(--text-1); }
+.hrEmpCardMeta{ margin-top: 2px; color:var(--text-2); }
+
+.hrSectionTitle{ margin: 14px 0 12px; font-size: 18px; font-weight: 900; color:var(--text-1); }
+
+/* Skills grid (same look as your employee skills page) */
+.skillsGrid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+.skillCard{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:16px;
+  box-shadow: 0 1px 0 rgba(16,24,40,0.02);
+}
+
+.skillCardHeader{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom: 14px;
+}
+
+.skillHeaderLeft{ display:flex; align-items:center; gap: 10px; }
+
+.skillIcon{
+  width:34px; height:34px;
+  border-radius:12px;
+  background:#f2f4f7;
+  display:grid; place-items:center;
+}
+
+.skillCardTitle{ font-weight: 900; color:var(--text-1); }
+
+.countBubble{
+  width:32px; height:32px;
+  border-radius:999px;
+  background:#2f978a;
+  color:var(--surface);
+  display:grid; place-items:center;
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.skillList{ display:grid; gap:10px; }
+
+.skillRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  padding: 12px;
+  border-radius:14px;
+  background:var(--surface-2);
+  border:1px solid var(--border);
+}
+
+.skillName{ font-weight:600; color:var(--text-1); font-size:14px; }
+.skillTag{
+  padding: 6px 10px;
+  border-radius: 999px;
+  background:#f2f4f7;
+  border:1px solid #e4e7ec;
+  font-weight: 700;
+  font-size:12px;
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px){
+  .skillsGrid{ grid-template-columns: 1fr; }
+}

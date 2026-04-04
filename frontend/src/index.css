@@ -1,0 +1,112 @@
+/* ---------- Base ---------- */
+:root {
+  --app-font-size: 14px;
+
+  /* Brand palette — Magharibeya Assurance */
+  --primary: #3b6fd4;
+  --primary-2: #f47c20;
+  --danger: #dc2626;
+
+  --bg: #f5f7ff;
+  --surface: #ffffff;
+  --surface-2: #eef2ff;
+
+  --text: #1a2340;
+  --text-2: #3d4f7c;
+  --muted: #6b7a99;
+
+  --border: #dde3f0;
+  --shadow: 0 4px 20px rgba(59, 111, 212, 0.10);
+
+  --focus: rgba(59, 111, 212, 0.30);
+  --ring: 0 0 0 3px var(--focus);
+}
+
+/* Dark theme */
+html[data-theme="dark"] {
+  --bg: #0f1629;
+  --surface: #1a2340;
+  --surface-2: #243060;
+
+  --text: #e5e7eb;
+  --text-2: #cbd5e1;
+  --muted: #aab4c3;
+
+  --border: #2a3860;
+  --shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+
+  --primary: #4f84e8;
+  --primary-2: #f47c20;
+  --danger: #ef4444;
+
+  --focus: rgba(79, 132, 232, 0.35);
+}
+
+/* Global smooth scroll */
+html {
+  scroll-behavior: smooth;
+  font-size: var(--app-font-size);
+}
+
+/* Box sizing */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Links */
+a { color: inherit; }
+
+/* Inputs */
+input, button {
+  font-family: inherit;
+}
+
+/* Default focus accessibility */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+  border-radius: 10px;
+}
+
+/* Scrollbar */
+*::-webkit-scrollbar { width: 8px; }
+*::-webkit-scrollbar-thumb { background: rgba(107, 122, 153, 0.25); border-radius: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+
+/* Mode Focus : contour très visible quand on navigue au clavier */
+.a11y-focus-mode :focus-visible {
+  outline: 4px solid #3b6fd4 !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 6px rgba(59, 111, 212, 0.25) !important;
+  border-radius: 10px;
+}
+
+/* Skip link (apparaît seulement au focus) */
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: 10px;
+  transform: translateY(-200%);
+  background: #3b6fd4;
+  color: white;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-weight: 800;
+  z-index: 99999;
+  text-decoration: none;
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}

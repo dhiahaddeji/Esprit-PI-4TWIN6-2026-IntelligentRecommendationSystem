@@ -79,7 +79,7 @@ export default function EmployeeInvitations() {
         Invitations à participer à des activités.
       </p>
 
-      {error ? <div style={{ ...card(), borderColor: "#fecdca", color: "#b42318" }}>{error}</div> : null}
+      {error ? <div style={{ ...card(), borderColor: "#F28080", color: "#8B1A1A" }}>{error}</div> : null}
 
       <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
         {invitations.length === 0 ? (
@@ -132,7 +132,7 @@ function btnLink() {
   return {
     textDecoration: "none",
     fontWeight: 900,
-    color: "#0b2b4b",
+    color: "#0B2D38",
     border: "1px solid #eef0f4",
     background: "var(--surface)",
     padding: "8px 10px",
@@ -141,9 +141,9 @@ function btnLink() {
 }
 function pill(status) {
   const map = {
-    PENDING: { bg: "#f8fafc", bd: "#eef0f4", tx: "#344054" },
-    ACCEPTED: { bg: "#ecfdf3", bd: "#abefc6", tx: "#067647" },
-    DECLINED: { bg: "#fffbfa", bd: "#fecdca", tx: "#b42318" },
+    PENDING: { bg: "#EEF7FA", bd: "#eef0f4", tx: "#1A1A2A" },
+    ACCEPTED: { bg: "#E8F5ED", bd: "#A8D8E3", tx: "#145C2B" },
+    DECLINED: { bg: "#FDF8EE", bd: "#F28080", tx: "#8B1A1A" },
   };
   const s = map[status] || map.PENDING;
   return {

@@ -67,7 +67,7 @@ export default function EmployeeInvitationDetail() {
 
   return (
     <div style={{ padding: 18, maxWidth: 860 }}>
-      <Link to="/employee/invitations" style={{ textDecoration: "none", fontWeight: 900, color: "#0b2b4b" }}>
+      <Link to="/employee/invitations" style={{ textDecoration: "none", fontWeight: 900, color: "#0B2D38" }}>
         ← Retour notifications
       </Link>
 
@@ -81,12 +81,12 @@ export default function EmployeeInvitationDetail() {
           <span style={pill(inv.status)}>{inv.status}</span>
         </div>
 
-        <div style={{ marginTop: 14, color: "#344054" }}>
+        <div style={{ marginTop: 14, color: "#1A1A2A" }}>
           <b>Description:</b> {act?.description || "—"}
         </div>
 
         {error && (
-          <div style={{ marginTop: 12, color: "#b42318", background: "#fffbfa", border: "1px solid #fecdca", padding: 10, borderRadius: 12 }}>
+          <div style={{ marginTop: 12, color: "#8B1A1A", background: "#FDF8EE", border: "1px solid #F28080", padding: 10, borderRadius: 12 }}>
             {error}
           </div>
         )}
@@ -120,16 +120,16 @@ function card() {
   return { background: "var(--surface)", border: "1px solid #eef0f4", borderRadius: 16, padding: 16 };
 }
 function btnPrimary() {
-  return { background: "#0b2b4b", color: "white", padding: "10px 14px", borderRadius: 12, border: "none", fontWeight: 900, cursor: "pointer" };
+  return { background: "#0B2D38", color: "white", padding: "10px 14px", borderRadius: 12, border: "none", fontWeight: 900, cursor: "pointer" };
 }
 function btnDanger() {
-  return { background: "#b42318", color: "white", padding: "10px 14px", borderRadius: 12, border: "none", fontWeight: 900, cursor: "pointer" };
+  return { background: "#8B1A1A", color: "white", padding: "10px 14px", borderRadius: 12, border: "none", fontWeight: 900, cursor: "pointer" };
 }
 function pill(status) {
   const map = {
-    PENDING: { bg: "#f8fafc", bd: "#eef0f4", tx: "#344054" },
-    ACCEPTED: { bg: "#ecfdf3", bd: "#abefc6", tx: "#067647" },
-    DECLINED: { bg: "#fffbfa", bd: "#fecdca", tx: "#b42318" },
+    PENDING: { bg: "#EEF7FA", bd: "#eef0f4", tx: "#1A1A2A" },
+    ACCEPTED: { bg: "#E8F5ED", bd: "#A8D8E3", tx: "#145C2B" },
+    DECLINED: { bg: "#FDF8EE", bd: "#F28080", tx: "#8B1A1A" },
   };
   const s = map[status] || map.PENDING;
   return { fontSize: 12, padding: "4px 10px", borderRadius: 999, border: `1px solid ${s.bd}`, background: s.bg, fontWeight: 900, color: s.tx };

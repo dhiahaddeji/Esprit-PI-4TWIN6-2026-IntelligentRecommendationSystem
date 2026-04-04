@@ -168,8 +168,8 @@ export default function Topbar() {
                         <span
                           className="notifIcon"
                           style={{
-                            background: (NOTIF_META[n.type]?.color ?? "#3b6fd4") + "1a",
-                            color:      NOTIF_META[n.type]?.color ?? "#3b6fd4",
+                            background: (NOTIF_META[n.type]?.color ?? "#1D7A91") + "1a",
+                            color:      NOTIF_META[n.type]?.color ?? "#1D7A91",
                           }}
                         >
                           {NOTIF_META[n.type]?.icon ?? "🔔"}

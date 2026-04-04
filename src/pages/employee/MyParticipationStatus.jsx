@@ -40,7 +40,7 @@ export default function MyParticipationStatus() {
               </div>
 
               {p.status === "DECLINED" && (
-                <div style={{ marginTop: 10, color: "#b42318" }}>
+                <div style={{ marginTop: 10, color: "#8B1A1A" }}>
                   <b>Justification:</b> {p.justification || "—"}
                 </div>
               )}
@@ -57,9 +57,9 @@ function card() {
 }
 function pill(status) {
   const map = {
-    ACCEPTED: { bg: "#ecfdf3", bd: "#abefc6", tx: "#067647" },
-    DECLINED: { bg: "#fffbfa", bd: "#fecdca", tx: "#b42318" },
+    ACCEPTED: { bg: "#E8F5ED", bd: "#A8D8E3", tx: "#145C2B" },
+    DECLINED: { bg: "#FDF8EE", bd: "#F28080", tx: "#8B1A1A" },
   };
-  const s = map[status] || { bg: "#f8fafc", bd: "#eef0f4", tx: "#344054" };
+  const s = map[status] || { bg: "#EEF7FA", bd: "#eef0f4", tx: "#1A1A2A" };
   return { fontSize: 12, padding: "4px 10px", borderRadius: 999, border: `1px solid ${s.bd}`, background: s.bg, fontWeight: 900, color: s.tx };
 }

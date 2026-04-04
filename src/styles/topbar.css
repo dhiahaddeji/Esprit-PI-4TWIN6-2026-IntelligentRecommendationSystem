@@ -1,4 +1,7 @@
-/* src/styles/topbar.css */
+/* ═══════════════════════════════════════════════════════════════
+   Topbar — Zellige Moderne
+   Warm-white surface, teal/gold accents, WCAG AA throughout
+   ═══════════════════════════════════════════════════════════════ */
 
 .topbar {
   position: sticky;
@@ -12,9 +15,10 @@
   justify-content: space-between;
   padding: 0 28px;
   height: 64px;
-  transition: background 0.2s, border-color 0.2s;
+  transition: background 0.25s, border-color 0.25s;
 }
 
+/* ── Search ──────────────────────────────────────────────────────── */
 .searchWrap {
   flex: 1;
   max-width: 360px;
@@ -26,25 +30,25 @@
   border: 1.5px solid var(--input-border);
   border-radius: 10px;
   background: var(--input-bg);
-  color: var(--text-1);
+  color: var(--input-text);
+  font-family: var(--font-body);
   font-size: 13.5px;
   outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s, background 0.2s;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.searchInput::placeholder {
-  color: var(--placeholder);
-}
+.searchInput::placeholder { color: var(--placeholder); }
 
 .searchInput:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(59,111,212,0.12);
+  border-color: var(--c-teal-600);
+  box-shadow: 0 0 0 3px rgba(21,91,110,0.15);
 }
 
+/* ── Right cluster ───────────────────────────────────────────────── */
 .topRight {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .iconBtn {
@@ -52,22 +56,29 @@
   border: none;
   cursor: pointer;
   font-size: 18px;
-  padding: 8px;
-  border-radius: 8px;
+  padding: 10px;
+  border-radius: 10px;
   color: var(--text-3);
-  transition: background 0.15s;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
 }
 
 .iconBtn:hover {
-  background: var(--accent-hover);
-  color: var(--accent);
+  background: var(--c-teal-50);
+  color: var(--c-teal-700);
 }
 
-/* ── Notification bell ──────────────────────────────────────────────────── */
-
-.notifWrap {
-  position: relative;
+[data-theme="dark"] .iconBtn:hover {
+  background: rgba(21,91,110,0.18);
+  color: var(--c-teal-200);
 }
+
+/* ── Notification bell ───────────────────────────────────────────── */
+.notifWrap { position: relative; }
 
 .notifBtn {
   position: relative;
@@ -75,20 +86,25 @@
   border: none;
   cursor: pointer;
   font-size: 18px;
-  padding: 8px;
-  border-radius: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: background 0.15s;
-  line-height: 1;
 }
 
-.notifBtn:hover { background: var(--accent-hover); }
+.notifBtn:hover { background: var(--c-teal-50); }
+[data-theme="dark"] .notifBtn:hover { background: rgba(21,91,110,0.18); }
 
 .badge {
   position: absolute;
-  top: 2px;
-  right: 2px;
-  background: #f47c20;
-  color: white;
+  top: 4px;
+  right: 4px;
+  background: var(--c-gold-500);
+  color: #fff;
   font-size: 9px;
   font-weight: 700;
   border-radius: 10px;
@@ -99,20 +115,20 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
+  box-shadow: 0 1px 4px rgba(201,149,42,0.40);
 }
 
-/* ── Notification panel ─────────────────────────────────────────────────── */
-
+/* ── Notification panel ──────────────────────────────────────────── */
 .notifPanel {
   position: absolute;
   top: calc(100% + 10px);
   right: 0;
-  width: 360px;
-  max-height: 480px;
+  width: 368px;
+  max-height: 500px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  box-shadow: var(--shadow-lg);
   z-index: 300;
   display: flex;
   flex-direction: column;
@@ -135,8 +151,9 @@
 }
 
 .notifTitle {
-  font-size: 14px;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
   color: var(--text-1);
 }
 
@@ -144,14 +161,17 @@
   background: none;
   border: none;
   cursor: pointer;
+  font-family: var(--font-body);
   font-size: 12px;
-  color: var(--accent);
+  color: var(--c-teal-600);
   padding: 4px 8px;
   border-radius: 6px;
   transition: background 0.12s;
+  min-height: 32px;
 }
 
-.notifMarkAll:hover { background: var(--accent-hover); }
+.notifMarkAll:hover { background: var(--c-teal-50); }
+[data-theme="dark"] .notifMarkAll:hover { background: rgba(21,91,110,0.18); }
 
 .notifList {
   overflow-y: auto;
@@ -167,7 +187,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 36px 16px;
+  padding: 40px 16px;
   gap: 8px;
   color: var(--text-3);
 }
@@ -184,16 +204,18 @@
   background: none;
   border: none;
   border-radius: 10px;
-  padding: 10px 10px 10px 10px;
+  padding: 10px;
   cursor: pointer;
   transition: background 0.12s;
   position: relative;
 }
 
 .notifItem:hover { background: var(--surface-2); }
+.notifItem.unread { background: var(--c-gold-50); }
+.notifItem.unread:hover { background: var(--c-gold-100); }
 
-.notifItem.unread { background: var(--accent-hover); }
-.notifItem.unread:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+[data-theme="dark"] .notifItem.unread        { background: rgba(201,149,42,0.08); }
+[data-theme="dark"] .notifItem.unread:hover  { background: rgba(201,149,42,0.13); }
 
 .notifIcon {
   width: 36px;
@@ -206,12 +228,10 @@
   flex-shrink: 0;
 }
 
-.notifBody {
-  flex: 1;
-  min-width: 0;
-}
+.notifBody  { flex: 1; min-width: 0; }
 
 .notifItemTitle {
+  font-family: var(--font-body);
   font-size: 13px;
   font-weight: 600;
   color: var(--text-1);
@@ -224,7 +244,7 @@
 .notifItemMsg {
   font-size: 12px;
   color: var(--text-2);
-  line-height: 1.4;
+  line-height: 1.45;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -242,14 +262,13 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #f47c20;
+  background: var(--c-gold-500);
   flex-shrink: 0;
   margin-top: 4px;
 }
 
-.menuWrap {
-  position: relative;
-}
+/* ── Profile menu ────────────────────────────────────────────────── */
+.menuWrap { position: relative; }
 
 .profileBtn {
   display: flex;
@@ -260,20 +279,22 @@
   border-radius: 12px;
   padding: 6px 12px 6px 6px;
   cursor: pointer;
+  min-height: 44px;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .profileBtn:hover {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(59,111,212,0.10);
+  border-color: var(--c-teal-600);
+  box-shadow: 0 0 0 3px rgba(21,91,110,0.12);
 }
 
 .avatar {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3b6fd4, #f47c20);
-  color: white;
+  background: linear-gradient(135deg, var(--c-teal-700), var(--c-gold-500));
+  color: #fff;
+  font-family: var(--font-body);
   font-size: 13px;
   font-weight: 700;
   display: flex;
@@ -283,6 +304,7 @@
 }
 
 .profileText .name {
+  font-family: var(--font-body);
   font-size: 13px;
   font-weight: 600;
   color: var(--text-1);
@@ -290,6 +312,7 @@
 }
 
 .profileText .role {
+  font-family: var(--font-body);
   font-size: 11px;
   color: var(--text-3);
   line-height: 1.2;
@@ -303,13 +326,12 @@
   border: 1px solid var(--border);
   border-radius: 14px;
   box-shadow: var(--shadow-lg);
-  min-width: 180px;
+  min-width: 190px;
   padding: 8px;
   z-index: 200;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  transition: background 0.2s;
 }
 
 .profileMenu button {
@@ -322,16 +344,19 @@
   border: none;
   border-radius: 9px;
   padding: 9px 12px;
+  font-family: var(--font-body);
   font-size: 13.5px;
   color: var(--text-1);
   cursor: pointer;
+  min-height: 40px;
   transition: background 0.12s;
 }
 
-.profileMenu button:hover { background: var(--surface-2); }
-.profileMenu button.danger { color: var(--danger-text); }
-.profileMenu button.danger:hover { background: var(--danger-bg); }
+.profileMenu button:hover      { background: var(--surface-2); }
+.profileMenu button.danger     { color: var(--c-danger-text); }
+.profileMenu button.danger:hover { background: var(--c-danger-bg); }
 
+/* ── Accessibility popover ───────────────────────────────────────── */
 .popover {
   position: absolute;
   top: 48px;
@@ -342,7 +367,7 @@
 .a11yOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(26,35,64,0.3);
+  background: rgba(7,30,37,0.35);
   -webkit-backdrop-filter: blur(2px);
   backdrop-filter: blur(2px);
   z-index: 300;
@@ -359,5 +384,4 @@
   border-radius: 20px;
   box-shadow: var(--shadow-lg);
   min-width: 320px;
-  transition: background 0.2s;
 }

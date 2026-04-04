@@ -7,13 +7,13 @@ const NotificationsContext = createContext(null);
 
 // ── Icon / color per notification type ───────────────────────────────────────
 export const NOTIF_META = {
-  skill_submitted:     { icon: "📋", color: "#3b6fd4", label: "Compétences" },
-  skill_validated:     { icon: "✅", color: "#16a34a", label: "Compétences" },
-  skill_rejected:      { icon: "⚠️", color: "#dc2626", label: "Compétences" },
-  cv_import:           { icon: "📄", color: "#f47c20", label: "CV" },
-  new_message:         { icon: "💬", color: "#7c3aed", label: "Message" },
-  activity_invitation: { icon: "🎯", color: "#0891b2", label: "Activité" },
-  activity_response:   { icon: "📩", color: "#059669", label: "Activité" },
+  skill_submitted:     { icon: "📋", color: "#1D7A91", label: "Compétences" },
+  skill_validated:     { icon: "✅", color: "#145C2B", label: "Compétences" },
+  skill_rejected:      { icon: "⚠️", color: "#8B1A1A", label: "Compétences" },
+  cv_import:           { icon: "📄", color: "#C9952A", label: "CV" },
+  new_message:         { icon: "💬", color: "#155B6E", label: "Message" },
+  activity_invitation: { icon: "🎯", color: "#1D7A91", label: "Activité" },
+  activity_response:   { icon: "📩", color: "#145C2B", label: "Activité" },
 };
 
 function getToken() { return localStorage.getItem("access_token"); }
@@ -146,7 +146,7 @@ export function NotificationsProvider({ children }) {
       {toasts.length > 0 && (
         <div style={toastContainerStyle}>
           {toasts.map((t) => {
-            const meta = NOTIF_META[t.type] || { icon: "🔔", color: "#3b6fd4" };
+            const meta = NOTIF_META[t.type] || { icon: "🔔", color: "#1D7A91" };
             return (
               <div
                 key={t._toastId}
@@ -190,7 +190,7 @@ const toastContainerStyle = {
 const toastStyle = {
   display: "flex", alignItems: "flex-start", gap: "12px",
   background: "var(--surface, #fff)", border: "1px solid var(--border, #e5e7eb)",
-  borderLeft: "4px solid #3b6fd4", borderRadius: "12px",
+  borderLeft: "4px solid #1D7A91", borderRadius: "12px",
   padding: "14px 16px", boxShadow: "0 8px 24px rgba(0,0,0,0.14)",
   cursor: "pointer", animation: "toastIn 0.25s ease", pointerEvents: "auto",
 };

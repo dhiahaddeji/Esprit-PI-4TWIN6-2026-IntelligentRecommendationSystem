@@ -10,30 +10,30 @@ import { getStoredUser } from "../auth/authService";
 // ─── Palettes ────────────────────────────────────────────────────────────────
 
 const ROLE_META = {
-  SUPERADMIN: { label: "Super Admin",     color: "#7c3aed", bg: "#f5f3ff" },
-  HR:         { label: "Responsable RH",  color: "#2563eb", bg: "#eff6ff" },
-  MANAGER:    { label: "Manager",         color: "#0891b2", bg: "#ecfeff" },
-  EMPLOYEE:   { label: "Employé",         color: "#16a34a", bg: "#f0fdf4" },
+  SUPERADMIN: { label: "Super Admin",     color: "#1D7A91", bg: "#EEF7FA" },
+  HR:         { label: "Responsable RH",  color: "#155B6E", bg: "#D6EEF3" },
+  MANAGER:    { label: "Manager",         color: "#C9952A", bg: "#FBF0DC" },
+  EMPLOYEE:   { label: "Employé",         color: "#145C2B", bg: "#E8F5ED" },
 };
 
 const STATUS_META = {
-  DRAFT:            { label: "Brouillon",       color: "var(--text-3)", bg: "#f1f5f9" },
-  AI_SUGGESTED:     { label: "Analyse IA",      color: "#7c3aed", bg: "#f5f3ff" },
-  HR_VALIDATED:     { label: "Validé RH",       color: "#2563eb", bg: "#eff6ff" },
-  SENT_TO_MANAGER:  { label: "Soumis Manager",  color: "#d97706", bg: "#fffbeb" },
-  MANAGER_CONFIRMED:{ label: "Confirmé",        color: "#059669", bg: "#ecfdf5" },
-  NOTIFIED:         { label: "Clôturé",         color: "var(--text-2)", bg: "#f8fafc" },
+  DRAFT:            { label: "Brouillon",       color: "var(--text-3)",  bg: "#E4E4F0" },
+  AI_SUGGESTED:     { label: "Analyse IA",      color: "#1D7A91",        bg: "#EEF7FA" },
+  HR_VALIDATED:     { label: "Validé RH",       color: "#155B6E",        bg: "#D6EEF3" },
+  SENT_TO_MANAGER:  { label: "Soumis Manager",  color: "#7A4A00",        bg: "#FEF6E4" },
+  MANAGER_CONFIRMED:{ label: "Confirmé",        color: "#145C2B",        bg: "#E8F5ED" },
+  NOTIFIED:         { label: "Clôturé",         color: "var(--text-2)",  bg: "#EEF7FA" },
 };
 
 const TYPE_META = {
-  formation:     { label: "Formation",      color: "#3b6fd4" },
-  certification: { label: "Certification",  color: "#7c3aed" },
-  projet:        { label: "Projet",         color: "#059669" },
-  mission:       { label: "Mission",        color: "#d97706" },
-  audit:         { label: "Audit",          color: "#e11d48" },
+  formation:     { label: "Formation",      color: "#1D7A91" },
+  certification: { label: "Certification",  color: "#C9952A" },
+  projet:        { label: "Projet",         color: "#145C2B" },
+  mission:       { label: "Mission",        color: "#7A4A00" },
+  audit:         { label: "Audit",          color: "#8B1A1A" },
 };
 
-const PIE_COLORS = ["#3b6fd4", "#7c3aed", "#059669", "#d97706", "#e11d48", "#0891b2"];
+const PIE_COLORS = ["#1D7A91", "#C9952A", "#145C2B", "#7A4A00", "#8B1A1A", "#155B6E"];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -112,7 +112,7 @@ function Skeleton({ w = "100%", h = 16, r = 8 }) {
 }
 
 function StatusBadge({ status }) {
-  const m = STATUS_META[status] || { label: status, color: "var(--text-2)", bg: "#f8fafc" };
+  const m = STATUS_META[status] || { label: status, color: "var(--text-2)", bg: "#EEF7FA" };
   return (
     <span style={{
       fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 999,
@@ -153,7 +153,7 @@ function SuperAdminDash() {
 
   const roleChart = Object.entries(byRole).map(([name, value]) => ({
     name: ROLE_META[name]?.label || name, value,
-    color: ROLE_META[name]?.color || "#64748b",
+    color: ROLE_META[name]?.color || "#638899",
   }));
 
   const statusChart = Object.entries(byStatus).map(([k, v]) => ({
@@ -170,14 +170,14 @@ function SuperAdminDash() {
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       {/* KPIs */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
-        <KpiCard icon="👥" value={users.length}                         label="Total comptes"    loading={loading} color="#1a2340" />
-        <KpiCard icon="👤" value={byRole.EMPLOYEE || 0}                  label="Employés"         loading={loading} color="#16a34a" />
-        <KpiCard icon="🏆" value={byRole.MANAGER  || 0}                  label="Managers"         loading={loading} color="#0891b2" />
-        <KpiCard icon="🧑‍💼" value={byRole.HR       || 0}                 label="Responsables RH"  loading={loading} color="#2563eb" />
+        <KpiCard icon="👥" value={users.length}                         label="Total comptes"    loading={loading} color="#0B2D38" />
+        <KpiCard icon="👤" value={byRole.EMPLOYEE || 0}                  label="Employés"         loading={loading} color="#145C2B" />
+        <KpiCard icon="🏆" value={byRole.MANAGER  || 0}                  label="Managers"         loading={loading} color="#1D7A91" />
+        <KpiCard icon="🧑‍💼" value={byRole.HR       || 0}                 label="Responsables RH"  loading={loading} color="#155B6E" />
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 16 }}>
-        <KpiCard icon="📅" value={activities.length}                     label="Total activités"  loading={loading} color="#7c3aed" />
-        <KpiCard icon="📋" value={byStatus.NOTIFIED || 0}               label="Activités clôturées" loading={loading} color="#475569"
+        <KpiCard icon="📅" value={activities.length}                     label="Total activités"  loading={loading} color="#1D7A91" />
+        <KpiCard icon="📋" value={byStatus.NOTIFIED || 0}               label="Activités clôturées" loading={loading} color="#456070"
           sub={`${activities.length - (byStatus.NOTIFIED || 0)} en cours`} />
       </div>
 
@@ -201,11 +201,11 @@ function SuperAdminDash() {
           {loading ? <Skeleton h={240} r={12} /> : statusChart.length === 0 ? <EmptyState text="Aucune activité" /> : (
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={statusChart} margin={{ top: 8, right: 8, left: -20, bottom: 40 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E4E4F0" />
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} angle={-30} textAnchor="end" interval={0} />
                 <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                 <Tooltip />
-                <Bar dataKey="value" radius={[6, 6, 0, 0]} fill="#7c3aed" />
+                <Bar dataKey="value" radius={[6, 6, 0, 0]} fill="#1D7A91" />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -236,7 +236,7 @@ function SuperAdminDash() {
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
                       <span style={{ fontSize: 10.5, fontWeight: 700, padding: "2px 7px", borderRadius: 999, background: m.bg, color: m.color }}>{m.label}</span>
-                      <span style={{ fontSize: 10.5, color: "#cbd5e1" }}>{timeAgo(u.createdAt)}</span>
+                      <span style={{ fontSize: 10.5, color: "#9BBCC7" }}>{timeAgo(u.createdAt)}</span>
                     </div>
                   </div>
                 );
@@ -336,13 +336,13 @@ function HRDash() {
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       {/* KPIs */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
-        <KpiCard icon="👥" value={employees.length}           label="Employés"              loading={loading} color="#16a34a"
+        <KpiCard icon="👥" value={employees.length}           label="Employés"              loading={loading} color="#145C2B"
           sub={`${analytics?.coveragePercent ?? "—"}% avec compétences`} />
-        <KpiCard icon="📅" value={openActs.length}            label="Activités en cours"    loading={loading} color="#7c3aed"
+        <KpiCard icon="📅" value={openActs.length}            label="Activités en cours"    loading={loading} color="#1D7A91"
           sub={`${activities.length} total`} />
-        <KpiCard icon="⏳" value={pending.length}             label="Demandes compétences"  loading={loading} color="#d97706"
+        <KpiCard icon="⏳" value={pending.length}             label="Demandes compétences"  loading={loading} color="#C9952A"
           sub="en attente de validation" />
-        <KpiCard icon="🏢" value={departments.length}         label="Départements"          loading={loading} color="#0891b2"
+        <KpiCard icon="🏢" value={departments.length}         label="Départements"          loading={loading} color="#1D7A91"
           sub={`score moyen ${analytics?.avgGlobalScore ?? "—"}`} />
       </div>
 
@@ -352,11 +352,11 @@ function HRDash() {
           {loading ? <Skeleton h={240} r={12} /> : statusChart.length === 0 ? <EmptyState text="Aucune activité" /> : (
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={statusChart} margin={{ top: 8, right: 8, left: -20, bottom: 40 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E4E4F0" />
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} angle={-30} textAnchor="end" interval={0} />
                 <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                 <Tooltip />
-                <Bar dataKey="value" radius={[6, 6, 0, 0]} fill="#2563eb" />
+                <Bar dataKey="value" radius={[6, 6, 0, 0]} fill="#155B6E" />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -385,11 +385,11 @@ function HRDash() {
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={deptChart} layout="vertical" margin={{ top: 4, right: 40, left: 60, bottom: 4 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E4E4F0" horizontal={false} />
                 <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} />
                 <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={60} />
                 <Tooltip formatter={v => [`${v}/100`]} />
-                <Bar dataKey="value" radius={[0, 6, 6, 0]} fill="#059669" />
+                <Bar dataKey="value" radius={[0, 6, 6, 0]} fill="#145C2B" />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -401,11 +401,11 @@ function HRDash() {
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={topSkills} layout="vertical" margin={{ top: 4, right: 40, left: 80, bottom: 4 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E4E4F0" horizontal={false} />
                 <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
                 <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={80} />
                 <Tooltip formatter={v => [`${v} employés`]} />
-                <Bar dataKey="value" radius={[0, 6, 6, 0]} fill="#7c3aed" />
+                <Bar dataKey="value" radius={[0, 6, 6, 0]} fill="#1D7A91" />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -490,11 +490,11 @@ function ManagerDash({ me }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       {/* KPIs */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
-        <KpiCard icon="📅" value={activities.length}  label="Mes activités"         loading={loading} color="#0891b2" />
-        <KpiCard icon="⏰" value={awaitingMe.length}  label="En attente de mon avis" loading={loading} color="#d97706"
+        <KpiCard icon="📅" value={activities.length}  label="Mes activités"         loading={loading} color="#1D7A91" />
+        <KpiCard icon="⏰" value={awaitingMe.length}  label="En attente de mon avis" loading={loading} color="#C9952A"
           sub={awaitingMe.length > 0 ? "Action requise" : "Tout est traité ✓"} />
-        <KpiCard icon="✅" value={confirmed.length}   label="Confirmées"             loading={loading} color="#059669" />
-        <KpiCard icon="🎯" value={pending.length}     label="Compétences à valider"  loading={loading} color="#7c3aed"
+        <KpiCard icon="✅" value={confirmed.length}   label="Confirmées"             loading={loading} color="#145C2B" />
+        <KpiCard icon="🎯" value={pending.length}     label="Compétences à valider"  loading={loading} color="#1D7A91"
           sub="demandes en attente" />
       </div>
 
@@ -515,7 +515,7 @@ function ManagerDash({ me }) {
 
         <Panel title="Activités nécessitant mon action" icon="⚡"
           action={awaitingMe.length > 0 && (
-            <span style={{ fontSize: 11, fontWeight: 800, padding: "3px 10px", borderRadius: 999, background: "#fffbeb", color: "#d97706", border: "1px solid #fde68a" }}>
+            <span style={{ fontSize: 11, fontWeight: 800, padding: "3px 10px", borderRadius: 999, background: "#FEF6E4", color: "#C9952A", border: "1px solid #FEF6E4" }}>
               {awaitingMe.length} en attente
             </span>
           )}
@@ -529,14 +529,14 @@ function ManagerDash({ me }) {
           ) : (
             awaitingMe.map(a => (
               <div key={a._id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderBottom: "1px solid var(--border-2)" }}>
-                <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#d97706", flexShrink: 0 }} />
+                <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#C9952A", flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 600, fontSize: 14, color: "var(--text-1)" }}>{a.title}</div>
                   <div style={{ fontSize: 11.5, color: "var(--text-3)", marginTop: 2 }}>
                     {a.seats} place{a.seats !== 1 ? "s" : ""} · {a.participants?.length || 0} candidats · {timeAgo(a.createdAt)}
                   </div>
                 </div>
-                <a href={`/manager/activities/${a._id}`} style={{ fontSize: 12, fontWeight: 700, color: "#2563eb", textDecoration: "none", whiteSpace: "nowrap" }}>
+                <a href={`/manager/activities/${a._id}`} style={{ fontSize: 12, fontWeight: 700, color: "#155B6E", textDecoration: "none", whiteSpace: "nowrap" }}>
                   Examiner →
                 </a>
               </div>
@@ -607,13 +607,13 @@ function EmployeeDash() {
   const totalSkills = (approved.savoir?.length || 0) + (approved.savoir_faire?.length || 0) + (approved.savoir_etre?.length || 0);
 
   const skillTypeChart = [
-    { name: "Savoir",       value: approved.savoir?.length       || 0, color: "#3b6fd4" },
-    { name: "Savoir-faire", value: approved.savoir_faire?.length || 0, color: "#7c3aed" },
-    { name: "Savoir-être",  value: approved.savoir_etre?.length  || 0, color: "#059669" },
+    { name: "Savoir",       value: approved.savoir?.length       || 0, color: "#1D7A91" },
+    { name: "Savoir-faire", value: approved.savoir_faire?.length || 0, color: "#1D7A91" },
+    { name: "Savoir-être",  value: approved.savoir_etre?.length  || 0, color: "#145C2B" },
   ].filter(s => s.value > 0);
 
   const LEVEL_ORDER = { LOW: 1, MEDIUM: 2, HIGH: 3, EXPERT: 4 };
-  const LEVEL_COLORS = { LOW: "#94a3b8", MEDIUM: "#3b6fd4", HIGH: "#059669", EXPERT: "#7c3aed" };
+  const LEVEL_COLORS = { LOW: "#638899", MEDIUM: "#1D7A91", HIGH: "#145C2B", EXPERT: "#1D7A91" };
   const LEVEL_LABELS = { LOW: "Débutant", MEDIUM: "Intermédiaire", HIGH: "Avancé", EXPERT: "Expert" };
 
   const allSkills = [
@@ -628,13 +628,13 @@ function EmployeeDash() {
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       {/* KPIs */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
-        <KpiCard icon="🔔" value={invitations.length}    label="Mes invitations"   loading={loading} color="#d97706"
+        <KpiCard icon="🔔" value={invitations.length}    label="Mes invitations"   loading={loading} color="#C9952A"
           sub={`${pending.length} en attente`} />
-        <KpiCard icon="✅" value={participations.length} label="Mes participations" loading={loading} color="#059669" />
-        <KpiCard icon="🧠" value={totalSkills}            label="Mes compétences"   loading={loading} color="#7c3aed"
+        <KpiCard icon="✅" value={participations.length} label="Mes participations" loading={loading} color="#145C2B" />
+        <KpiCard icon="🧠" value={totalSkills}            label="Mes compétences"   loading={loading} color="#1D7A91"
           sub={skills?.pending ? "1 demande en attente" : "à jour"} />
         <KpiCard icon="📈" value={`${score}/100`}         label="Mon score global"  loading={loading}
-          color={score >= 70 ? "#059669" : score >= 40 ? "#d97706" : "#e11d48"}
+          color={score >= 70 ? "#145C2B" : score >= 40 ? "#C9952A" : "#e11d48"}
           sub={score >= 70 ? "Très bon niveau" : score >= 40 ? "Niveau correct" : "À améliorer"} />
       </div>
 
@@ -651,8 +651,8 @@ function EmployeeDash() {
                       dataKey="value" startAngle={90} endAngle={-270}
                       innerRadius={52} outerRadius={70}
                     >
-                      <Cell fill={score >= 70 ? "#059669" : score >= 40 ? "#d97706" : "#e11d48"} />
-                      <Cell fill="#f1f5f9" />
+                      <Cell fill={score >= 70 ? "#145C2B" : score >= 40 ? "#C9952A" : "#e11d48"} />
+                      <Cell fill="#E4E4F0" />
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
@@ -707,7 +707,7 @@ function EmployeeDash() {
                   <span style={{
                     fontSize: 11, fontWeight: 700, padding: "2px 9px",
                     borderRadius: 999, background: `${LEVEL_COLORS[s.level]}18`,
-                    color: LEVEL_COLORS[s.level] || "#64748b",
+                    color: LEVEL_COLORS[s.level] || "#638899",
                   }}>{LEVEL_LABELS[s.level] || s.level}</span>
                 </div>
               ))}
@@ -724,7 +724,7 @@ function EmployeeDash() {
           </div>
         ) : invitations.length === 0 ? <EmptyState text="Aucune invitation reçue pour l'instant" /> : (
           invitations.slice(0, 5).map(inv => {
-            const statusColor = inv.status === "ACCEPTED" ? "#059669" : inv.status === "DECLINED" ? "#e11d48" : "#d97706";
+            const statusColor = inv.status === "ACCEPTED" ? "#145C2B" : inv.status === "DECLINED" ? "#e11d48" : "#C9952A";
             const statusLabel = inv.status === "ACCEPTED" ? "Acceptée" : inv.status === "DECLINED" ? "Refusée" : "En attente";
             return (
               <div key={inv._id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderBottom: "1px solid var(--border-2)" }}>
@@ -779,15 +779,15 @@ function AiInsightsWidget({ role, payload, ready }) {
   }, [ready, payload]);
 
   const ROLE_GRADIENT = {
-    SUPERADMIN: "linear-gradient(135deg,#0b1e3d 0%,#1a3a6b 100%)",
-    HR:         "linear-gradient(135deg,#1e3a8a 0%,#2563eb 100%)",
-    MANAGER:    "linear-gradient(135deg,#0c4a6e 0%,#0891b2 100%)",
-    EMPLOYEE:   "linear-gradient(135deg,#064e3b 0%,#059669 100%)",
+    SUPERADMIN: "linear-gradient(135deg,#071E25 0%,#0B2D38 100%)",
+    HR:         "linear-gradient(135deg,#0B2D38 0%,#155B6E 100%)",
+    MANAGER:    "linear-gradient(135deg,#6B4400 0%,#C9952A 100%)",
+    EMPLOYEE:   "linear-gradient(135deg,#0B2D38 0%,#1D7A91 100%)",
   };
 
   return (
     <div style={{
-      background: ROLE_GRADIENT[role] || "linear-gradient(135deg,#1a2340,#2d3f6b)",
+      background: ROLE_GRADIENT[role] || "linear-gradient(135deg,#0B2D38,#155B6E)",
       borderRadius: 16, padding: "20px 24px",
       boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
       color: "#fff", position: "relative", overflow: "hidden",
@@ -859,7 +859,7 @@ function AiInsightsWidget({ role, payload, ready }) {
 export default function Dashboard() {
   const me   = getStoredUser();
   const role = me?.role;
-  const meta = ROLE_META[role] || { label: role, color: "var(--text-1)", bg: "#f8fafc" };
+  const meta = ROLE_META[role] || { label: role, color: "var(--text-1)", bg: "#EEF7FA" };
 
   const greet = () => {
     const h = new Date().getHours();
