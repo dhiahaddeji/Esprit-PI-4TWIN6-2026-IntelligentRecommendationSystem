@@ -1,0 +1,206 @@
+/* src/styles/topbar.css */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--topbar-bg);
+  border-bottom: 1px solid var(--topbar-border);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  height: 64px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.searchWrap {
+  flex: 1;
+  max-width: 360px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 9px 16px;
+  border: 1.5px solid var(--input-border);
+  border-radius: 10px;
+  background: var(--input-bg);
+  color: var(--text-1);
+  font-size: 13.5px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.2s;
+}
+
+.searchInput::placeholder {
+  color: var(--placeholder);
+}
+
+.searchInput:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59,111,212,0.12);
+}
+
+.topRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.iconBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 8px;
+  border-radius: 8px;
+  color: var(--text-3);
+  transition: background 0.15s;
+}
+
+.iconBtn:hover {
+  background: var(--accent-hover);
+  color: var(--accent);
+}
+
+.notif {
+  position: relative;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+
+.notif:hover { background: var(--accent-hover); }
+
+.badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #f47c20;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menuWrap {
+  position: relative;
+}
+
+.profileBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 6px 12px 6px 6px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.profileBtn:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59,111,212,0.10);
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b6fd4, #f47c20);
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profileText .name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+  line-height: 1.2;
+}
+
+.profileText .role {
+  font-size: 11px;
+  color: var(--text-3);
+  line-height: 1.2;
+}
+
+.profileMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  min-width: 180px;
+  padding: 8px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: background 0.2s;
+}
+
+.profileMenu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 9px;
+  padding: 9px 12px;
+  font-size: 13.5px;
+  color: var(--text-1);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.profileMenu button:hover { background: var(--surface-2); }
+.profileMenu button.danger { color: var(--danger-text); }
+.profileMenu button.danger:hover { background: var(--danger-bg); }
+
+.popover {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  z-index: 999;
+}
+
+.a11yOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26,35,64,0.3);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  z-index: 300;
+}
+
+.a11yPopover {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 301;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow-lg);
+  min-width: 320px;
+  transition: background 0.2s;
+}

@@ -1,0 +1,57 @@
+/* src/styles/layout.css */
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.layoutMain {
+  margin-left: 240px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-width: 0;
+  background: var(--bg);
+  transition: background 0.2s;
+}
+
+.layoutContent {
+  flex: 1;
+  padding: 22px;
+  min-width: 0;
+  background: var(--bg);
+  transition: background 0.2s;
+}
+
+/* Skip link */
+.skipLink {
+  position: absolute;
+  left: 12px;
+  top: 10px;
+  transform: translateY(-200%);
+  background: #3b6fd4;
+  color: white;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-weight: 800;
+  z-index: 99999;
+  text-decoration: none;
+}
+.skipLink:focus {
+  transform: translateY(0);
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+
+@media (max-width: 900px) {
+  .layoutMain {
+    margin-left: 84px;
+  }
+}

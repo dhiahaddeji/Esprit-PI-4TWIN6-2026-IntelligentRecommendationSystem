@@ -1,0 +1,219 @@
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import AccessibilityMenu from "./AccessibilityMenu";
+import { getStoredUser, logout } from "../auth/authService";
+import { useTheme } from "../contexts/ThemeContext";
+import { useTranslation } from "../contexts/TranslationContext";
+import "../styles/topbar.css";
+
+export default function Topbar() {
+  const { isDark, toggle } = useTheme();
+  const { lang, changeLanguage } = useTranslation();
+  const [a11yOpen, setA11yOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+
+  const profileRef = useRef(null);
+  const langRef = useRef(null);
+  const navigate = useNavigate();
+
+  // Fermer profil et langues au clic dehors
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+      if (langRef.current && !langRef.current.contains(e.target)) {
+        setLangOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
+
+  // Bloquer scroll quand popup accessibilité ouvert
+  useEffect(() => {
+    if (!a11yOpen) return;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [a11yOpen]);
+
+  const user = getStoredUser() || { name: "—", role: null };
+
+  const getRoleLabel = (role) => {
+    switch (role) {
+      case "SUPERADMIN": return "Super Admin";
+      case "HR":         return "Responsable RH";
+      case "MANAGER":    return "Manager";
+      case "EMPLOYEE":   return "Employé";
+      default:           return role || "—";
+    }
+  };
+
+  const roleLabel = getRoleLabel(user.role);
+
+  const displayName =
+    user.firstName && user.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : user.name || "—";
+
+  const initials = displayName
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0].toUpperCase())
+    .join("");
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  return (
+    <>
+      <header className="topbar">
+        <div className="searchWrap">
+          <input
+            className="searchInput"
+            placeholder="Rechercher employés, activités..."
+          />
+        </div>
+
+        <div className="topRight">
+
+          {/* DARK / LIGHT MODE */}
+          <button
+            type="button"
+            className={`themeToggle ${isDark ? "dark" : "light"}`}
+            onClick={toggle}
+            aria-label={isDark ? "Passer en mode clair" : "Passer en mode sombre"}
+            title={isDark ? "Mode clair" : "Mode sombre"}
+            aria-pressed={isDark}
+          >
+            <span className="themeToggleIcon" aria-hidden="true">
+              <span className="sun">☀️</span>
+              <span className="moon">🌙</span>
+            </span>
+          </button>
+
+          {/* ACCESSIBILITÉ */}
+          <button
+            className="iconBtn"
+            type="button"
+            onClick={() => setA11yOpen(true)}
+            aria-label="Accessibilité"
+            title="Accessibilité"
+          >
+            ♿
+          </button>
+
+          {/* TRADUCTION */}
+          <div className="menuWrap" ref={langRef}>
+            <button
+              className="iconBtn"
+              type="button"
+              onClick={() => setLangOpen((v) => !v)}
+              title="Changer de langue"
+              aria-label="Changer de langue"
+              style={{ fontSize: "1.2rem" }}
+            >
+              {lang === "fr" ? "🇫🇷" : lang === "en" ? "🇬🇧" : "🇸🇦"}
+            </button>
+
+            {langOpen && (
+              <div className="profileMenu" style={{ minWidth: "120px" }}>
+                <button
+                  onClick={() => {
+                    changeLanguage("fr");
+                    setLangOpen(false);
+                  }}
+                  disabled={lang === "fr"}
+                >
+                  🇫🇷 Français
+                </button>
+                <button
+                  onClick={() => {
+                    changeLanguage("en");
+                    setLangOpen(false);
+                  }}
+                  disabled={lang === "en"}
+                >
+                  🇬🇧 English
+                </button>
+                <button
+                  onClick={() => {
+                    changeLanguage("ar");
+                    setLangOpen(false);
+                  }}
+                  disabled={lang === "ar"}
+                >
+                  🇸🇦 العربية
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* NOTIF */}
+          <div className="notif" title="Notifications">
+            🔔 <span className="badge">2</span>
+          </div>
+
+          {/* PROFIL */}
+          <div className="menuWrap" ref={profileRef}>
+            <button
+              type="button"
+              className="profileBtn"
+              onClick={() => setProfileOpen((v) => !v)}
+            >
+              <div className="avatar">{initials}</div>
+              <div className="profileText">
+                <div className="name">{displayName}</div>
+                <div className="role">{roleLabel}</div>
+              </div>
+            </button>
+
+            {profileOpen && (
+              <div className="profileMenu">
+                <button onClick={() => navigate("/me")}>
+                  👤 Mon profil
+                </button>
+
+                {user.role === "EMPLOYEE" && (
+                  <button onClick={() => navigate("/employee/invitations")}>
+                    🔔 Notifications
+                  </button>
+                )}
+
+                <button className="danger" onClick={handleLogout}>
+                  ⎋ Déconnexion
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* POPUP ACCESSIBILITÉ (FIXED + OVERLAY) */}
+      {a11yOpen && (
+        <>
+          <div
+            className="a11yOverlay"
+            onClick={() => setA11yOpen(false)}
+          />
+
+          <div
+            className="a11yPopover"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <AccessibilityMenu
+              open={a11yOpen}
+              onClose={() => setA11yOpen(false)}
+            />
+          </div>
+        </>
+      )}
+    </>
+  );
+}

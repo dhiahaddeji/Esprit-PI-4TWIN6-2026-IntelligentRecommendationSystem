@@ -1,0 +1,108 @@
+/* src/styles/sidebar.css
+   The sidebar is ALWAYS dark (never adapts to light/dark theme).
+   All text/colors here use hardcoded values, not CSS variables.      */
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 240px;
+  height: 100vh;
+  background: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 100;
+  box-shadow: 4px 0 24px rgba(0,0,0,0.25);
+  transition: background 0.25s;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 22px 20px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.brandLogo {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.brandName {
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffffff;          /* always white on dark sidebar */
+  letter-spacing: 0.3px;
+}
+
+.brandSub {
+  font-size: 10px;
+  color: #f47c20;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.menu {
+  flex: 1;
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.menuSection {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.30);  /* always white-ish on dark */
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  padding: 18px 12px 6px;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: rgba(255,255,255,0.65);  /* always white-ish */
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+}
+
+.menuItem:hover {
+  background: rgba(255,255,255,0.09);
+  color: #ffffff;
+}
+
+.menuItem.active {
+  background: #2d5bbf;
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 2px 12px rgba(45,91,191,0.40);
+}
+
+.sidebarFooter {
+  padding: 14px 20px 18px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.roleTag {
+  display: inline-block;
+  background: rgba(244,124,32,0.18);
+  color: #f47c20;
+  border: 1px solid rgba(244,124,32,0.35);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
