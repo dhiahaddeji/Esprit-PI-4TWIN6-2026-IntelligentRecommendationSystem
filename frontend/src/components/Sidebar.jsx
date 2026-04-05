@@ -2,6 +2,7 @@
 import { NavLink } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { getStoredUser, getStoredToken } from "../auth/authService";
+import http from "../api/http";
 import "../styles/sidebar.css";
 
 function useUnreadCount() {
@@ -14,11 +15,8 @@ function useUnreadCount() {
       try {
         const token = getStoredToken();
         if (!token) return;
-        const res = await fetch("http://localhost:3000/messaging/unread", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) return;
-        const data = await res.json();
+        const res = await http.get("/messaging/unread");
+        const data = res.data;
         if (!cancelled) setCount(data.total ?? 0);
       } catch {}
     }

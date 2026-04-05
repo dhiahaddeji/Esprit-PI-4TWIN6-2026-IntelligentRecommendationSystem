@@ -41,7 +41,13 @@ export default function Register() {
           onChange={(e) => setName(e.target.value)}
           placeholder="Full name"
           required
-          style={{ padding: 12, borderRadius: 10, border: "1px solid #e4e7ec" }}
+          style={{
+            padding: 12,
+            borderRadius: 10,
+            border: "1px solid var(--input-border)",
+            background: "var(--input-bg)",
+            color: "var(--input-text)",
+          }}
         />
         <input
           value={email}
@@ -49,13 +55,25 @@ export default function Register() {
           placeholder="Email"
           type="email"
           required
-          style={{ padding: 12, borderRadius: 10, border: "1px solid #e4e7ec" }}
+          style={{
+            padding: 12,
+            borderRadius: 10,
+            border: "1px solid var(--input-border)",
+            background: "var(--input-bg)",
+            color: "var(--input-text)",
+          }}
         />
 
         <select
           value={role}
           onChange={(e) => setRole(e.target.value)}
-          style={{ padding: 12, borderRadius: 10, border: "1px solid #e4e7ec" }}
+          style={{
+            padding: 12,
+            borderRadius: 10,
+            border: "1px solid var(--input-border)",
+            background: "var(--input-bg)",
+            color: "var(--input-text)",
+          }}
         >
           <option value="EMPLOYEE">EMPLOYEE</option>
           <option value="HR">HR</option>
@@ -68,11 +86,23 @@ export default function Register() {
           placeholder="Password"
           type="password"
           required
-          style={{ padding: 12, borderRadius: 10, border: "1px solid #e4e7ec" }}
+          style={{
+            padding: 12,
+            borderRadius: 10,
+            border: "1px solid var(--input-border)",
+            background: "var(--input-bg)",
+            color: "var(--input-text)",
+          }}
         />
 
         {error && (
-          <div style={{ color: "#b42318", background: "#fffbfa", border: "1px solid #fecdca", padding: 10, borderRadius: 10 }}>
+          <div style={{
+            color: "var(--danger-text)",
+            background: "var(--danger-bg)",
+            border: "1px solid var(--danger-text)",
+            padding: 10,
+            borderRadius: 10,
+          }}>
             {error}
           </div>
         )}
@@ -83,7 +113,7 @@ export default function Register() {
             padding: 12,
             borderRadius: 10,
             border: "none",
-            background: "#0b2b4b",
+            background: "var(--accent)",
             color: "white",
             fontWeight: 800,
             cursor: "pointer",
@@ -94,7 +124,7 @@ export default function Register() {
       </form>
 
       <p style={{ marginTop: 12 }}>
-        Already have an account? <Link to="/login">Login</Link>
+        Already have an account? <Link to="/login" style={{ color: "var(--accent)" }}>Login</Link>
       </p>
     </div>
   );

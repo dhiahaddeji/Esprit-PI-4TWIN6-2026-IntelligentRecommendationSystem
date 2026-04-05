@@ -76,6 +76,10 @@ export default function HRCreateActivity() {
   const addReq = () => {
     const intitule = addComp.intitule.trim();
     if (!intitule) return;
+    if (intitule.length > 120) {
+      setError("Le nom de la compétence est trop long (max 120 caractères).");
+      return;
+    }
     if (compReqs.some(c => c.intitule.toLowerCase() === intitule.toLowerCase())) return;
     setCompReqs(r => [...r, { ...addComp, intitule }]);
     setAddComp(c => ({ ...c, intitule: "" }));
@@ -94,14 +98,40 @@ export default function HRCreateActivity() {
     setLoading(true);
     setError("");
     try {
+      const title = form.title.trim();
+      const description = form.description.trim();
+      const location = form.location.trim();
+      const duration = form.duration.trim();
+
+      if (title.length > 160) {
+        setError("Le titre est trop long (max 160 caractères).");
+        setLoading(false);
+        return;
+      }
+      if (description && description.length > 4000) {
+        setError("La description est trop longue (max 4000 caractères).");
+        setLoading(false);
+        return;
+      }
+      if (location && location.length > 120) {
+        setError("Le lieu est trop long (max 120 caractères).");
+        setLoading(false);
+        return;
+      }
+      if (duration && duration.length > 40) {
+        setError("La durée est trop longue (max 40 caractères).");
+        setLoading(false);
+        return;
+      }
+
       const payload = {
-        title: form.title,
-        description: form.description,
+        title,
+        description: description || undefined,
         startDate: form.startDate,
         endDate: form.endDate || form.startDate,
         date: form.startDate,
-        location: form.location,
-        duration: form.duration,
+        location: location || undefined,
+        duration: duration || undefined,
         seats: Number(form.seats),
         managerId: form.managerId,
         type: form.type,
@@ -154,12 +184,13 @@ export default function HRCreateActivity() {
       <form onSubmit={onSubmit} style={{ marginTop: 16, display: "grid", gap: 12 }}>
         <Field label="Titre *">
           <input name="title" value={form.title} onChange={onChange}
-            placeholder="Ex: Atelier Leadership" style={inputStyle()} />
+            placeholder="Ex: Atelier Leadership" maxLength={160} style={inputStyle()} />
         </Field>
 
         <Field label="Description">
           <textarea name="description" value={form.description} onChange={onChange}
             placeholder="Détails de l'activité..."
+            maxLength={4000}
             style={{ ...inputStyle(), minHeight: 90, resize: "vertical" }} />
         </Field>
 
@@ -191,14 +222,14 @@ export default function HRCreateActivity() {
           </Field>
           <Field label="Lieu *">
             <input name="location" value={form.location} onChange={onChange}
-              placeholder="Ex: Salle A / En ligne" style={inputStyle()} />
+              placeholder="Ex: Salle A / En ligne" maxLength={120} style={inputStyle()} />
           </Field>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
           <Field label="Durée">
             <input name="duration" value={form.duration} onChange={onChange}
-              placeholder="Ex: 2 jours" style={inputStyle()} />
+              placeholder="Ex: 2 jours" maxLength={40} style={inputStyle()} />
           </Field>
           <Field label="Places *">
             <input type="number" name="seats" min={1} value={form.seats} onChange={onChange} style={inputStyle()} />
@@ -296,6 +327,7 @@ export default function HRCreateActivity() {
                 onChange={e => setAddComp(c => ({ ...c, intitule: e.target.value }))}
                 onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addReq(); } }}
                 placeholder="Nom de la compétence…"
+                maxLength={120}
                 style={{ flex: 1, ...inputStyle() }}
               />
               <button type="button" onClick={addReq} style={{

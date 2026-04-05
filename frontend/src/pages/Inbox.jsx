@@ -63,7 +63,7 @@ function insertAtCursor(value, setValue, ref, text) {
 }
 
 function Avatar({ name, size = 36, role }) {
-  const meta = ROLE_COLORS[role] || { bg: "#e2e8f0", color: "var(--text-2)" };
+  const meta = ROLE_COLORS[role] || { bg: "var(--surface-2)", color: "var(--text-2)" };
   return (
     <div style={{
       width: size, height: size, borderRadius: "50%", flexShrink: 0,
@@ -147,8 +147,8 @@ function NewConvModal({ me, users, onClose, onCreate }) {
           ].map(t => (
             <button key={t.v} onClick={() => { setType(t.v); setSelected([]); }} style={{
               flex: 1, padding: "8px 4px", borderRadius: 10, border: "none",
-              background: type === t.v ? "#0b2b4b" : "#f1f5f9",
-              color: type === t.v ? "#fff" : "#64748b",
+              background: type === t.v ? "#0b2b4b" : "var(--surface-2)",
+              color: type === t.v ? "#fff" : "var(--text-2)",
               fontWeight: 700, fontSize: 13, cursor: "pointer",
             }}>{t.label}</button>
           ))}
@@ -158,7 +158,7 @@ function NewConvModal({ me, users, onClose, onCreate }) {
         {type === "announcement" && (
           <div style={{
             marginBottom: 12, padding: "10px 14px", borderRadius: 10,
-            background: "#fffbeb", border: "1px solid #fde68a", fontSize: 12.5, color: "#92400e",
+            background: "var(--warn-bg)", border: "1px solid var(--border)", fontSize: 12.5, color: "var(--warn-text)",
           }}>
             📢 <strong>Mode Annonce</strong> — les destinataires <strong>ne pourront pas répondre</strong>. Idéal pour informer vos équipes.
           </div>
@@ -202,8 +202,8 @@ function NewConvModal({ me, users, onClose, onCreate }) {
                 style={{
                   display: "flex", alignItems: "center", gap: 10,
                   padding: "9px 12px", borderRadius: 10, cursor: "pointer", marginBottom: 4,
-                  background: isSelected ? "#eff6ff" : "#fff",
-                  border: `1.5px solid ${isSelected ? "#3b6fd4" : "#f1f5f9"}`,
+                  background: isSelected ? "var(--info-bg)" : "var(--surface)",
+                  border: `1.5px solid ${isSelected ? "var(--accent)" : "var(--border)"}`,
                   transition: "all 0.12s",
                 }}
               >
@@ -216,7 +216,7 @@ function NewConvModal({ me, users, onClose, onCreate }) {
                   fontSize: 10.5, fontWeight: 700, padding: "2px 7px",
                   borderRadius: 999, background: meta.bg, color: meta.color,
                 }}>{meta.label}</span>
-                {isSelected && <span style={{ color: "#3b6fd4", fontSize: 16, fontWeight: 700 }}>✓</span>}
+                {isSelected && <span style={{ color: "var(--accent)", fontSize: 16, fontWeight: 700 }}>✓</span>}
               </div>
             );
           })}
@@ -228,7 +228,7 @@ function NewConvModal({ me, users, onClose, onCreate }) {
         </div>
 
         {error && (
-          <div style={{ marginBottom: 10, padding: "8px 12px", borderRadius: 8, background: "#fffbfa", border: "1px solid #fecdca", color: "#b42318", fontSize: 12.5 }}>
+          <div style={{ marginBottom: 10, padding: "8px 12px", borderRadius: 8, background: "var(--danger-bg)", border: "1px solid var(--danger-text)", color: "var(--danger-text)", fontSize: 12.5 }}>
             {error}
           </div>
         )}
@@ -269,11 +269,11 @@ function ConvItem({ conv, isActive, me, onClick }) {
       style={{
         display: "flex", alignItems: "center", gap: 11,
         padding: "12px 16px", cursor: "pointer", borderRadius: 12,
-        background: isActive ? "#eff6ff" : "transparent",
-        border: isActive ? "1px solid #bfdbfe" : "1px solid transparent",
+        background: isActive ? "var(--info-bg)" : "transparent",
+        border: isActive ? "1px solid var(--accent)" : "1px solid transparent",
         marginBottom: 4, transition: "all 0.12s",
       }}
-      onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "#f8fafc"; }}
+      onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "var(--surface-2)"; }}
       onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
     >
       {/* Icon */}
@@ -282,11 +282,11 @@ function ConvItem({ conv, isActive, me, onClick }) {
         display: "flex", alignItems: "center", justifyContent: "center",
         fontSize: 18,
         background: conv.type === "announcement"
-          ? "#fffbeb"
+          ? "var(--warn-bg)"
           : conv.type === "group"
-          ? "#f0fdf4"
-          : "#f0f4ff",
-        border: `2px solid ${conv.type === "announcement" ? "#fde68a" : conv.type === "group" ? "#bbf7d0" : "#c7d2fe"}`,
+          ? "var(--success-bg)"
+          : "var(--info-bg)",
+        border: `2px solid ${conv.type === "announcement" ? "var(--warn-text)" : conv.type === "group" ? "var(--success-text)" : "var(--accent)"}`,
       }}>{icon}</div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -310,7 +310,7 @@ function ConvItem({ conv, isActive, me, onClick }) {
           {unread > 0 && (
             <span style={{
               minWidth: 20, height: 20, borderRadius: 999,
-              background: "#3b6fd4", color: "#fff",
+              background: "var(--accent)", color: "#fff",
               fontSize: 11, fontWeight: 800,
               display: "flex", alignItems: "center", justifyContent: "center",
               padding: "0 5px", flexShrink: 0, marginLeft: 6,
@@ -356,11 +356,11 @@ function MessageBubble({ msg, isMe }) {
           borderRadius: isMe ? "16px 4px 16px 16px" : "4px 16px 16px 16px",
           background: isMe
             ? "linear-gradient(135deg,#0b2b4b,#1e3a5f)"
-            : "#fff",
-          color: isMe ? "#fff" : "#1a2340",
+            : "var(--surface)",
+          color: isMe ? "#fff" : "var(--text-1)",
           fontSize: 14, lineHeight: 1.55,
           boxShadow: "0 1px 6px rgba(0,0,0,0.08)",
-          border: isMe ? "none" : "1px solid #e8ecf4",
+          border: isMe ? "none" : "1px solid var(--border)",
           wordBreak: "break-word",
         }}>
           {msg.content}
@@ -396,8 +396,8 @@ function AnnouncementCard({ msg, isFirst }) {
       <div style={{
         display: "flex", alignItems: "center", gap: 12,
         padding: "14px 18px",
-        background: "linear-gradient(135deg,#fffbeb,#fef3c7)",
-        borderBottom: "1px solid #fde68a",
+        background: "var(--warn-bg)",
+        borderBottom: "1px solid var(--border)",
       }}>
         <div style={{
           width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
@@ -417,13 +417,13 @@ function AnnouncementCard({ msg, isFirst }) {
               border: `1px solid ${meta.color}30`,
             }}>{meta.label}</span>
           </div>
-          <div style={{ fontSize: 11.5, color: "#92400e", marginTop: 2 }}>
+          <div style={{ fontSize: 11.5, color: "var(--warn-text)", marginTop: 2 }}>
             📅 {dateStr} à {timeStr}
           </div>
         </div>
         <div style={{
           fontSize: 11, fontWeight: 600, padding: "4px 10px",
-          borderRadius: 999, background: "#92400e", color: "#fff",
+          borderRadius: 999, background: "var(--warn-text)", color: "#fff",
           letterSpacing: "0.5px",
         }}>ANNONCE</div>
       </div>
@@ -431,7 +431,7 @@ function AnnouncementCard({ msg, isFirst }) {
       {/* Content */}
       <div style={{
         padding: "18px 20px",
-        fontSize: 14.5, lineHeight: 1.7, color: "#1e293b",
+        fontSize: 14.5, lineHeight: 1.7, color: "var(--text-1)",
         whiteSpace: "pre-wrap", wordBreak: "break-word",
       }}>
         {msg.content}
@@ -496,7 +496,7 @@ function AnnouncementView({ conv, me, onNewMessage }) {
   const recipientCount = (conv.participants?.length || 1) - 1;
 
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, background: "#f4f6fb" }}>
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, background: "var(--bg)" }}>
 
       {/* ── Top banner ── */}
       <div style={{
@@ -546,9 +546,9 @@ function AnnouncementView({ conv, me, onNewMessage }) {
         }}>
           <div style={{
             padding: "11px 16px",
-            background: "linear-gradient(135deg,#fffbeb,#fef3c7)",
-            borderBottom: "1px solid #fde68a",
-            fontSize: 12.5, fontWeight: 700, color: "#92400e",
+            background: "var(--warn-bg)",
+            borderBottom: "1px solid var(--border)",
+            fontSize: 12.5, fontWeight: 700, color: "var(--warn-text)",
             display: "flex", alignItems: "center", gap: 6,
           }}>
             <span>✍️</span> Publier une nouvelle annonce
@@ -584,7 +584,7 @@ function AnnouncementView({ conv, me, onNewMessage }) {
                 {showEmoji && (
                   <div style={{
                     position: "absolute", bottom: 44, left: 0,
-                    background: "#fff", border: "1px solid var(--border)",
+                    background: "var(--surface)", border: "1px solid var(--border)",
                     borderRadius: 12, padding: 8, width: 220,
                     display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 6,
                     boxShadow: "0 10px 24px rgba(15,23,42,0.18)", zIndex: 20,
@@ -613,7 +613,7 @@ function AnnouncementView({ conv, me, onNewMessage }) {
                 style={{
                   padding: "9px 20px", borderRadius: 10, border: "none",
                   background: sending || !input.trim()
-                    ? "#cbd5e1"
+                    ? "var(--border)"
                     : "linear-gradient(135deg,#b45309,#78350f)",
                   color: "#fff", fontWeight: 700, fontSize: 13.5,
                   cursor: sending || !input.trim() ? "not-allowed" : "pointer",
@@ -646,7 +646,7 @@ function AnnouncementView({ conv, me, onNewMessage }) {
           }}>
             <div style={{
               width: 80, height: 80, borderRadius: "50%", marginBottom: 20,
-              background: "linear-gradient(135deg,#fef3c7,#fde68a)",
+              background: "var(--warn-bg)",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 38, boxShadow: "0 4px 20px rgba(180,83,9,0.15)",
             }}>📭</div>
@@ -661,8 +661,8 @@ function AnnouncementView({ conv, me, onNewMessage }) {
             {!canWrite && (
               <div style={{
                 marginTop: 24, padding: "12px 20px", borderRadius: 12,
-                background: "#fffbeb", border: "1px solid #fde68a",
-                fontSize: 12.5, color: "#92400e", fontWeight: 600,
+                background: "var(--warn-bg)", border: "1px solid var(--border)",
+                fontSize: 12.5, color: "var(--warn-text)", fontWeight: 600,
               }}>
                 🔔 Vous serez notifié lorsqu'une annonce sera publiée
               </div>
@@ -675,9 +675,9 @@ function AnnouncementView({ conv, me, onNewMessage }) {
               fontSize: 12, fontWeight: 600, color: "var(--text-3)",
               marginBottom: 12, display: "flex", alignItems: "center", gap: 8,
             }}>
-              <div style={{ flex: 1, height: 1, background: "#e8ecf4" }} />
+              <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
               {messages.length} annonce{messages.length !== 1 ? "s" : ""}
-              <div style={{ flex: 1, height: 1, background: "#e8ecf4" }} />
+              <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
             </div>
             {[...messages].reverse().map((msg, i) => (
               <AnnouncementCard key={msg._id} msg={msg} isFirst={i === 0} />
@@ -690,11 +690,11 @@ function AnnouncementView({ conv, me, onNewMessage }) {
       {!canWrite && (
         <div style={{
           padding: "11px 24px",
-          background: "#fffbeb",
-          borderTop: "1px solid #fde68a",
+          background: "var(--warn-bg)",
+          borderTop: "1px solid var(--border)",
           flexShrink: 0,
           display: "flex", alignItems: "center", gap: 8,
-          fontSize: 12.5, color: "#92400e", fontWeight: 600,
+          fontSize: 12.5, color: "var(--warn-text)", fontWeight: 600,
         }}>
           <span style={{ fontSize: 16 }}>🔒</span>
           Ce canal est réservé aux annonces officielles — les réponses ne sont pas autorisées.
@@ -802,7 +802,7 @@ function ChatThread({ conv, me, onNewMessage }) {
           }}>
             <div style={{
               width: 64, height: 64, borderRadius: "50%", marginBottom: 14,
-              background: "#f0f4ff",
+              background: "var(--info-bg)",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 28,
             }}>
@@ -835,7 +835,7 @@ function ChatThread({ conv, me, onNewMessage }) {
         {showEmoji && (
           <div style={{
             position: "absolute", bottom: 58, left: 16,
-            background: "#fff", border: "1px solid var(--border)",
+            background: "var(--surface)", border: "1px solid var(--border)",
             borderRadius: 12, padding: 8, width: 240,
             display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 6,
             boxShadow: "0 10px 24px rgba(15,23,42,0.18)", zIndex: 20,
@@ -979,7 +979,7 @@ export default function Inbox() {
                   <span style={{
                     marginLeft: 8, fontSize: 11, fontWeight: 800,
                     padding: "2px 7px", borderRadius: 999,
-                    background: "#ef4444", color: "#fff",
+                    background: "var(--danger-text)", color: "#fff",
                   }}>{totalUnread}</span>
                 )}
               </h1>
@@ -1022,8 +1022,8 @@ export default function Inbox() {
             ].map(t => (
               <button key={t.val} onClick={() => setFilter(t.val)} style={{
                 flex: 1, padding: "5px 4px", borderRadius: 8, border: "none",
-                background: filter === t.val ? "#0b2b4b" : "#f1f5f9",
-                color: filter === t.val ? "#fff" : "#64748b",
+                background: filter === t.val ? "#0b2b4b" : "var(--surface-2)",
+                color: filter === t.val ? "#fff" : "var(--text-2)",
                 fontSize: 11.5, fontWeight: 600, cursor: "pointer",
               }}>{t.label}</button>
             ))}

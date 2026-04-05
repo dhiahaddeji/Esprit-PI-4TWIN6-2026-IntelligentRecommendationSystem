@@ -38,7 +38,7 @@ export class UsersService {
     }
 
     const updated = await this.userModel
-      .findByIdAndUpdate(id, data, { new: true })
+      .findByIdAndUpdate(id, data, { returnDocument: 'after' })
       .exec();
 
     if (!updated) throw new NotFoundException('Utilisateur introuvable');

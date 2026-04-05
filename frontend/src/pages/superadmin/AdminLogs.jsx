@@ -61,9 +61,9 @@ function DetailsCell({ log }) {
   if (isLogin) {
     // Show login time and email prominently inline (no need to expand)
     return (
-      <div style={{ fontSize: 12, color: "#555", lineHeight: 1.6 }}>
-        {d.email && <div><span style={{ color: "#999" }}>Email :</span> {d.email}</div>}
-        {d.matricule && <div><span style={{ color: "#999" }}>Matricule :</span> <strong>{d.matricule}</strong></div>}
+      <div style={{ fontSize: 12, color: "var(--text-2)", lineHeight: 1.6 }}>
+        {d.email && <div><span style={{ color: "var(--text-3)" }}>Email :</span> {d.email}</div>}
+        {d.matricule && <div><span style={{ color: "var(--text-3)" }}>Matricule :</span> <strong>{d.matricule}</strong></div>}
         {d.loginTime && (
           <div style={{ color: "#27ae60", fontWeight: 600, marginTop: 2 }}>
             🕐 {formatDate(d.loginTime)}
@@ -73,16 +73,16 @@ function DetailsCell({ log }) {
     );
   }
 
-  if (!d || Object.keys(d).length === 0) return <span style={{ color: "#bbb" }}>—</span>;
+  if (!d || Object.keys(d).length === 0) return <span style={{ color: "var(--text-3)" }}>—</span>;
 
   return (
     <details style={{ cursor: "pointer" }}>
-      <summary style={{ fontSize: 12, color: "#888", userSelect: "none", listStyle: "none" }}>
+      <summary style={{ fontSize: 12, color: "var(--text-2)", userSelect: "none", listStyle: "none" }}>
         <span style={{ textDecoration: "underline dotted" }}>Voir détails</span>
       </summary>
       <pre style={{
-        margin: "6px 0 0", fontSize: 11, color: "#555",
-        background: "#f8f9fc", borderRadius: 5, padding: 8,
+        margin: "6px 0 0", fontSize: 11, color: "var(--text-2)",
+        background: "var(--surface-2)", borderRadius: 5, padding: 8,
         maxHeight: 120, overflow: "auto", whiteSpace: "pre-wrap",
       }}>
         {JSON.stringify(d, null, 2)}
@@ -206,10 +206,10 @@ export default function AdminLogs() {
       {/* ── Header ── */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: 21, fontWeight: 700, color: "#1a1a2e" }}>
+          <h1 style={{ margin: 0, fontSize: 21, fontWeight: 700, color: "var(--text-1)" }}>
             📋 Journal d'audit
           </h1>
-          <p style={{ margin: "4px 0 0", color: "#777", fontSize: 13 }}>
+          <p style={{ margin: "4px 0 0", color: "var(--text-2)", fontSize: 13 }}>
             {total.toLocaleString("fr-FR")} entrée{total !== 1 ? "s" : ""}
             {liveCount > 0 && (
               <span style={{
@@ -236,18 +236,18 @@ export default function AdminLogs() {
 
       {/* ── Filters ── */}
       <div style={{
-        background: "#fff", border: "1px solid #e8e8f0", borderRadius: 10,
+        background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10,
         padding: "14px 18px", marginBottom: 16,
         display: "flex", gap: 14, flexWrap: "wrap", alignItems: "flex-end",
       }}>
         <div style={{ flex: "1 1 200px" }}>
-          <label style={{ fontSize: 11, fontWeight: 700, color: "#666", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+          <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-2)", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.5px" }}>
             Type d'action
           </label>
           <select
             value={filterAction}
             onChange={e => setFilterAction(e.target.value)}
-            style={{ width: "100%", padding: "8px 10px", borderRadius: 7, border: "1px solid #dde", fontSize: 13, background: "#fafbfc" }}
+            style={{ width: "100%", padding: "8px 10px", borderRadius: 7, border: "1px solid var(--input-border)", fontSize: 13, background: "var(--input-bg)", color: "var(--text-1)" }}
           >
             <option value="">Toutes les actions</option>
             {Object.entries(ACTION_META).map(([key, { label, icon }]) => (
@@ -257,34 +257,34 @@ export default function AdminLogs() {
         </div>
 
         <div style={{ flex: "1 1 140px" }}>
-          <label style={{ fontSize: 11, fontWeight: 700, color: "#666", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+          <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-2)", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.5px" }}>
             Du
           </label>
           <input
             type="date"
             value={filterDateFrom}
             onChange={e => setFilterDateFrom(e.target.value)}
-            style={{ width: "100%", padding: "8px 10px", borderRadius: 7, border: "1px solid #dde", fontSize: 13, background: "#fafbfc" }}
+            style={{ width: "100%", padding: "8px 10px", borderRadius: 7, border: "1px solid var(--input-border)", fontSize: 13, background: "var(--input-bg)", color: "var(--text-1)" }}
           />
         </div>
 
         <div style={{ flex: "1 1 140px" }}>
-          <label style={{ fontSize: 11, fontWeight: 700, color: "#666", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+          <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-2)", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.5px" }}>
             Au
           </label>
           <input
             type="date"
             value={filterDateTo}
             onChange={e => setFilterDateTo(e.target.value)}
-            style={{ width: "100%", padding: "8px 10px", borderRadius: 7, border: "1px solid #dde", fontSize: 13, background: "#fafbfc" }}
+            style={{ width: "100%", padding: "8px 10px", borderRadius: 7, border: "1px solid var(--input-border)", fontSize: 13, background: "var(--input-bg)", color: "var(--text-1)" }}
           />
         </div>
 
         <button
           onClick={() => { setFilterAction(""); setFilterDateFrom(""); setFilterDateTo(""); }}
           style={{
-            padding: "8px 16px", borderRadius: 7, border: "1px solid #dde",
-            background: "#f5f5f8", cursor: "pointer", fontSize: 13, fontWeight: 500, color: "#555",
+            padding: "8px 16px", borderRadius: 7, border: "1px solid var(--border)",
+            background: "var(--surface-2)", cursor: "pointer", fontSize: 13, fontWeight: 500, color: "var(--text-2)",
           }}
         >
           Réinitialiser
@@ -292,10 +292,10 @@ export default function AdminLogs() {
       </div>
 
       {/* ── Table ── */}
-      <div style={{ background: "#fff", border: "1px solid #e8e8f0", borderRadius: 10, overflow: "hidden" }}>
+      <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
-            <tr style={{ background: "#f4f5fb", borderBottom: "2px solid #e4e5f0" }}>
+            <tr style={{ background: "var(--surface-2)", borderBottom: "2px solid var(--border)" }}>
               <th style={thStyle}>Date / Heure</th>
               <th style={thStyle}>Action</th>
               <th style={thStyle}>Utilisateur</th>
@@ -307,7 +307,7 @@ export default function AdminLogs() {
           <tbody>
             {logs.length === 0 && !loading && (
               <tr>
-                <td colSpan={6} style={{ padding: 48, textAlign: "center", color: "#bbb", fontSize: 14 }}>
+                <td colSpan={6} style={{ padding: 48, textAlign: "center", color: "var(--text-3)", fontSize: 14 }}>
                   Aucun log trouvé
                 </td>
               </tr>
@@ -319,13 +319,13 @@ export default function AdminLogs() {
                 <tr
                   key={log._id || i}
                   style={{
-                    borderBottom: "1px solid #f0f0f8",
-                    background: isNew ? "#f0fdf4" : "transparent",
+                    borderBottom: "1px solid var(--border)",
+                    background: isNew ? "var(--success-bg)" : "transparent",
                     transition: "background 1s ease",
                   }}
                 >
                   {/* Date / Heure */}
-                  <td style={{ ...tdStyle, whiteSpace: "nowrap", fontFamily: "monospace", fontSize: 12, color: "#444" }}>
+                  <td style={{ ...tdStyle, whiteSpace: "nowrap", fontFamily: "monospace", fontSize: 12, color: "var(--text-2)" }}>
                     {formatDate(log.createdAt)}
                   </td>
 
@@ -335,7 +335,7 @@ export default function AdminLogs() {
                   </td>
 
                   {/* Utilisateur */}
-                  <td style={{ ...tdStyle, fontWeight: 600, color: "#1a1a2e" }}>
+                  <td style={{ ...tdStyle, fontWeight: 600, color: "var(--text-1)" }}>
                     {log.userName || log.userId || "—"}
                     {isNew && (
                       <span style={{
@@ -348,12 +348,12 @@ export default function AdminLogs() {
                   </td>
 
                   {/* Rôle */}
-                  <td style={{ ...tdStyle, color: "#666" }}>
+                  <td style={{ ...tdStyle, color: "var(--text-2)" }}>
                     {ROLE_LABELS[log.userRole] || log.userRole || "—"}
                   </td>
 
                   {/* Identifiant / Cible */}
-                  <td style={{ ...tdStyle, color: "#555", maxWidth: 180 }}>
+                  <td style={{ ...tdStyle, color: "var(--text-2)", maxWidth: 180 }}>
                     {isLogin ? (
                       /* For logins: show matricule or email as identifier */
                       <span style={{ fontFamily: "monospace", fontSize: 12, color: "#2980b9", fontWeight: 600 }}>
@@ -377,18 +377,18 @@ export default function AdminLogs() {
         </table>
 
         {loading && (
-          <div style={{ padding: 20, textAlign: "center", color: "#999", fontSize: 13 }}>
+          <div style={{ padding: 20, textAlign: "center", color: "var(--text-3)", fontSize: 13 }}>
             Chargement...
           </div>
         )}
 
         {hasMore && !loading && (
-          <div style={{ padding: 14, textAlign: "center", borderTop: "1px solid #f0f0f8" }}>
+          <div style={{ padding: 14, textAlign: "center", borderTop: "1px solid var(--border)" }}>
             <button
               onClick={loadMore}
               style={{
-                background: "#f5f5f8", border: "1px solid #dde", borderRadius: 8,
-                padding: "8px 28px", cursor: "pointer", fontSize: 13, fontWeight: 500, color: "#555",
+                background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 8,
+                padding: "8px 28px", cursor: "pointer", fontSize: 13, fontWeight: 500, color: "var(--text-2)",
               }}
             >
               Charger plus — {total - logs.length} entrée{total - logs.length > 1 ? "s" : ""} restante{total - logs.length > 1 ? "s" : ""}
@@ -404,7 +404,7 @@ const thStyle = {
   padding: "11px 16px",
   textAlign: "left",
   fontWeight: 700,
-  color: "#444",
+  color: "var(--text-2)",
   whiteSpace: "nowrap",
   fontSize: 12,
   textTransform: "uppercase",

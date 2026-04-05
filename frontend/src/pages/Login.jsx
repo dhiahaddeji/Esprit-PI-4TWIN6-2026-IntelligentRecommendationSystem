@@ -11,9 +11,22 @@ export default function Login() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      alert("Email requis");
+      return;
+    }
+    if (trimmedEmail.length > 254) {
+      alert("Email trop long (max 254 caracteres)");
+      return;
+    }
+    if (password.length > 128) {
+      alert("Mot de passe trop long (max 128 caracteres)");
+      return;
+    }
 
     try {
-      const data = await login({ email, password });
+      const data = await login({ email: trimmedEmail, password });
 
       localStorage.setItem(LS_TOKEN, data.accessToken);
       localStorage.setItem(LS_USER, JSON.stringify(data.user));
@@ -71,6 +84,7 @@ export default function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
+              maxLength={254}
               required
             />
           </label>
@@ -84,6 +98,7 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
+              maxLength={128}
               required
             />
           </label>

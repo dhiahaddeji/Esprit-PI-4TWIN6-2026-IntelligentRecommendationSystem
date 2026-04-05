@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
+import http from "../api/http";
 
 const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
@@ -17,10 +18,6 @@ export const NOTIF_META = {
 };
 
 function getToken() { return localStorage.getItem("access_token"); }
-function getHeaders() {
-  const t = getToken();
-  return t ? { Authorization: `Bearer ${t}` } : {};
-}
 
 export function NotificationsProvider({ children }) {
   const [notifications, setNotifications] = useState([]);
@@ -31,12 +28,13 @@ export function NotificationsProvider({ children }) {
 
   // ── Load notifications from REST ──────────────────────────────────────
   const loadNotifications = () => {
-    fetch(`${API}/notifications`, { headers: getHeaders() })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
+    http
+      .get("/notifications")
+      .then((res) => {
+        const data = res?.data;
         if (!data) return;
         setNotifications(data.items || []);
-        setUnread(data.unread  || 0);
+        setUnread(data.unread || 0);
       })
       .catch(() => {});
   };
@@ -126,14 +124,14 @@ export function NotificationsProvider({ children }) {
 
   // ── Mark one read ─────────────────────────────────────────────────────
   const markRead = (notifId) => {
-    fetch(`${API}/notifications/${notifId}/read`, { method: "PATCH", headers: getHeaders() }).catch(() => {});
+    http.patch(`/notifications/${notifId}/read`).catch(() => {});
     setNotifications((prev) => prev.map((n) => (n._id === notifId ? { ...n, read: true } : n)));
     setUnread((u) => Math.max(0, u - 1));
   };
 
   // ── Mark all read ─────────────────────────────────────────────────────
   const markAllRead = () => {
-    fetch(`${API}/notifications/read-all`, { method: "PATCH", headers: getHeaders() }).catch(() => {});
+    http.patch("/notifications/read-all").catch(() => {});
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     setUnread(0);
   };

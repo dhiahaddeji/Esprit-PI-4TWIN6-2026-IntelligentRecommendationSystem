@@ -53,11 +53,11 @@ export default function HRActivities() {
             <div
               style={{
                 marginTop: 10,
-                background: "#fffbfa",
-                border: "1px solid #fecdca",
+                background: "var(--danger-bg)",
+                border: "1px solid var(--danger-text)",
                 padding: 10,
                 borderRadius: 12,
-                color: "#b42318",
+                color: "var(--danger-text)",
               }}
             >
               {error}
@@ -68,8 +68,8 @@ export default function HRActivities() {
         <Link
           to="/hr/activities/new"
           style={{
-            background: "#0b2b4b",
-            color: "white",
+            background: "var(--accent)",
+            color: "#fff",
             padding: "10px 14px",
             borderRadius: 12,
             textDecoration: "none",
@@ -82,7 +82,7 @@ export default function HRActivities() {
 
       <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
         {activities.length === 0 ? (
-          <div style={{ background: "var(--surface)", border: "1px solid #eef0f4", borderRadius: 14, padding: 14 }}>
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: 14 }}>
             Aucune activité pour le moment.
           </div>
         ) : (
@@ -95,7 +95,7 @@ export default function HRActivities() {
                 key={String(id)}
                 style={{
                   background: "var(--surface)",
-                  border: "1px solid #eef0f4",
+                  border: "1px solid var(--border)",
                   borderRadius: 14,
                   padding: 14,
                   display: "flex",
@@ -118,7 +118,7 @@ export default function HRActivities() {
                         fontSize: 12,
                         padding: "4px 10px",
                         borderRadius: 999,
-                        border: "1px solid #eef0f4",
+                        border: "1px solid var(--border)",
                         background: "var(--surface-2)",
                         fontWeight: 800,
                       }}
@@ -133,10 +133,10 @@ export default function HRActivities() {
                   style={{
                     textDecoration: "none",
                     fontWeight: 800,
-                    color: "#0b2b4b",
+                    color: "var(--accent)",
                     padding: "8px 10px",
                     borderRadius: 10,
-                    border: "1px solid #eef0f4",
+                    border: "1px solid var(--border)",
                     background: "var(--surface)",
                   }}
                 >
@@ -152,7 +152,7 @@ export default function HRActivities() {
         <button
           onClick={() => setPage((p) => Math.max(1, p - 1))}
           disabled={!canPrev}
-          style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #e2e8f0" }}
+          style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text-1)" }}
         >
           ← Précédent
         </button>
@@ -162,7 +162,7 @@ export default function HRActivities() {
         <button
           onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
           disabled={!canNext}
-          style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #e2e8f0" }}
+          style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text-1)" }}
         >
           Suivant →
         </button>

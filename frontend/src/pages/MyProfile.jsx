@@ -132,11 +132,29 @@ export default function MyProfile() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
+    const firstName = form.firstName.trim();
+    const lastName = form.lastName.trim();
+    const telephone = form.telephone.trim();
+    if (firstName && firstName.length > 80) {
+      showToast("Le prenom est trop long (max 80 caracteres).", "error");
+      setSaving(false);
+      return;
+    }
+    if (lastName && lastName.length > 80) {
+      showToast("Le nom est trop long (max 80 caracteres).", "error");
+      setSaving(false);
+      return;
+    }
+    if (telephone && telephone.length > 30) {
+      showToast("Le telephone est trop long (max 30 caracteres).", "error");
+      setSaving(false);
+      return;
+    }
     try {
       const fd = new FormData();
-      if (form.firstName) fd.append("firstName", form.firstName);
-      if (form.lastName) fd.append("lastName", form.lastName);
-      if (form.telephone) fd.append("telephone", form.telephone);
+      if (firstName) fd.append("firstName", firstName);
+      if (lastName) fd.append("lastName", lastName);
+      if (telephone) fd.append("telephone", telephone);
       if (photoFile) fd.append("photo", photoFile);
       if (cvFile) fd.append("cv", cvFile);
 
@@ -236,6 +254,7 @@ export default function MyProfile() {
                   setForm((f) => ({ ...f, firstName: e.target.value }))
                 }
                 placeholder="Votre prénom"
+                maxLength={80}
               />
             </div>
             <div style={styles.fieldGroup}>
@@ -247,6 +266,7 @@ export default function MyProfile() {
                   setForm((f) => ({ ...f, lastName: e.target.value }))
                 }
                 placeholder="Votre nom"
+                maxLength={80}
               />
             </div>
           </div>
@@ -259,6 +279,7 @@ export default function MyProfile() {
                 setForm((f) => ({ ...f, telephone: e.target.value }))
               }
               placeholder="+216 XX XXX XXX"
+              maxLength={30}
             />
           </div>
         </div>

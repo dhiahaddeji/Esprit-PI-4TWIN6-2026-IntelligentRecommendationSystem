@@ -105,7 +105,7 @@ export default function HREmployees() {
         <button
           onClick={() => setPage((p) => Math.max(1, p - 1))}
           disabled={!canPrev}
-          style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #e2e8f0" }}
+          style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text-1)" }}
         >
           ← Precedent
         </button>
@@ -115,7 +115,7 @@ export default function HREmployees() {
         <button
           onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
           disabled={!canNext}
-          style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #e2e8f0" }}
+          style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text-1)" }}
         >
           Suivant →
         </button>

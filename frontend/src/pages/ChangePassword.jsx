@@ -20,6 +20,8 @@ export default function ChangePassword() {
   const validate = () => {
     if (form.newPassword.length < 8)
       return "Le mot de passe doit contenir au moins 8 caractères.";
+    if (form.newPassword.length > 128)
+      return "Le mot de passe est trop long (max 128 caractères).";
     if (!/[A-Z]/.test(form.newPassword))
       return "Il doit contenir au moins une majuscule.";
     if (!/[0-9]/.test(form.newPassword))
@@ -83,6 +85,7 @@ export default function ChangePassword() {
               onChange={handleChange}
               placeholder="Min. 8 caractères, 1 majuscule, 1 chiffre"
               autoComplete="new-password"
+              maxLength={128}
               required
             />
           </label>
@@ -97,6 +100,7 @@ export default function ChangePassword() {
               onChange={handleChange}
               placeholder="••••••••"
               autoComplete="new-password"
+              maxLength={128}
               required
             />
           </label>

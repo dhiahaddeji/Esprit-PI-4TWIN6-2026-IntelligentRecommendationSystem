@@ -42,7 +42,7 @@ export class InvitationsService {
         status,
         justification: status === 'DECLINED' ? justification || '' : '',
       },
-      { new: true },
+      { returnDocument: 'after' },
     );
   }
 

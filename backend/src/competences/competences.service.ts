@@ -154,7 +154,7 @@ export class CompetencesService {
     const comp = await this.compModel.findByIdAndUpdate(
       competenceId,
       { hierarchie_eval, etat: 'validated' },
-      { new: true },
+      { returnDocument: 'after' },
     );
     if (!comp) throw new NotFoundException('Compétence introuvable');
     return comp;
@@ -166,7 +166,7 @@ export class CompetencesService {
     const comp = await this.compModel.findByIdAndUpdate(
       competenceId,
       { auto_eval },
-      { new: true },
+      { returnDocument: 'after' },
     );
     if (!comp) throw new NotFoundException('Compétence introuvable');
     return comp;
@@ -178,7 +178,7 @@ export class CompetencesService {
     const comp = await this.compModel.findByIdAndUpdate(
       competenceId,
       { ...dto },
-      { new: true },
+      { returnDocument: 'after' },
     );
     if (!comp) throw new NotFoundException('Compétence introuvable');
     return comp;

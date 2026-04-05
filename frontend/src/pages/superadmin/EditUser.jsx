@@ -79,7 +79,7 @@ export default function EditUser() {
 
   return (
     <div style={{
-      backgroundColor: "#ffffff",
+      backgroundColor: "var(--bg)",
       minHeight: "100vh",
       padding: "40px 30px",
       fontFamily: "Arial, sans-serif",
@@ -91,7 +91,7 @@ export default function EditUser() {
           style={{
             background: "none",
             border: "none",
-            color: "#0b2b4b",
+            color: "var(--accent)",
             fontSize: "16px",
             cursor: "pointer",
             marginRight: "20px",
@@ -102,19 +102,19 @@ export default function EditUser() {
         >
           ← Retour à la liste
         </button>
-        <h1 style={{ color: "#111827", fontSize: "36px", margin: 0 }}>
+        <h1 style={{ color: "var(--text-1)", fontSize: "36px", margin: 0 }}>
           Modifier l'utilisateur
         </h1>
       </div>
 
       {error && (
         <div style={{
-          background: "#fee2e2",
-          color: "#991b1b",
+          background: "var(--danger-bg)",
+          color: "var(--danger-text)",
           padding: "16px",
           borderRadius: "8px",
           marginBottom: "24px",
-          border: "1px solid #fecaca"
+          border: "1px solid var(--danger-text)"
         }}>
           {error}
         </div>
@@ -122,12 +122,12 @@ export default function EditUser() {
 
       {success && (
         <div style={{
-          background: "#ecfdf5",
-          color: "#065f46",
+          background: "var(--success-bg)",
+          color: "var(--success-text)",
           padding: "16px",
           borderRadius: "8px",
           marginBottom: "24px",
-          border: "1px solid #a7f3d0"
+          border: "1px solid var(--success-text)"
         }}>
           Utilisateur modifié avec succès ! Redirection...
         </div>
@@ -146,9 +146,11 @@ export default function EditUser() {
             style={{
               width: "100%",
               padding: "12px",
-              border: "1px solid #d1d5db",
+              border: "1px solid var(--input-border)",
               borderRadius: "6px",
-              fontSize: "16px"
+              fontSize: "16px",
+              background: "var(--input-bg)",
+              color: "var(--input-text)",
             }}
           />
         </div>
@@ -166,9 +168,11 @@ export default function EditUser() {
             style={{
               width: "100%",
               padding: "12px",
-              border: "1px solid #d1d5db",
+              border: "1px solid var(--input-border)",
               borderRadius: "6px",
-              fontSize: "16px"
+              fontSize: "16px",
+              background: "var(--input-bg)",
+              color: "var(--input-text)",
             }}
           />
         </div>
@@ -185,9 +189,11 @@ export default function EditUser() {
             style={{
               width: "100%",
               padding: "12px",
-              border: "1px solid #d1d5db",
+              border: "1px solid var(--input-border)",
               borderRadius: "6px",
-              fontSize: "16px"
+              fontSize: "16px",
+              background: "var(--input-bg)",
+              color: "var(--input-text)",
             }}
           />
         </div>
@@ -204,10 +210,11 @@ export default function EditUser() {
               style={{
                 width: "100%",
                 padding: "12px",
-                border: "1px solid #d1d5db",
+                border: "1px solid var(--input-border)",
                 borderRadius: "6px",
                 fontSize: "16px",
-                background: "white"
+                background: "var(--input-bg)",
+                color: "var(--input-text)",
               }}
             >
               <option value="EMPLOYEE">Employé</option>
@@ -228,10 +235,11 @@ export default function EditUser() {
               style={{
                 width: "100%",
                 padding: "12px",
-                border: "1px solid #d1d5db",
+                border: "1px solid var(--input-border)",
                 borderRadius: "6px",
                 fontSize: "16px",
-                background: "white"
+                background: "var(--input-bg)",
+                color: "var(--input-text)",
               }}
             >
               <option value="ACTIVE">Actif</option>
@@ -253,9 +261,11 @@ export default function EditUser() {
             style={{
               width: "100%",
               padding: "12px",
-              border: "1px solid #d1d5db",
+              border: "1px solid var(--input-border)",
               borderRadius: "6px",
-              fontSize: "16px"
+              fontSize: "16px",
+              background: "var(--input-bg)",
+              color: "var(--input-text)",
             }}
           />
         </div>
@@ -267,7 +277,7 @@ export default function EditUser() {
             style={{
               flex: 1,
               padding: "14px",
-              background: submitting ? "#9ca3af" : "#0b2b4b",
+              background: submitting ? "var(--border)" : "var(--accent)",
               color: "white",
               border: "none",
               borderRadius: "8px",
@@ -284,9 +294,9 @@ export default function EditUser() {
             onClick={() => navigate("/admin/users")}
             style={{
               padding: "14px 30px",
-              background: "white",
-              color: "#4b5563",
-              border: "1px solid #d1d5db",
+              background: "var(--surface)",
+              color: "var(--text-2)",
+              border: "1px solid var(--border)",
               borderRadius: "8px",
               fontSize: "18px",
               fontWeight: "bold",

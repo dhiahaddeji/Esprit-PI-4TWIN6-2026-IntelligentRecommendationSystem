@@ -13,9 +13,18 @@ export default function ForgotPassword() {
     e.preventDefault();
     setError("");
     setMessage("");
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      setError("Email requis.");
+      return;
+    }
+    if (trimmedEmail.length > 254) {
+      setError("Email trop long (max 254 caracteres).");
+      return;
+    }
     setLoading(true);
     try {
-      const res = await requestPasswordReset(email);
+      const res = await requestPasswordReset(trimmedEmail);
       setMessage(res?.message || "Si un compte existe, un email a été envoyé.");
     } catch (err) {
       setError(err.message || "Erreur lors de la demande.");
@@ -50,6 +59,7 @@ export default function ForgotPassword() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
+              maxLength={254}
               required
               disabled={loading}
             />

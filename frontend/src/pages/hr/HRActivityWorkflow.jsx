@@ -7,17 +7,17 @@ import http from "../../api/http";
 const EVAL_LABELS = ["Pas de compétence", "Notions", "Pratique", "Maîtrise", "Expert"];
 
 const STATUS_META = {
-  DRAFT:             { label: "Brouillon",           bg: "#f1f5f9", color: "var(--text-2)" },
-  AI_SUGGESTED:      { label: "IA lancée",            bg: "#fef3c7", color: "#92400e" },
-  HR_VALIDATED:      { label: "Validée HR",           bg: "#d1fae5", color: "#065f46" },
-  SENT_TO_MANAGER:   { label: "Envoyée au manager",   bg: "#dbeafe", color: "#1e40af" },
-  MANAGER_CONFIRMED: { label: "Confirmée manager",    bg: "#d1fae5", color: "#065f46" },
-  NOTIFIED:          { label: "Employés notifiés",    bg: "#ede9fe", color: "#5b21b6" },
+  DRAFT:             { label: "Brouillon",           bg: "var(--surface-2)", color: "var(--text-2)" },
+  AI_SUGGESTED:      { label: "IA lancée",            bg: "var(--warn-bg)", color: "var(--warn-text)" },
+  HR_VALIDATED:      { label: "Validée HR",           bg: "var(--success-bg)", color: "var(--success-text)" },
+  SENT_TO_MANAGER:   { label: "Envoyée au manager",   bg: "var(--accent-bg)", color: "var(--accent)" },
+  MANAGER_CONFIRMED: { label: "Confirmée manager",    bg: "var(--success-bg)", color: "var(--success-text)" },
+  NOTIFIED:          { label: "Employés notifiés",    bg: "var(--surface-2)", color: "var(--text-2)" },
 };
 
 const AVAILABILITY_META = {
-  AVAILABLE: { label: "Disponible", bg: "#d1fae5", color: "#065f46" },
-  BUSY:      { label: "Occupe",     bg: "#fef3c7", color: "#92400e" },
+  AVAILABLE: { label: "Disponible", bg: "var(--success-bg)", color: "var(--success-text)" },
+  BUSY:      { label: "Occupe",     bg: "var(--warn-bg)", color: "var(--warn-text)" },
 };
 
 const TYPE_ICONS = {
@@ -29,9 +29,9 @@ const COMP_TYPE_LABELS = { savoir: "Savoir", savoir_faire: "Savoir-faire", savoi
 // ── Score bar component ────────────────────────────────────────────────────────
 function ScoreBar({ score }) {
   const color =
-    score >= 80 ? "#059669" :
-    score >= 60 ? "#2563eb" :
-    score >= 40 ? "#d97706" : "#dc2626";
+    score >= 80 ? "var(--success-text)" :
+    score >= 60 ? "var(--accent)" :
+    score >= 40 ? "var(--warn-text)" : "var(--danger-text)";
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
       <div style={{ flex: 1, height: 6, borderRadius: 3, background: "var(--bg)", overflow: "hidden" }}>
@@ -56,8 +56,8 @@ function RecCard({ item, seats, onRemove, onPromoteToSelected }) {
   return (
     <div style={{
       borderRadius: 14,
-      border: `1.5px solid ${isSelected ? "#86efac" : "#c7d2fe"}`,
-      background: isSelected ? "#f0fdf4" : "#f5f3ff",
+      border: `1.5px solid ${isSelected ? "var(--success-text)" : "var(--accent)"}`,
+      background: isSelected ? "var(--success-bg)" : "var(--accent-bg)",
       padding: "14px 16px",
       marginBottom: 10,
     }}>
@@ -66,7 +66,7 @@ function RecCard({ item, seats, onRemove, onPromoteToSelected }) {
         {/* Rank badge */}
         <div style={{
           minWidth: 28, height: 28, borderRadius: "50%",
-          background: isSelected ? "#10b981" : "#8b5cf6",
+          background: isSelected ? "var(--success-text)" : "var(--accent)",
           color: "#fff", display: "flex", alignItems: "center",
           justifyContent: "center", fontWeight: 800, fontSize: 12, flexShrink: 0,
         }}>#{item.rank}</div>
@@ -79,8 +79,8 @@ function RecCard({ item, seats, onRemove, onPromoteToSelected }) {
             </span>
             <span style={{
               fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999,
-              background: isSelected ? "#d1fae5" : "#ede9fe",
-              color: isSelected ? "#065f46" : "#5b21b6",
+              background: isSelected ? "var(--success-bg)" : "var(--accent-bg)",
+              color: isSelected ? "var(--success-text)" : "var(--accent-text)",
             }}>
               {isSelected ? "✅ Sélectionné" : "🔄 Backup"}
             </span>
@@ -114,15 +114,15 @@ function RecCard({ item, seats, onRemove, onPromoteToSelected }) {
               onClick={() => onPromoteToSelected(item.employeeId)}
               title="Promouvoir en sélectionné"
               style={{
-                background: "#d1fae5", border: "none", borderRadius: 7,
-                color: "#059669", cursor: "pointer", padding: "4px 8px", fontSize: 12, fontWeight: 700,
+                background: "var(--success-bg)", border: "none", borderRadius: 7,
+                color: "var(--success-text)", cursor: "pointer", padding: "4px 8px", fontSize: 12, fontWeight: 700,
               }}
             >↑ Sélect.</button>
           )}
           <button
             onClick={() => setExpanded(e => !e)}
             style={{
-              background: "var(--bg)", border: "none", borderRadius: 7,
+              background: "var(--surface-2)", border: "none", borderRadius: 7,
               color: "var(--text-2)", cursor: "pointer", padding: "4px 8px", fontSize: 12,
             }}
           >{expanded ? "▲" : "▼"}</button>
@@ -130,8 +130,8 @@ function RecCard({ item, seats, onRemove, onPromoteToSelected }) {
             onClick={() => onRemove(item.employeeId)}
             title="Retirer de la liste"
             style={{
-              background: "#fee2e2", border: "none", borderRadius: 7,
-              color: "#dc2626", cursor: "pointer", padding: "4px 8px", fontSize: 13,
+              background: "var(--danger-bg)", border: "none", borderRadius: 7,
+              color: "var(--danger-text)", cursor: "pointer", padding: "4px 8px", fontSize: 13,
             }}
           >✕</button>
         </div>
@@ -143,13 +143,13 @@ function RecCard({ item, seats, onRemove, onPromoteToSelected }) {
           {(item.matchedSkills || []).map((s, i) => (
             <span key={i} style={{
               fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 999,
-              background: "#d1fae5", color: "#065f46", border: "1px solid #6ee7b7",
+              background: "var(--success-bg)", color: "var(--success-text)", border: "1px solid var(--success-text)",
             }}>✓ {s}</span>
           ))}
           {(item.missingSkills || []).map((s, i) => (
             <span key={i} style={{
               fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 999,
-              background: "#fee2e2", color: "#b42318", border: "1px solid #fca5a5",
+              background: "var(--danger-bg)", color: "var(--danger-text)", border: "1px solid var(--danger-text)",
             }}>✗ {s}</span>
           ))}
         </div>
@@ -158,15 +158,15 @@ function RecCard({ item, seats, onRemove, onPromoteToSelected }) {
       {/* Expanded detail */}
       {expanded && item.details?.length > 0 && (
         <div style={{
-          marginTop: 12, borderTop: "1px solid #e5e7eb", paddingTop: 10,
+          marginTop: 12, borderTop: "1px solid var(--border-2)", paddingTop: 10,
           display: "grid", gap: 5,
         }}>
           {item.details.map((d, i) => (
             <div key={i} style={{
               display: "flex", alignItems: "center", gap: 8,
               padding: "6px 10px", borderRadius: 8,
-              background: d.meets_minimum ? "#f0fdf4" : "#fffbeb",
-              border: `1px solid ${d.meets_minimum ? "#bbf7d0" : "#fde68a"}`,
+              background: d.meets_minimum ? "var(--success-bg)" : "var(--warn-bg)",
+              border: `1px solid ${d.meets_minimum ? "var(--success-text)" : "var(--warn-text)"}`,
             }}>
               <span style={{ fontSize: 14 }}>{d.meets_minimum ? "✅" : "⚠️"}</span>
               <span style={{ flex: 1, fontWeight: 600, fontSize: 12.5, color: "var(--text-1)" }}>{d.intitule}</span>
@@ -178,7 +178,7 @@ function RecCard({ item, seats, onRemove, onPromoteToSelected }) {
               </span>
             </div>
           ))}
-          <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 4 }}>
+          <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 4 }}>
             {item.totalCompetences} compétence{item.totalCompetences !== 1 ? "s" : ""} validée{item.totalCompetences !== 1 ? "s" : ""} au total
           </div>
         </div>
@@ -240,11 +240,11 @@ function AiChatPanel({ activity, recList }) {
     }}>
       <div style={{
         padding: "12px 16px", borderBottom: "1px solid var(--border)",
-        background: "linear-gradient(135deg,#3b6fd4,#2d58b0)",
+        background: "linear-gradient(135deg,var(--accent),var(--accent-text))",
         display: "flex", alignItems: "center", gap: 8,
       }}>
         <span style={{ color: "#fff", fontWeight: 800, fontSize: 14 }}>🤖 Assistant IA</span>
-        <span style={{ color: "#bfdbfe", fontSize: 12 }}>— questions sur cette recommandation</span>
+        <span style={{ color: "var(--accent-text)", fontSize: 12 }}>— questions sur cette recommandation</span>
       </div>
 
       {/* Suggestions */}
@@ -253,7 +253,7 @@ function AiChatPanel({ activity, recList }) {
           {suggestions.map(s => (
             <button key={s} onClick={() => send(s)} style={{
               padding: "5px 11px", borderRadius: 999, cursor: "pointer",
-              background: "#eff6ff", color: "#3b6fd4", border: "1px solid #bfdbfe",
+              background: "var(--accent-bg)", color: "var(--accent-text)", border: "1px solid var(--accent-text)",
               fontSize: 12, fontWeight: 600,
             }}>{s}</button>
           ))}
@@ -266,9 +266,9 @@ function AiChatPanel({ activity, recList }) {
           {messages.map((m, i) => (
             <div key={i} style={{
               padding: "8px 12px", borderRadius: 10, fontSize: 13, lineHeight: 1.55,
-              background: m.role === "user" ? "#3b6fd4" : "#fff",
-              color: m.role === "user" ? "#fff" : "#1a2340",
-              border: m.role === "user" ? "none" : "1px solid #dde3f0",
+              background: m.role === "user" ? "var(--accent)" : "var(--surface)",
+              color: m.role === "user" ? "#fff" : "var(--text-1)",
+              border: m.role === "user" ? "none" : "1px solid var(--border)",
               alignSelf: m.role === "user" ? "flex-end" : "flex-start",
               maxWidth: "90%",
               whiteSpace: "pre-wrap",
@@ -315,7 +315,7 @@ function AiChatPanel({ activity, recList }) {
           disabled={loading || !input.trim()}
           style={{
             padding: "8px 16px", borderRadius: 9,
-            background: "linear-gradient(135deg,#3b6fd4,#2d58b0)",
+            background: "linear-gradient(135deg,var(--accent),var(--accent-text))",
             color: "#fff", border: "none", fontWeight: 700, fontSize: 13,
             cursor: loading || !input.trim() ? "not-allowed" : "pointer",
             opacity: loading || !input.trim() ? 0.5 : 1,
@@ -526,7 +526,7 @@ export default function HRActivityWorkflow() {
                 <span style={{
                   marginLeft: 12, fontSize: 11, fontWeight: 700,
                   padding: "2px 8px", borderRadius: 6,
-                  background: "#eff6ff", color: "#3b6fd4",
+                  background: "var(--accent-bg)", color: "var(--accent)",
                 }}>
                   {activity.prioritization}
                 </span>
@@ -539,7 +539,7 @@ export default function HRActivityWorkflow() {
                 {activity.competences_requises.map((c, i) => (
                   <span key={i} style={{
                     fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 6,
-                    background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0",
+                    background: "var(--success-bg)", color: "var(--success-text)", border: "1px solid var(--success-text)",
                   }}>
                     {COMP_TYPE_LABELS[c.type] || c.type}: {c.intitule}
                     {c.niveau_min !== undefined && ` (min: ${EVAL_LABELS[c.niveau_min] || c.niveau_min})`}
@@ -561,13 +561,13 @@ export default function HRActivityWorkflow() {
       {error && (
         <div style={{
           marginBottom: 14, padding: "12px 16px", borderRadius: 12,
-          background: "#fffbfa", border: "1px solid #fecdca", color: "#b42318",
+          background: "var(--danger-bg)", border: "1px solid var(--danger-text)", color: "var(--danger-text)",
         }}>{error}</div>
       )}
       {success && (
         <div style={{
           marginBottom: 14, padding: "12px 16px", borderRadius: 12,
-          background: "#ecfdf3", border: "1px solid #abefc6", color: "#065f46",
+          background: "var(--success-bg)", border: "1px solid var(--success-text)", color: "var(--success-text)",
         }}>{success}</div>
       )}
 
@@ -605,9 +605,9 @@ export default function HRActivityWorkflow() {
                     display: "flex", alignItems: "center", gap: 8,
                     padding: "9px 18px", borderRadius: 10, border: "none",
                     background: loadingAI || isLocked
-                      ? "#e2e8f0"
-                      : "linear-gradient(135deg,#3b6fd4,#2d58b0)",
-                    color: loadingAI || isLocked ? "#94a3b8" : "#fff",
+                      ? "var(--surface-3)"
+                      : "linear-gradient(135deg,var(--accent),var(--accent-text))",
+                    color: loadingAI || isLocked ? "var(--text-3)" : "#fff",
                     fontWeight: 700, fontSize: 13.5, cursor: loadingAI || isLocked ? "not-allowed" : "pointer",
                     transition: "all 0.2s",
                   }}
@@ -628,7 +628,7 @@ export default function HRActivityWorkflow() {
             {recList.length === 0 && !loadingAI && (
               <div style={{
                 textAlign: "center", padding: "40px 20px",
-                background: "var(--surface-2)", borderRadius: 12, border: "1px dashed #dde3f0",
+                background: "var(--surface-2)", borderRadius: 12, border: "1px dashed var(--border)",
                 color: "var(--text-2)", fontSize: 13,
               }}>
                 <div style={{ fontSize: 32, marginBottom: 10 }}>🤖</div>
@@ -644,7 +644,7 @@ export default function HRActivityWorkflow() {
                 background: "var(--surface-2)", borderRadius: 12, border: "1px solid var(--border)",
               }}>
                 <div style={{ fontSize: 28, marginBottom: 8 }}>🔍</div>
-                <div style={{ fontWeight: 700, color: "#3b6fd4", marginBottom: 4 }}>
+                <div style={{ fontWeight: 700, color: "var(--accent)", marginBottom: 4 }}>
                   Analyse des profils en cours…
                 </div>
                 <div style={{ color: "var(--text-2)", fontSize: 13 }}>
@@ -659,8 +659,8 @@ export default function HRActivityWorkflow() {
                 {displayList.length === 0 && onlyAvailable && (
                   <div style={{
                     textAlign: "center", padding: "16px 14px",
-                    background: "#fffbfa", borderRadius: 10, border: "1px solid #fecdca",
-                    color: "#b42318", fontSize: 12,
+                    background: "var(--danger-bg)", borderRadius: 10, border: "1px solid var(--danger-text)",
+                    color: "var(--danger-text)", fontSize: 12,
                   }}>
                     Aucun employe disponible selon le filtre.
                   </div>
@@ -668,7 +668,7 @@ export default function HRActivityWorkflow() {
                 {/* Section: Selected */}
                 {selectedCount > 0 && (
                   <div style={{ marginBottom: 8 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#059669", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "var(--success-text)", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
                       ✅ Sélectionnés ({selectedCount}/{seats} places)
                     </div>
                     {displayList
@@ -689,7 +689,7 @@ export default function HRActivityWorkflow() {
                 {/* Section: Backup */}
                 {backupCount > 0 && (
                   <div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#7c3aed", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
                       🔄 Backup ({backupCount})
                     </div>
                     {displayList
@@ -717,9 +717,9 @@ export default function HRActivityWorkflow() {
                 style={{
                   width: "100%", padding: "11px", borderRadius: 11, border: "none",
                   background: !recList.length || isLocked
-                    ? "#e2e8f0"
-                    : "linear-gradient(135deg,#10b981,#059669)",
-                  color: !recList.length || isLocked ? "#94a3b8" : "#fff",
+                    ? "var(--surface-3)"
+                    : "var(--success-text)",
+                  color: !recList.length || isLocked ? "var(--text-3)" : "#fff",
                   fontWeight: 800, fontSize: 14,
                   cursor: !recList.length || isLocked ? "not-allowed" : "pointer",
                 }}
@@ -772,8 +772,8 @@ export default function HRActivityWorkflow() {
                   <div key={empId} style={{
                     display: "flex", alignItems: "center", justifyContent: "space-between",
                     padding: "9px 12px", borderRadius: 10,
-                    border: `1px solid ${inList ? "#bbf7d0" : "#dde3f0"}`,
-                    background: inList ? "#f0fdf4" : "#fff",
+                    border: `1px solid ${inList ? "var(--success-text)" : "var(--border)"}`,
+                    background: inList ? "var(--success-bg)" : "var(--surface)",
                   }}>
                     <div>
                       <div style={{ fontWeight: 600, fontSize: 13.5, color: "var(--text-1)" }}>{name}</div>
@@ -784,8 +784,8 @@ export default function HRActivityWorkflow() {
                       disabled={inList || loadingSave || isLocked}
                       style={{
                         padding: "5px 12px", borderRadius: 8, border: "none", fontSize: 12, fontWeight: 700,
-                        background: inList ? "#d1fae5" : "#eff6ff",
-                        color: inList ? "#059669" : "#3b6fd4",
+                        background: inList ? "var(--success-bg)" : "var(--accent-bg)",
+                        color: inList ? "var(--success-text)" : "var(--accent-text)",
                         cursor: inList || loadingSave || isLocked ? "not-allowed" : "pointer",
                       }}
                     >

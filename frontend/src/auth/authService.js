@@ -10,6 +10,7 @@ export const LS_USER  = "user";
 const api = axios.create({
   baseURL: API_URL,
   headers: { "Content-Type": "application/json" },
+  withCredentials: true,
 });
 
 // Injecter le token JWT dans chaque requête

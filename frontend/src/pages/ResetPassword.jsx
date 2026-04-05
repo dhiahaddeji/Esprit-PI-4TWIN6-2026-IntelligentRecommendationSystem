@@ -23,6 +23,16 @@ export default function ResetPassword() {
       return;
     }
 
+    if (newPassword.length < 8) {
+      setError("Le mot de passe doit contenir au moins 8 caractères.");
+      return;
+    }
+
+    if (newPassword.length > 128) {
+      setError("Le mot de passe est trop long (max 128 caractères).");
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
       setError("Les mots de passe ne correspondent pas.");
       return;
@@ -67,6 +77,7 @@ export default function ResetPassword() {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               autoComplete="new-password"
+              maxLength={128}
               required
               disabled={loading}
             />
@@ -81,6 +92,7 @@ export default function ResetPassword() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               autoComplete="new-password"
+              maxLength={128}
               required
               disabled={loading}
             />

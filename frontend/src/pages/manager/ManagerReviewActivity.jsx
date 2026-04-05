@@ -45,7 +45,7 @@ export default function ManagerReviewActivity() {
     setError("");
     setSuccess("");
     try {
-      await http.patch(`/activities/${id}/confirm`, { participants: selected });
+      await http.patch(`/activities/${id}/confirm`, { participants: selected.map(String) });
       setSuccess("Participants confirmés.");
       load();
     } catch (e) {

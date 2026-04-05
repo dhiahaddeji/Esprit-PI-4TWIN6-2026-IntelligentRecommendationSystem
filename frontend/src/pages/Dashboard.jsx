@@ -10,19 +10,19 @@ import { getStoredUser } from "../auth/authService";
 // ─── Palettes ────────────────────────────────────────────────────────────────
 
 const ROLE_META = {
-  SUPERADMIN: { label: "Super Admin",     color: "#7c3aed", bg: "#f5f3ff" },
-  HR:         { label: "Responsable RH",  color: "#2563eb", bg: "#eff6ff" },
-  MANAGER:    { label: "Manager",         color: "#0891b2", bg: "#ecfeff" },
-  EMPLOYEE:   { label: "Employé",         color: "#16a34a", bg: "#f0fdf4" },
+  SUPERADMIN: { label: "Super Admin",     color: "#7c3aed", bg: "var(--surface-2)" },
+  HR:         { label: "Responsable RH",  color: "#2563eb", bg: "var(--surface-2)" },
+  MANAGER:    { label: "Manager",         color: "#0891b2", bg: "var(--surface-2)" },
+  EMPLOYEE:   { label: "Employé",         color: "#16a34a", bg: "var(--surface-2)" },
 };
 
 const STATUS_META = {
-  DRAFT:            { label: "Brouillon",       color: "var(--text-3)", bg: "#f1f5f9" },
-  AI_SUGGESTED:     { label: "Analyse IA",      color: "#7c3aed", bg: "#f5f3ff" },
-  HR_VALIDATED:     { label: "Validé RH",       color: "#2563eb", bg: "#eff6ff" },
-  SENT_TO_MANAGER:  { label: "Soumis Manager",  color: "#d97706", bg: "#fffbeb" },
-  MANAGER_CONFIRMED:{ label: "Confirmé",        color: "#059669", bg: "#ecfdf5" },
-  NOTIFIED:         { label: "Clôturé",         color: "var(--text-2)", bg: "#f8fafc" },
+  DRAFT:            { label: "Brouillon",       color: "var(--text-3)", bg: "var(--surface-2)" },
+  AI_SUGGESTED:     { label: "Analyse IA",      color: "var(--accent)", bg: "var(--accent-bg)" },
+  HR_VALIDATED:     { label: "Validé RH",       color: "var(--info-text)", bg: "var(--info-bg)" },
+  SENT_TO_MANAGER:  { label: "Soumis Manager",  color: "var(--warn-text)", bg: "var(--warn-bg)" },
+  MANAGER_CONFIRMED:{ label: "Confirmé",        color: "var(--success-text)", bg: "var(--success-bg)" },
+  NOTIFIED:         { label: "Clôturé",         color: "var(--text-2)", bg: "var(--surface-2)" },
 };
 
 const TYPE_META = {
@@ -112,7 +112,7 @@ function Skeleton({ w = "100%", h = 16, r = 8 }) {
 }
 
 function StatusBadge({ status }) {
-  const m = STATUS_META[status] || { label: status, color: "var(--text-2)", bg: "#f8fafc" };
+  const m = STATUS_META[status] || { label: status, color: "var(--text-2)", bg: "var(--surface-2)" };
   return (
     <span style={{
       fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 999,
@@ -201,7 +201,7 @@ function SuperAdminDash() {
           {loading ? <Skeleton h={240} r={12} /> : statusChart.length === 0 ? <EmptyState text="Aucune activité" /> : (
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={statusChart} margin={{ top: 8, right: 8, left: -20, bottom: 40 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-2)" />
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} angle={-30} textAnchor="end" interval={0} />
                 <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                 <Tooltip />
@@ -236,7 +236,7 @@ function SuperAdminDash() {
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
                       <span style={{ fontSize: 10.5, fontWeight: 700, padding: "2px 7px", borderRadius: 999, background: m.bg, color: m.color }}>{m.label}</span>
-                      <span style={{ fontSize: 10.5, color: "#cbd5e1" }}>{timeAgo(u.createdAt)}</span>
+                      <span style={{ fontSize: 10.5, color: "var(--text-3)" }}>{timeAgo(u.createdAt)}</span>
                     </div>
                   </div>
                 );
@@ -287,6 +287,8 @@ function HRDash() {
   const [users,      setUsers]      = useState([]);
   const [activities, setActivities] = useState([]);
   const [analytics,  setAnalytics]  = useState(null);
+  const [compAnalytics, setCompAnalytics] = useState(null);
+  const [compEmployees, setCompEmployees] = useState([]);
   const [pending,    setPending]    = useState([]);
   const [departments,setDepartments]= useState([]);
   const [loading,    setLoading]    = useState(true);
@@ -299,12 +301,16 @@ function HRDash() {
       http.get("/skills/analytics"),
       http.get("/skills/pending"),
       http.get("/departments"),
-    ]).then(([u, a, sk, p, d]) => {
+      http.get("/competences/analytics"),
+      http.get("/competences/employees-all"),
+    ]).then(([u, a, sk, p, d, ca, ce]) => {
       setUsers(Array.isArray(u.data) ? u.data : []);
       setActivities(Array.isArray(a.data) ? a.data : []);
       setAnalytics(sk.data || null);
       setPending(Array.isArray(p.data) ? p.data : []);
       setDepartments(Array.isArray(d.data) ? d.data : []);
+      setCompAnalytics(ca.data || null);
+      setCompEmployees(Array.isArray(ce.data) ? ce.data : []);
     }).finally(() => setLoading(false));
   }, []);
 
@@ -322,15 +328,48 @@ function HRDash() {
     name: TYPE_META[k]?.label || k, value: v, color: PIE_COLORS[i % PIE_COLORS.length],
   }));
 
-  const deptChart = (analytics?.byDepartment || [])
-    .filter(d => d.avgScore > 0)
-    .map(d => ({ name: d.department === "Non assigné" ? "Non assigné" : d.department, value: d.avgScore }))
-    .slice(0, 8);
+  const deptChart = (() => {
+    if (compEmployees.length) {
+      const userById = new Map(users.map(u => [String(u._id || u.id), u]));
+      const deptById = new Map(departments.map(d => [String(d._id), d.name]));
+      const agg = new Map();
 
-  const topSkills = (analytics?.topSkills || []).slice(0, 8).map(s => ({
-    name: s.name.length > 16 ? s.name.slice(0, 14) + "…" : s.name,
-    value: s.count,
-  }));
+      compEmployees.forEach((emp) => {
+        const user = userById.get(String(emp.employee_id));
+        const deptId = user?.departement_id || "Non assigné";
+        const deptName = deptId === "Non assigné" ? "Non assigné" : (deptById.get(String(deptId)) || deptId);
+        const scores = (emp.competences || []).map(c => c.score ?? 0);
+        if (!scores.length) return;
+        const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+
+        const entry = agg.get(deptName) || { total: 0, count: 0 };
+        entry.total += avg;
+        entry.count += 1;
+        agg.set(deptName, entry);
+      });
+
+      return Array.from(agg.entries())
+        .map(([name, data]) => ({ name, value: Math.round(data.total / data.count) }))
+        .filter(d => d.value > 0)
+        .slice(0, 8);
+    }
+
+    return (analytics?.byDepartment || [])
+      .filter(d => d.avgScore > 0)
+      .map(d => ({ name: d.department === "Non assigné" ? "Non assigné" : d.department, value: d.avgScore }))
+      .slice(0, 8);
+  })();
+
+  const topSkills = (() => {
+    const list = compAnalytics?.topSkills || analytics?.topSkills || [];
+    return list.slice(0, 8).map((s) => {
+      const name = s.intitule || s.name || "—";
+      return {
+        name: name.length > 16 ? name.slice(0, 14) + "…" : name,
+        value: s.count || 0,
+      };
+    });
+  })();
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
@@ -352,7 +391,7 @@ function HRDash() {
           {loading ? <Skeleton h={240} r={12} /> : statusChart.length === 0 ? <EmptyState text="Aucune activité" /> : (
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={statusChart} margin={{ top: 8, right: 8, left: -20, bottom: 40 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-2)" />
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} angle={-30} textAnchor="end" interval={0} />
                 <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                 <Tooltip />
@@ -385,7 +424,7 @@ function HRDash() {
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={deptChart} layout="vertical" margin={{ top: 4, right: 40, left: 60, bottom: 4 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-2)" horizontal={false} />
                 <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} />
                 <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={60} />
                 <Tooltip formatter={v => [`${v}/100`]} />
@@ -401,7 +440,7 @@ function HRDash() {
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={topSkills} layout="vertical" margin={{ top: 4, right: 40, left: 80, bottom: 4 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-2)" horizontal={false} />
                 <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
                 <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={80} />
                 <Tooltip formatter={v => [`${v} employés`]} />
@@ -515,7 +554,7 @@ function ManagerDash({ me }) {
 
         <Panel title="Activités nécessitant mon action" icon="⚡"
           action={awaitingMe.length > 0 && (
-            <span style={{ fontSize: 11, fontWeight: 800, padding: "3px 10px", borderRadius: 999, background: "#fffbeb", color: "#d97706", border: "1px solid #fde68a" }}>
+            <span style={{ fontSize: 11, fontWeight: 800, padding: "3px 10px", borderRadius: 999, background: "var(--warn-bg)", color: "var(--warn-text)", border: "1px solid var(--warn-text)" }}>
               {awaitingMe.length} en attente
             </span>
           )}
@@ -529,14 +568,14 @@ function ManagerDash({ me }) {
           ) : (
             awaitingMe.map(a => (
               <div key={a._id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderBottom: "1px solid var(--border-2)" }}>
-                <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#d97706", flexShrink: 0 }} />
+                <div style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--warn-text)", flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 600, fontSize: 14, color: "var(--text-1)" }}>{a.title}</div>
                   <div style={{ fontSize: 11.5, color: "var(--text-3)", marginTop: 2 }}>
                     {a.seats} place{a.seats !== 1 ? "s" : ""} · {a.participants?.length || 0} candidats · {timeAgo(a.createdAt)}
                   </div>
                 </div>
-                <a href={`/manager/activities/${a._id}`} style={{ fontSize: 12, fontWeight: 700, color: "#2563eb", textDecoration: "none", whiteSpace: "nowrap" }}>
+                <a href={`/manager/activities/${a._id}`} style={{ fontSize: 12, fontWeight: 700, color: "var(--accent)", textDecoration: "none", whiteSpace: "nowrap" }}>
                   Examiner →
                 </a>
               </div>
@@ -652,7 +691,7 @@ function EmployeeDash() {
                       innerRadius={52} outerRadius={70}
                     >
                       <Cell fill={score >= 70 ? "#059669" : score >= 40 ? "#d97706" : "#e11d48"} />
-                      <Cell fill="#f1f5f9" />
+                      <Cell fill="var(--surface-2)" />
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
@@ -707,7 +746,7 @@ function EmployeeDash() {
                   <span style={{
                     fontSize: 11, fontWeight: 700, padding: "2px 9px",
                     borderRadius: 999, background: `${LEVEL_COLORS[s.level]}18`,
-                    color: LEVEL_COLORS[s.level] || "#64748b",
+                    color: LEVEL_COLORS[s.level] || "var(--text-3)",
                   }}>{LEVEL_LABELS[s.level] || s.level}</span>
                 </div>
               ))}
@@ -724,21 +763,24 @@ function EmployeeDash() {
           </div>
         ) : invitations.length === 0 ? <EmptyState text="Aucune invitation reçue pour l'instant" /> : (
           invitations.slice(0, 5).map(inv => {
-            const statusColor = inv.status === "ACCEPTED" ? "#059669" : inv.status === "DECLINED" ? "#e11d48" : "#d97706";
-            const statusLabel = inv.status === "ACCEPTED" ? "Acceptée" : inv.status === "DECLINED" ? "Refusée" : "En attente";
+            const statusMeta = inv.status === "ACCEPTED"
+              ? { label: "Acceptée", bg: "var(--success-bg)", color: "var(--success-text)" }
+              : inv.status === "DECLINED"
+                ? { label: "Refusée", bg: "var(--danger-bg)", color: "var(--danger-text)" }
+                : { label: "En attente", bg: "var(--warn-bg)", color: "var(--warn-text)" };
             return (
               <div key={inv._id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderBottom: "1px solid var(--border-2)" }}>
                 <div style={{
                   width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                  background: `${statusColor}15`, color: statusColor,
+                  background: statusMeta.bg, color: statusMeta.color,
                   display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18,
                 }}>🔔</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 600, fontSize: 14, color: "var(--text-1)" }}>{inv.activityTitle || "Activité"}</div>
                   <div style={{ fontSize: 11.5, color: "var(--text-3)", marginTop: 2 }}>{timeAgo(inv.createdAt)}</div>
                 </div>
-                <span style={{ fontSize: 11.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, background: `${statusColor}15`, color: statusColor }}>
-                  {statusLabel}
+                <span style={{ fontSize: 11.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, background: statusMeta.bg, color: statusMeta.color }}>
+                  {statusMeta.label}
                 </span>
               </div>
             );
@@ -859,7 +901,7 @@ function AiInsightsWidget({ role, payload, ready }) {
 export default function Dashboard() {
   const me   = getStoredUser();
   const role = me?.role;
-  const meta = ROLE_META[role] || { label: role, color: "var(--text-1)", bg: "#f8fafc" };
+  const meta = ROLE_META[role] || { label: role, color: "var(--text-1)", bg: "var(--surface-2)" };
 
   const greet = () => {
     const h = new Date().getHours();
@@ -894,7 +936,7 @@ export default function Dashboard() {
           <div style={{
             display: "flex", alignItems: "center", gap: 10,
             padding: "10px 18px", borderRadius: 12,
-            background: meta.bg, border: `1px solid ${meta.color}30`,
+            background: meta.bg, border: "1px solid var(--border)",
           }}>
             <div style={{
               width: 38, height: 38, borderRadius: "50%",

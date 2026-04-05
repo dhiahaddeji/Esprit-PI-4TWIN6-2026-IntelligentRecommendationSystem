@@ -20,7 +20,7 @@ const ROLE_COLORS = {
 
 const STATUS_COLORS = {
   ACTIVE:    { bg: "#d1fae5", color: "#065f46" },
-  INACTIVE:  { bg: "#f1f5f9", color: "var(--text-2)" },
+  INACTIVE:  { bg: "var(--surface-2)", color: "var(--text-2)" },
   SUSPENDED: { bg: "#fee2e2", color: "#991b1b" },
 };
 
@@ -151,8 +151,8 @@ export default function UsersList() {
       {error && (
         <div style={{
           padding: "16px 20px",
-          background: "#fee2e2",
-          color: "#991b1b",
+          background: "var(--danger-bg)",
+          color: "var(--danger-text)",
           borderRadius: "12px",
           marginBottom: "16px",
           fontWeight: 600,
@@ -189,13 +189,13 @@ export default function UsersList() {
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
-                <tr style={{ background: "var(--surface-2)", borderBottom: "2px solid #dde3f0" }}>
+                <tr style={{ background: "var(--surface-2)", borderBottom: "2px solid var(--border)" }}>
                   {["Utilisateur", "Email", "Matricule", "Rôle", "Statut", ...(isSuperAdmin ? ["Actions"] : [])].map(h => (
                     <th key={h} style={{
                       padding: "12px 16px",
                       fontWeight: 700,
                       fontSize: "12px",
-                      color: "#3d4f7c",
+                      color: "var(--text-2)",
                       textAlign: "left",
                       textTransform: "uppercase",
                       letterSpacing: "0.7px",
@@ -205,7 +205,7 @@ export default function UsersList() {
               </thead>
               <tbody>
                 {filtered.map((user, i) => {
-                  const rc = ROLE_COLORS[user.role] || { bg: "#f1f5f9", color: "var(--text-2)" };
+                  const rc = ROLE_COLORS[user.role] || { bg: "var(--surface-2)", color: "var(--text-2)" };
                   const sc = STATUS_COLORS[user.status] || STATUS_COLORS.INACTIVE;
                   const displayName = user.firstName && user.lastName
                     ? `${user.firstName} ${user.lastName}`
@@ -215,10 +215,10 @@ export default function UsersList() {
                     : "?";
                   return (
                     <tr key={user._id} style={{
-                      borderBottom: i < filtered.length - 1 ? "1px solid #f1f5f9" : "none",
+                      borderBottom: i < filtered.length - 1 ? "1px solid var(--border)" : "none",
                       transition: "background 0.15s",
                     }}
-                      onMouseEnter={e => e.currentTarget.style.background = "#f8faff"}
+                      onMouseEnter={e => e.currentTarget.style.background = "var(--surface-2)"}
                       onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                     >
                       <td style={{ padding: "14px 16px" }}>
@@ -264,9 +264,9 @@ export default function UsersList() {
                               to={`/admin/edit-user/${user._id}`}
                               style={{
                                 padding: "5px 12px", borderRadius: "7px",
-                                background: "#eff6ff", color: "#3b6fd4",
+                                background: "var(--info-bg)", color: "var(--accent)",
                                 textDecoration: "none", fontSize: "13px", fontWeight: 600,
-                                border: "1px solid #bfdbfe",
+                                border: "1px solid var(--border)",
                               }}
                             >
                               Modifier
@@ -275,8 +275,8 @@ export default function UsersList() {
                               onClick={() => handleDelete(user._id)}
                               style={{
                                 padding: "5px 12px", borderRadius: "7px",
-                                background: "#fee2e2", color: "#dc2626",
-                                border: "1px solid #fecaca", fontSize: "13px",
+                                background: "var(--danger-bg)", color: "var(--danger-text)",
+                                border: "1px solid var(--danger-text)", fontSize: "13px",
                                 fontWeight: 600, cursor: "pointer",
                               }}
                             >
@@ -298,7 +298,7 @@ export default function UsersList() {
         <button
           onClick={() => setPage((p) => Math.max(1, p - 1))}
           disabled={page <= 1}
-          style={{ padding: "6px 10px", borderRadius: "8px", border: "1px solid #e2e8f0" }}
+          style={{ padding: "6px 10px", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text-2)" }}
         >
           ← Précédent
         </button>
@@ -308,7 +308,7 @@ export default function UsersList() {
         <button
           onClick={() => setPage((p) => Math.min(Math.max(1, Math.ceil(total / limit)), p + 1))}
           disabled={page >= Math.max(1, Math.ceil(total / limit))}
-          style={{ padding: "6px 10px", borderRadius: "8px", border: "1px solid #e2e8f0" }}
+          style={{ padding: "6px 10px", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text-2)" }}
         >
           Suivant →
         </button>

@@ -46,8 +46,20 @@ export default function CompleteProfile() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (!form.firstName.trim() || !form.lastName.trim()) {
+    const firstName = form.firstName.trim();
+    const lastName = form.lastName.trim();
+    const telephone = form.telephone.trim();
+
+    if (!firstName || !lastName) {
       setError("Le prénom et le nom sont obligatoires.");
+      return;
+    }
+    if (firstName.length > 80 || lastName.length > 80) {
+      setError("Le prénom/nom est trop long (max 80 caractères).");
+      return;
+    }
+    if (telephone && telephone.length > 30) {
+      setError("Le téléphone est trop long (max 30 caractères).");
       return;
     }
 
@@ -55,9 +67,9 @@ export default function CompleteProfile() {
     setError("");
     try {
       const fd = new FormData();
-      fd.append("firstName", form.firstName.trim());
-      fd.append("lastName", form.lastName.trim());
-      if (form.telephone) fd.append("telephone", form.telephone.trim());
+      fd.append("firstName", firstName);
+      fd.append("lastName", lastName);
+      if (telephone) fd.append("telephone", telephone);
       if (photo) fd.append("photo", photo);
       if (cv)    fd.append("cv", cv);
 
@@ -127,6 +139,7 @@ export default function CompleteProfile() {
               value={form.firstName}
               onChange={handleChange}
               placeholder="Ex: Sarah"
+              maxLength={80}
               required
             />
           </label>
@@ -140,6 +153,7 @@ export default function CompleteProfile() {
               value={form.lastName}
               onChange={handleChange}
               placeholder="Ex: Benali"
+              maxLength={80}
               required
             />
           </label>
@@ -154,6 +168,7 @@ export default function CompleteProfile() {
               onChange={handleChange}
               placeholder="Ex: 06 12 34 56 78"
               type="tel"
+              maxLength={30}
             />
           </label>
 

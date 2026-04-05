@@ -75,8 +75,9 @@ export async function getRecommendation(activityId) {
 /* ---------------- MANAGER FLOW ---------------- */
 export async function managerConfirmParticipants(activityId, participantIds) {
   if (!activityId) throw new Error("Missing activityId");
+  const participants = (participantIds || []).map(String);
   const { data } = await http.patch(`/activities/${activityId}/confirm`, {
-    participants: participantIds || [],
+    participants,
   });
   return data;
 }
