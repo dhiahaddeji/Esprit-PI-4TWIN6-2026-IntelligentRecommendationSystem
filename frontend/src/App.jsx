@@ -15,6 +15,8 @@ import NotAuthorized from "./pages/NotAuthorized";
 import GitHubCallback from "./pages/GitHubCallback";
 import ChangePassword from "./pages/ChangePassword";
 import CompleteProfile from "./pages/CompleteProfile";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 // Common pages
 import Inbox from "./pages/Inbox";
@@ -65,6 +67,8 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/not-authorized" element={<NotAuthorized />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* GitHub OAuth callback (public — pas de layout) */}
       <Route path="/auth/callback" element={<GitHubCallback />} />

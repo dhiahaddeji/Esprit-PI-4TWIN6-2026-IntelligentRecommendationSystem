@@ -121,6 +121,8 @@ export class UsersController {
       password: _,
       refreshTokenHash: __,
       refreshTokenExpiresAt: ___,
+      resetPasswordTokenHash: ____,
+      resetPasswordExpiresAt: _____,
       ...safe
     } = (updated as any).toObject
       ? (updated as any).toObject()

@@ -26,6 +26,8 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { CompleteProfileDto } from './dto/complete-profile.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 const profileFileFilter = (_req: any, file: any, cb: any) => {
   const photoTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -105,6 +107,18 @@ export class AuthController {
     const result = await this.authService.refresh(refreshToken);
     this.setRefreshCookie(res, result.refreshToken, result.refreshTokenExpiresAt);
     return result;
+  }
+
+  @Throttle({ default: { limit: 3, ttl: 60 } })
+  @Post('forgot-password')
+  async forgotPassword(@Body() body: ForgotPasswordDto) {
+    return this.authService.requestPasswordReset(body.email);
+  }
+
+  @Throttle({ default: { limit: 5, ttl: 60 } })
+  @Post('reset-password')
+  async resetPassword(@Body() body: ResetPasswordDto) {
+    return this.authService.resetPassword(body.token, body.newPassword);
   }
 
   @UseGuards(JwtAuthGuard)

@@ -97,7 +97,7 @@ export default function Login() {
             <button
               className="authLinkBtn"
               type="button"
-              onClick={() => alert("Fonctionnalité mot de passe oublié en cours de développement")}
+              onClick={() => navigate("/forgot-password")}
             >
               Mot de passe oublié ?
             </button>

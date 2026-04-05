@@ -53,6 +53,12 @@ export class User {
   @Prop()
   refreshTokenExpiresAt: Date;
 
+  @Prop()
+  resetPasswordTokenHash: string;
+
+  @Prop()
+  resetPasswordExpiresAt: Date;
+
   // ── Rôle & statut ─────────────────────────────────────────────────────
   @Prop({ required: true, enum: UserRole })
   role: UserRole;

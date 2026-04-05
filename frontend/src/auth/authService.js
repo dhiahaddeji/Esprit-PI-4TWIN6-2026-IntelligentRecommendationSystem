@@ -67,6 +67,26 @@ export async function changePassword(newPassword) {
   }
 }
 
+/** Mot de passe oublié */
+export async function requestPasswordReset(email) {
+  try {
+    const res = await api.post("/auth/forgot-password", { email });
+    return res.data;
+  } catch (err) {
+    throw new Error(extractErrorMessage(err, "Échec de la demande de réinitialisation"));
+  }
+}
+
+/** Réinitialiser le mot de passe via lien */
+export async function resetPassword(token, newPassword) {
+  try {
+    const res = await api.post("/auth/reset-password", { token, newPassword });
+    return res.data;
+  } catch (err) {
+    throw new Error(extractErrorMessage(err, "Échec de la réinitialisation"));
+  }
+}
+
 /** Compléter le profil (multipart/form-data) */
 export async function completeProfile(formData) {
   try {

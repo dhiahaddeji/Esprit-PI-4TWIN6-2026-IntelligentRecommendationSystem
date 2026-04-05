@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   UnauthorizedException,
   ForbiddenException,
@@ -7,9 +8,11 @@ import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { createHash, randomBytes } from 'crypto';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { AuditAction } from '../audit-logs/audit-log.schema';
 import type { StringValue } from 'ms';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +21,7 @@ export class AuthService {
     private jwtService: JwtService,
     private auditLogsService: AuditLogsService,
     private configService: ConfigService,
+    private mailService: MailService,
   ) {}
 
   // ── Helpers ────────────────────────────────────────────────────────
@@ -36,6 +40,10 @@ export class AuthService {
       this.configService.get<string>('JWT_SECRET') ||
       'SECRET_KEY'
     );
+  }
+
+  private resetTokenTtl() {
+    return this.configService.get<string>('RESET_PASSWORD_TTL') || '15m';
   }
 
   private ttlToMs(ttl: string | number) {
@@ -58,6 +66,10 @@ export class AuthService {
     const decoded = this.jwtService.decode(token) as { exp?: number } | null;
     if (decoded?.exp) return new Date(decoded.exp * 1000);
     return new Date(Date.now() + this.ttlToMs(ttl));
+  }
+
+  private hashToken(token: string) {
+    return createHash('sha256').update(token).digest('hex');
   }
 
   private buildAccessToken(user: any) {
@@ -284,6 +296,64 @@ export class AuthService {
       refreshTokenExpiresAt: refreshBundle.expiresAt,
       user: this.buildUserPayload(user),
     };
+  }
+
+  // ── Forgot / reset password ───────────────────────────────────────
+
+  async requestPasswordReset(email: string) {
+    const generic = {
+      message:
+        'Si un compte existe avec cet email, un lien de réinitialisation a été envoyé.',
+    };
+
+    const user = await this.usersService.findByEmail(email);
+    if (!user) return generic;
+
+    const rawToken = randomBytes(32).toString('hex');
+    const tokenHash = this.hashToken(rawToken);
+    const ttl = this.resetTokenTtl();
+    const expiresAt = new Date(Date.now() + this.ttlToMs(ttl));
+    await this.usersService.setPasswordResetToken(
+      user._id.toString(),
+      tokenHash,
+      expiresAt,
+    );
+
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:5173';
+    const resetUrl = `${frontendUrl}/reset-password?token=${rawToken}`;
+    const minutes = Math.max(1, Math.round(this.ttlToMs(ttl) / 60000));
+
+    await this.mailService.sendPasswordResetEmail({
+      to: user.email,
+      name: user.name || user.email,
+      resetUrl,
+      expiresInMinutes: minutes,
+    });
+
+    return generic;
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    if (!token) throw new BadRequestException('Token invalide ou expiré');
+
+    const tokenHash = this.hashToken(token);
+    const user = await this.usersService.findByResetTokenHash(tokenHash);
+    if (!user) throw new BadRequestException('Token invalide ou expiré');
+
+    if (user.resetPasswordExpiresAt && user.resetPasswordExpiresAt < new Date()) {
+      throw new BadRequestException('Token invalide ou expiré');
+    }
+
+    await this.usersService.update(user._id.toString(), {
+      password: newPassword,
+      mustChangePassword: false,
+      passwordExpiresAt: null,
+    });
+
+    await this.usersService.clearPasswordResetToken(user._id.toString());
+    await this.usersService.clearRefreshToken(user._id.toString());
+
+    return { message: 'Mot de passe mis à jour avec succès.' };
   }
 
   async logout(userId: string) {

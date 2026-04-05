@@ -10,11 +10,13 @@ import { UsersModule } from '../users/users.module';
 import { JwtStrategy } from './jwt.strategy';
 import { GithubStrategy } from './github.strategy';
 import { AuditLogsModule } from '../audit-logs/audit-logs.module';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
     UsersModule,
     AuditLogsModule,
+    MailModule,
     PassportModule.register({ session: false }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

@@ -104,4 +104,53 @@ export class MailService {
       // Ne pas faire planter la création de compte si l'email échoue
     }
   }
+
+  async sendPasswordResetEmail(opts: {
+    to: string;
+    name: string;
+    resetUrl: string;
+    expiresInMinutes: number;
+  }) {
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+        <div style="background:#0b2b4b;padding:28px 32px;">
+          <h1 style="color:#ffffff;margin:0;font-size:22px;">🛡️ AssurReco</h1>
+          <p style="color:#94a3b8;margin:4px 0 0;">Réinitialisation de mot de passe</p>
+        </div>
+        <div style="padding:32px;">
+          <h2 style="color:#0f172a;margin-top:0;">Bonjour ${opts.name || 'Utilisateur'},</h2>
+          <p style="color:#334155;">
+            Nous avons reçu une demande de réinitialisation de votre mot de passe.
+          </p>
+
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px;margin:24px 0;">
+            <p style="margin:0 0 8px;color:#64748b;font-size:13px;text-transform:uppercase;letter-spacing:.5px;">Lien de réinitialisation</p>
+            <a href="${opts.resetUrl}" style="color:#0b2b4b;font-weight:700;">Réinitialiser mon mot de passe</a>
+          </div>
+
+          <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:16px;margin-bottom:24px;">
+            <p style="margin:0;color:#92400e;">
+              ⏰ <strong>Ce lien expire dans ${opts.expiresInMinutes} minutes.</strong>
+            </p>
+          </div>
+
+          <p style="color:#94a3b8;font-size:12px;">
+            Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.
+          </p>
+        </div>
+      </div>
+    `;
+
+    try {
+      await this.transporter.sendMail({
+        from: process.env.EMAIL_FROM || `"AssurReco" <${process.env.EMAIL_USER}>`,
+        to: opts.to,
+        subject: '🔐 Réinitialiser votre mot de passe',
+        html,
+      });
+      this.logger.log(`Email de réinitialisation envoyé à ${opts.to}`);
+    } catch (err) {
+      this.logger.error(`Échec envoi email reset à ${opts.to}: ${err.message}`);
+    }
+  }
 }

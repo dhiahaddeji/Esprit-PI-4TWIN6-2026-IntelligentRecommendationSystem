@@ -61,6 +61,24 @@ export class UsersService {
     });
   }
 
+  async setPasswordResetToken(userId: string, tokenHash: string, expiresAt: Date) {
+    return this.userModel.findByIdAndUpdate(userId, {
+      resetPasswordTokenHash: tokenHash,
+      resetPasswordExpiresAt: expiresAt,
+    });
+  }
+
+  async clearPasswordResetToken(userId: string) {
+    return this.userModel.findByIdAndUpdate(userId, {
+      resetPasswordTokenHash: null,
+      resetPasswordExpiresAt: null,
+    });
+  }
+
+  async findByResetTokenHash(tokenHash: string) {
+    return this.userModel.findOne({ resetPasswordTokenHash: tokenHash }).exec();
+  }
+
   async delete(id: string) {
     return this.userModel.findByIdAndDelete(id);
   }
@@ -68,7 +86,7 @@ export class UsersService {
   async findAll() {
     return this.userModel
       .find()
-      .select('-password -refreshTokenHash -refreshTokenExpiresAt')
+      .select('-password -refreshTokenHash -refreshTokenExpiresAt -resetPasswordTokenHash -resetPasswordExpiresAt')
       .exec();
   }
 
@@ -80,7 +98,7 @@ export class UsersService {
     const [data, total] = await Promise.all([
       this.userModel
         .find(filter)
-        .select('-password -refreshTokenHash -refreshTokenExpiresAt')
+        .select('-password -refreshTokenHash -refreshTokenExpiresAt -resetPasswordTokenHash -resetPasswordExpiresAt')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(safeLimit)
@@ -94,7 +112,7 @@ export class UsersService {
   async findById(id: string) {
     const user = await this.userModel
       .findById(id)
-      .select('-password -refreshTokenHash -refreshTokenExpiresAt')
+      .select('-password -refreshTokenHash -refreshTokenExpiresAt -resetPasswordTokenHash -resetPasswordExpiresAt')
       .exec();
     if (!user) throw new NotFoundException('Utilisateur introuvable');
     return user;
@@ -104,7 +122,7 @@ export class UsersService {
     const user = await this.userModel
       .findById(id)
       .select(
-        'refreshTokenHash refreshTokenExpiresAt name firstName lastName email role status photoUrl mustChangePassword isProfileComplete matricule',
+        'refreshTokenHash refreshTokenExpiresAt resetPasswordTokenHash resetPasswordExpiresAt name firstName lastName email role status photoUrl mustChangePassword isProfileComplete matricule passwordExpiresAt',
       )
       .exec();
     if (!user) throw new NotFoundException('Utilisateur introuvable');
@@ -118,21 +136,21 @@ export class UsersService {
   async findByRole(role: string) {
     return this.userModel
       .find({ role })
-      .select('-password -refreshTokenHash -refreshTokenExpiresAt')
+      .select('-password -refreshTokenHash -refreshTokenExpiresAt -resetPasswordTokenHash -resetPasswordExpiresAt')
       .exec();
   }
 
   async findByIds(ids: string[]) {
     return this.userModel
       .find({ _id: { $in: ids } })
-      .select('-password -refreshTokenHash -refreshTokenExpiresAt')
+      .select('-password -refreshTokenHash -refreshTokenExpiresAt -resetPasswordTokenHash -resetPasswordExpiresAt')
       .exec();
   }
 
   async findRoles(roles: string[]) {
     return this.userModel
       .find({ role: { $in: roles } })
-      .select('-password -refreshTokenHash -refreshTokenExpiresAt')
+      .select('-password -refreshTokenHash -refreshTokenExpiresAt -resetPasswordTokenHash -resetPasswordExpiresAt')
       .exec();
   }
 
