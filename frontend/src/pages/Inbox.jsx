@@ -18,6 +18,12 @@ const ROLE_COLORS = {
 const CONV_ICONS = { dm: "💬", group: "👥", announcement: "📢" };
 const CONV_LABELS = { dm: "Message direct", group: "Groupe", announcement: "Annonce" };
 
+const EMOJI_LIST = [
+  "😀", "😁", "😂", "😅", "😊", "😍", "😎", "🤔",
+  "😢", "😡", "😴", "👍", "👎", "🙏", "👏", "🙌",
+  "🎉", "🔥", "💡", "✅", "⭐", "❤️",
+];
+
 function initials(name = "") {
   return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
 }
@@ -31,6 +37,29 @@ function timeAgo(dateStr) {
   if (diff < 3600) return `${Math.floor(diff / 60)}min`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
   return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+}
+
+function insertAtCursor(value, setValue, ref, text) {
+  const el = ref.current;
+  if (!el || typeof el.selectionStart !== "number") {
+    setValue(`${value}${text}`);
+    return;
+  }
+
+  const start = el.selectionStart;
+  const end = typeof el.selectionEnd === "number" ? el.selectionEnd : start;
+  const next = `${value.slice(0, start)}${text}${value.slice(end)}`;
+  setValue(next);
+
+  requestAnimationFrame(() => {
+    try {
+      el.focus();
+      const pos = start + text.length;
+      el.setSelectionRange(pos, pos);
+    } catch {
+      /* ignore focus errors */
+    }
+  });
 }
 
 function Avatar({ name, size = 36, role }) {
@@ -420,7 +449,9 @@ function AnnouncementView({ conv, me, onNewMessage }) {
   const [input,    setInput]    = useState("");
   const [sending,  setSending]  = useState(false);
   const [loading,  setLoading]  = useState(true);
+  const [showEmoji, setShowEmoji] = useState(false);
   const pollRef = useRef(null);
+  const inputRef = useRef(null);
 
   const myId     = me?.id || me?.userId;
   const canWrite = (conv.allowedSenders || []).includes(myId);
@@ -451,6 +482,7 @@ function AnnouncementView({ conv, me, onNewMessage }) {
     if (!text || sending) return;
     setSending(true);
     setInput("");
+    setShowEmoji(false);
     try {
       await http.post(`/messaging/conversations/${conv._id}/messages`, { content: text });
       await loadMessages();
@@ -523,6 +555,7 @@ function AnnouncementView({ conv, me, onNewMessage }) {
           </div>
           <div style={{ padding: "12px 16px" }}>
             <textarea
+              ref={inputRef}
               value={input}
               onChange={e => setInput(e.target.value)}
               placeholder="Rédigez votre annonce ici… Elle sera visible par tous les destinataires."
@@ -536,7 +569,44 @@ function AnnouncementView({ conv, me, onNewMessage }) {
                 fontFamily: "inherit",
               }}
             />
-            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, alignItems: "center" }}>
+              <div style={{ position: "relative" }}>
+                <button
+                  type="button"
+                  onClick={() => setShowEmoji(prev => !prev)}
+                  style={{
+                    width: 36, height: 36, borderRadius: 10, border: "1px solid var(--border)",
+                    background: "var(--surface)", cursor: "pointer", fontSize: 18,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}
+                  aria-label="Ajouter un emoji"
+                >😊</button>
+                {showEmoji && (
+                  <div style={{
+                    position: "absolute", bottom: 44, left: 0,
+                    background: "#fff", border: "1px solid var(--border)",
+                    borderRadius: 12, padding: 8, width: 220,
+                    display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 6,
+                    boxShadow: "0 10px 24px rgba(15,23,42,0.18)", zIndex: 20,
+                  }}>
+                    {EMOJI_LIST.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => {
+                          insertAtCursor(input, setInput, inputRef, emoji);
+                          setShowEmoji(false);
+                        }}
+                        style={{
+                          width: 28, height: 28, borderRadius: 8, border: "none",
+                          background: "transparent", cursor: "pointer", fontSize: 18,
+                        }}
+                        aria-label={`Emoji ${emoji}`}
+                      >{emoji}</button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <button
                 onClick={publish}
                 disabled={sending || !input.trim()}
@@ -650,8 +720,10 @@ function ChatThread({ conv, me, onNewMessage }) {
   const [input,     setInput]     = useState("");
   const [sending,   setSending]   = useState(false);
   const [loading,   setLoading]   = useState(true);
+  const [showEmoji, setShowEmoji] = useState(false);
   const bottomRef = useRef(null);
   const pollRef   = useRef(null);
+  const inputRef  = useRef(null);
 
   const loadMessages = useCallback(async () => {
     try {
@@ -686,6 +758,7 @@ function ChatThread({ conv, me, onNewMessage }) {
     if (!text || sending) return;
     setSending(true);
     setInput("");
+    setShowEmoji(false);
     try {
       await http.post(`/messaging/conversations/${conv._id}/messages`, { content: text });
       await loadMessages();
@@ -757,9 +830,46 @@ function ChatThread({ conv, me, onNewMessage }) {
       <div style={{
         padding: "12px 16px", background: "var(--surface)",
         borderTop: "1px solid var(--border)", flexShrink: 0,
-        display: "flex", gap: 10, alignItems: "flex-end",
+        display: "flex", gap: 10, alignItems: "flex-end", position: "relative",
       }}>
+        {showEmoji && (
+          <div style={{
+            position: "absolute", bottom: 58, left: 16,
+            background: "#fff", border: "1px solid var(--border)",
+            borderRadius: 12, padding: 8, width: 240,
+            display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 6,
+            boxShadow: "0 10px 24px rgba(15,23,42,0.18)", zIndex: 20,
+          }}>
+            {EMOJI_LIST.map((emoji) => (
+              <button
+                key={emoji}
+                type="button"
+                onClick={() => {
+                  insertAtCursor(input, setInput, inputRef, emoji);
+                  setShowEmoji(false);
+                }}
+                style={{
+                  width: 28, height: 28, borderRadius: 8, border: "none",
+                  background: "transparent", cursor: "pointer", fontSize: 18,
+                }}
+                aria-label={`Emoji ${emoji}`}
+              >{emoji}</button>
+            ))}
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={() => setShowEmoji(prev => !prev)}
+          style={{
+            width: 40, height: 40, borderRadius: 12, border: "1px solid var(--border)",
+            background: "var(--surface)", cursor: "pointer", fontSize: 18,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            flexShrink: 0,
+          }}
+          aria-label="Ajouter un emoji"
+        >😊</button>
         <textarea
+          ref={inputRef}
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => {
