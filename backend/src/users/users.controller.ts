@@ -8,6 +8,7 @@ import {
   UploadedFiles,
   Request,
   Body,
+  Query,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -33,9 +34,18 @@ export class UsersController {
 
   @Roles('HR', 'SUPERADMIN')
   @Get('employees')
-  async employees() {
-    const all = await this.usersService.findAll();
-    return all.filter(u => (u as any).role === 'EMPLOYEE');
+  async employees(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    if (!page && !limit) {
+      const all = await this.usersService.findAll();
+      return all.filter(u => (u as any).role === 'EMPLOYEE');
+    }
+
+    const p = page ? parseInt(page, 10) : 1;
+    const l = limit ? parseInt(limit, 10) : 20;
+    return this.usersService.listPaginated({ role: 'EMPLOYEE' }, p, l);
   }
 
   @Patch('profile')

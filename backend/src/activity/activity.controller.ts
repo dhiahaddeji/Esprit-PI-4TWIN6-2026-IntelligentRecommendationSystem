@@ -7,6 +7,7 @@ import {
   Post,
   Request,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -52,8 +53,15 @@ export class ActivitiesController {
 
   @Roles('HR', 'MANAGER', 'EMPLOYEE', 'SUPERADMIN')
   @Get()
-  list() {
-    return this.service.findAll();
+  list(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    if (!page && !limit) return this.service.findAll();
+
+    const p = page ? parseInt(page, 10) : 1;
+    const l = limit ? parseInt(limit, 10) : 20;
+    return this.service.listPaginated(p, l);
   }
 
   @Roles('HR', 'MANAGER', 'EMPLOYEE', 'SUPERADMIN')

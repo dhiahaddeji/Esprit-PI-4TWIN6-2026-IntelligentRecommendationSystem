@@ -1,33 +1,67 @@
-.hrEmpPage { padding: 6px 0 24px; }
+.hrEmpPage {
+  padding: 18px 24px 32px;
+  font-family: "Sora", "Space Grotesk", "Poppins", sans-serif;
+}
 
-.hrEmpTitle { margin: 0; font-size: 34px; font-weight: 900; color:var(--text-1); }
-.hrEmpSubtitle { margin: 6px 0 18px; color:var(--text-2); }
+.hrEmpHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
 
-.hrEmpToolbar { margin-bottom: 14px; }
+.hrEmpHeaderMeta {
+  font-size: 12px;
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 6px 10px;
+  border-radius: 10px;
+}
+
+.hrEmpTitle { margin: 0; font-size: 26px; font-weight: 800; color: var(--text-1); }
+.hrEmpSubtitle { margin: 4px 0 0; color: var(--text-2); }
+
+.hrEmpToolbar {
+  margin: 16px 0 12px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
 .hrEmpSearch{
   width: 100%;
-  max-width: 560px;
-  padding: 10px 12px;
+  max-width: 520px;
+  padding: 11px 14px;
   border-radius: 12px;
   border: 1px solid var(--border);
   outline: none;
+  background: #f8fafc;
 }
+.hrEmpToolbarInfo { font-size: 12px; color: var(--text-2); }
 
-.hrEmpList { display: grid; gap: 10px; }
+.hrEmpList { display: grid; gap: 12px; }
 
 .hrEmpRow{
   width: 100%;
   text-align: left;
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: #ffffff;
   border-radius: 14px;
-  padding: 12px;
+  padding: 14px 16px;
   display: flex;
   align-items: center;
   gap: 12px;
   cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
-.hrEmpRow:hover{ background:var(--surface-2); }
+.hrEmpRow:hover{
+  background: #f8fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.06);
+  border-color: #dbeafe;
+}
 
 .hrEmpAvatar{
   width: 42px; height: 42px;
@@ -41,6 +75,18 @@
 .hrEmpInfo { flex: 1; min-width: 0; }
 .hrEmpName { font-weight: 900; color:var(--text-1); }
 .hrEmpMeta { margin-top: 2px; color:var(--text-2); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hrEmpNameRow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.hrEmpBadge {
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+.hrEmpBadge-active { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+.hrEmpBadge-inactive { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
+.hrEmpBadge-suspended { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+.hrEmpBadge-role { background: #e0e7ff; color: #3730a3; border-color: #c7d2fe; }
 
 .hrEmpChevron { color:#98a2b3; font-size: 22px; padding-right: 6px; }
 
@@ -61,6 +107,7 @@
   border-radius: 16px;
   padding: 16px;
   margin-bottom: 16px;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.06);
 }
 .hrEmpCardTop{ display:flex; align-items:center; gap: 14px; }
 .hrEmpBigAvatar{
@@ -73,6 +120,17 @@
 }
 .hrEmpCardName{ font-weight: 900; font-size: 18px; color:var(--text-1); }
 .hrEmpCardMeta{ margin-top: 2px; color:var(--text-2); }
+.hrEmpTagRow{ display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+
+.hrEmpSectionGrid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.hrEmpField{ display: grid; gap: 4px; margin-top: 10px; }
+.hrEmpFieldLabel{ font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; }
+.hrEmpFieldValue{ font-size: 14px; font-weight: 700; color: var(--text-1); }
 
 .hrSectionTitle{ margin: 14px 0 12px; font-size: 18px; font-weight: 900; color:var(--text-1); }
 
@@ -146,4 +204,5 @@
 
 @media (max-width: 1100px){
   .skillsGrid{ grid-template-columns: 1fr; }
+  .hrEmpSectionGrid{ grid-template-columns: 1fr; }
 }

@@ -54,6 +54,25 @@ export class UsersService {
     return this.userModel.find().select('-password').exec();
   }
 
+  async listPaginated(filter: Record<string, any>, page?: number, limit?: number) {
+    const safeLimit = Math.min(limit ?? 20, 200);
+    const safePage = Math.max(page ?? 1, 1);
+    const skip = (safePage - 1) * safeLimit;
+
+    const [data, total] = await Promise.all([
+      this.userModel
+        .find(filter)
+        .select('-password')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(safeLimit)
+        .exec(),
+      this.userModel.countDocuments(filter),
+    ]);
+
+    return { data, total, page: safePage, limit: safeLimit };
+  }
+
   async findById(id: string) {
     const user = await this.userModel.findById(id).select('-password').exec();
     if (!user) throw new NotFoundException('Utilisateur introuvable');

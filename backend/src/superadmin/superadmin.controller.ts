@@ -8,6 +8,7 @@ import {
   UseGuards,
   Get,
   Request,
+  Query,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -38,8 +39,15 @@ export class SuperAdminController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('SUPERADMIN', 'HR', 'MANAGER')
   @Get('users')
-  async getAllUsers() {
-    return this.usersService.findAll();
+  async getAllUsers(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    if (!page && !limit) return this.usersService.findAll();
+
+    const p = page ? parseInt(page, 10) : 1;
+    const l = limit ? parseInt(limit, 10) : 20;
+    return this.usersService.listPaginated({}, p, l);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

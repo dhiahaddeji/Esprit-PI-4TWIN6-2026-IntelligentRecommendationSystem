@@ -1,11 +1,14 @@
 import { Link } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
-import { fetchActivities, } from "../../services/activityService";
+import { fetchActivitiesPage } from "../../services/activityService";
 import { getManagers } from "../../services/workflowService";
 
 export default function HRActivities() {
   const [activities, setActivities] = useState([]);
   const [managers, setManagers] = useState([]);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(12);
+  const [total, setTotal] = useState(0);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -13,8 +16,9 @@ export default function HRActivities() {
       try {
         setError("");
 
-        const acts = await fetchActivities(); // GET /activities
-        setActivities(Array.isArray(acts) ? acts : []);
+        const res = await fetchActivitiesPage({ page, limit });
+        setActivities(res.data || []);
+        setTotal(res.total || 0);
 
         const mgrs = await getManagers(); // GET /users/managers
         setManagers(Array.isArray(mgrs) ? mgrs : []);
@@ -24,13 +28,17 @@ export default function HRActivities() {
         setManagers([]);
       }
     })();
-  }, []);
+  }, [page, limit]);
 
   const managersById = useMemo(() => {
     const map = new Map();
     managers.forEach((u) => map.set(String(u._id || u.id), u));
     return map;
   }, [managers]);
+
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const canPrev = page > 1;
+  const canNext = page < totalPages;
 
   return (
     <div style={{ padding: 18 }}>
@@ -138,6 +146,26 @@ export default function HRActivities() {
             );
           })
         )}
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, alignItems: "center" }}>
+        <button
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={!canPrev}
+          style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #e2e8f0" }}
+        >
+          ← Précédent
+        </button>
+        <span style={{ fontSize: 12, color: "var(--text-2)" }}>
+          Page {page} / {totalPages}
+        </span>
+        <button
+          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          disabled={!canNext}
+          style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #e2e8f0" }}
+        >
+          Suivant →
+        </button>
       </div>
     </div>
   );

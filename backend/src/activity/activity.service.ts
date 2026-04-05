@@ -15,6 +15,19 @@ export class ActivitiesService {
     return this.model.find().sort({ createdAt: -1 });
   }
 
+  async listPaginated(page?: number, limit?: number) {
+    const safeLimit = Math.min(limit ?? 20, 200);
+    const safePage = Math.max(page ?? 1, 1);
+    const skip = (safePage - 1) * safeLimit;
+
+    const [data, total] = await Promise.all([
+      this.model.find().sort({ createdAt: -1 }).skip(skip).limit(safeLimit),
+      this.model.countDocuments(),
+    ]);
+
+    return { data, total, page: safePage, limit: safeLimit };
+  }
+
   findById(id: string) {
     return this.model.findById(id);
   }
