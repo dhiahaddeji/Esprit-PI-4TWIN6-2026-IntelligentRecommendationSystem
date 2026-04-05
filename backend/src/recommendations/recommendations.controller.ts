@@ -6,6 +6,7 @@ import { RecommendationsService } from './recommendations.service';
 import { ActivitiesService } from '../activity/activity.service';
 import { CompetencesService } from '../competences/competences.service';
 import { InvitationsService } from '../invitations/invitations.service';
+import { UsersService } from '../users/users.service';
 
 // Context weights by prioritization strategy
 const CONTEXT_WEIGHTS: Record<string, Record<number, number>> = {
@@ -24,6 +25,7 @@ export class RecommendationsController {
     private readonly activitiesService: ActivitiesService,
     private readonly compSvc: CompetencesService,
     private readonly invService: InvitationsService,
+    private readonly usersService: UsersService,
   ) {}
 
   // ── GET recommendation for an activity ──────────────────────────────
@@ -48,6 +50,8 @@ export class RecommendationsController {
       );
     }
 
+    const availabilityMap = await this.buildAvailabilityMap(activity, allEmployees);
+
     const reqs: any[]        = (activity as any).competences_requises || [];
     const seats: number      = (activity as any).seats || 5;
     const prioritization     = (activity as any).prioritization || 'expertise';
@@ -61,6 +65,8 @@ export class RecommendationsController {
       let levelRatioSum    = 0;
       let matchedCount     = 0;
       let ctxScoreSum      = 0;
+
+      const availability = availabilityMap.get(emp.employee_id);
 
       for (const req of reqs) {
         const reqName = req.intitule.toLowerCase();
@@ -132,6 +138,7 @@ export class RecommendationsController {
         employeeName:     emp.employee_name,
         score:            finalScore,
         rank_score:       rawScore,
+        availability,
         details,
         matchedSkills,
         missingSkills,
@@ -155,6 +162,7 @@ export class RecommendationsController {
       score:            e.score,
       rank:             idx + 1,
       status:           idx < seats ? 'Selected' : 'Backup',
+      availability:     e.availability,
       details:          e.details,
       matchedSkills:    e.matchedSkills,
       missingSkills:    e.missingSkills,
@@ -185,6 +193,27 @@ export class RecommendationsController {
     const rec = await this.recService.getByActivity(activityId);
     if (!rec?.list?.length) {
       throw new BadRequestException('Aucun employé sélectionné. Lancez l\'IA et sélectionnez des employés.');
+    }
+
+    const activity = await this.activitiesService.findById(activityId);
+    if (!activity) throw new NotFoundException('Activité introuvable');
+
+    const stubEmployees = (rec.list as any[]).map((item: any) => ({
+      employee_id: item.employeeId,
+    }));
+    const availabilityMap = await this.buildAvailabilityMap(activity, stubEmployees);
+    const busyEmployees = (rec.list as any[]).filter((item: any) => {
+      const availability = availabilityMap.get(item.employeeId);
+      return availability?.status === 'BUSY';
+    });
+
+    if (busyEmployees.length) {
+      const names = busyEmployees
+        .map((c: any) => c.employeeName || c.employeeId)
+        .join(', ');
+      throw new BadRequestException(
+        `Employés déjà occupés sur la même période: ${names}`,
+      );
     }
 
     const employeeIds = (rec.list as any[]).map((item: any) => item.employeeId);
@@ -231,5 +260,90 @@ export class RecommendationsController {
     const nameParts = name.split(/\s+/);
     const kwParts   = kw.split(/\s+/);
     return nameParts.some(np => kwParts.some(kp => np.includes(kp) && kp.length > 3));
+  }
+
+  private async buildAvailabilityMap(activity: any, employees: any[]) {
+    const employeeIds = employees
+      .map(e => e.employee_id)
+      .filter(Boolean);
+    const users = await this.usersService.findByIds(employeeIds);
+    const userMap = new Map(users.map(u => [String((u as any)._id), u]));
+
+    const targetRange = this.getActivityRange(activity);
+    const canCheck = Boolean(targetRange.start && targetRange.end);
+
+    const activities = await this.activitiesService.findAll();
+    const activityRanges = new Map<string, { start: Date | null; end: Date | null; participants: string[] }>();
+    for (const act of activities as any[]) {
+      const range = this.getActivityRange(act);
+      activityRanges.set(String(act._id), {
+        start: range.start,
+        end: range.end,
+        participants: (act.participants || []) as string[],
+      });
+    }
+
+    const assignmentSets = new Map<string, Set<string>>();
+    const addAssignment = (empId: string, actId: string) => {
+      if (!assignmentSets.has(empId)) assignmentSets.set(empId, new Set());
+      assignmentSets.get(empId)!.add(actId);
+    };
+
+    if (canCheck) {
+      for (const act of activities as any[]) {
+        const actId = String(act._id);
+        if (actId === String(activity._id)) continue;
+        const range = activityRanges.get(actId);
+        if (!range?.start || !range?.end || !range.participants?.length) continue;
+        if (!this.rangesOverlap(range.start, range.end, targetRange.start!, targetRange.end!)) continue;
+        for (const empId of range.participants) {
+          addAssignment(String(empId), actId);
+        }
+      }
+    }
+
+    const availability = new Map<string, any>();
+    for (const emp of employees) {
+      const assignmentCount = (assignmentSets.get(emp.employee_id)?.size || 0)
+        + 0;
+
+      const status = assignmentCount > 0 ? 'BUSY' : 'AVAILABLE';
+      const reason = assignmentCount > 0 ? 'ASSIGNED' : null;
+
+      availability.set(emp.employee_id, {
+        status,
+        reason,
+        assignmentCount,
+        maxCapacity: null,
+        onLeave: false,
+        conflictActivityIds: Array.from(assignmentSets.get(emp.employee_id) || []),
+      });
+    }
+
+    return availability;
+  }
+
+  private getActivityRange(activity: any) {
+    const startRaw = activity?.startDate || activity?.date;
+    const endRaw = activity?.endDate || activity?.startDate || activity?.date;
+    const start = this.parseDate(startRaw, false);
+    const end = this.parseDate(endRaw, true);
+    return { start, end };
+  }
+
+  private parseDate(value: any, endOfDay: boolean): Date | null {
+    if (!value) return null;
+    let v = value;
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      v = `${value}T00:00:00`;
+    }
+    const d = new Date(v);
+    if (Number.isNaN(d.getTime())) return null;
+    if (endOfDay) d.setHours(23, 59, 59, 999);
+    return d;
+  }
+
+  private rangesOverlap(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) {
+    return aStart <= bEnd && aEnd >= bStart;
   }
 }

@@ -15,6 +15,8 @@ export class Activity {
   @Prop({ required: true }) title: string;
   @Prop() description?: string;
   @Prop() date?: string;
+  @Prop() startDate?: Date;
+  @Prop() endDate?: Date;
   @Prop() location?: string;
   @Prop() duration?: string; // ex: "2 jours"
 

@@ -80,6 +80,16 @@ export class User {
 
   @Prop()
   cvUrl: string;
+
+  // ── Disponibilité & capacité ─────────────────────────────────────────
+  @Prop({ type: [Object], default: [] })
+  leavePeriods: { startDate: Date; endDate: Date; reason?: string }[];
+
+  @Prop({ type: [String], default: [] })
+  currentAssignments: string[];
+
+  @Prop({ default: 2 })
+  maxCapacity: number;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

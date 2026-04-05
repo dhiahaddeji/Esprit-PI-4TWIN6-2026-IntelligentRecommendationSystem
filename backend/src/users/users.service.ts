@@ -68,6 +68,13 @@ export class UsersService {
     return this.userModel.find({ role }).select('-password').exec();
   }
 
+  async findByIds(ids: string[]) {
+    return this.userModel
+      .find({ _id: { $in: ids } })
+      .select('-password')
+      .exec();
+  }
+
   async findRoles(roles: string[]) {
     return this.userModel.find({ role: { $in: roles } }).select('-password').exec();
   }

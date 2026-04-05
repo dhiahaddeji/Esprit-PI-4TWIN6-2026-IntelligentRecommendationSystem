@@ -26,8 +26,13 @@ export class ActivitiesController {
   @Roles('HR')
   @Post()
   async create(@Body() body: any, @Request() req: any) {
+    const startDate = body.startDate || body.date;
+    const endDate = body.endDate || startDate || body.date;
     const result = await this.service.create({
       ...body,
+      startDate,
+      endDate,
+      date: body.date || startDate,
       seats: Number(body.seats || 0),
       createdBy: req.user.userId,
       status: 'DRAFT',

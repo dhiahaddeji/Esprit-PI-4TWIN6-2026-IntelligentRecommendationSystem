@@ -32,7 +32,8 @@ export default function HRCreateActivity() {
   const [form, setForm] = useState({
     title: "",
     description: "",
-    date: "",
+    startDate: "",
+    endDate: "",
     location: "",
     duration: "",
     seats: 10,
@@ -61,7 +62,7 @@ export default function HRCreateActivity() {
 
   const canSubmit = useMemo(() => (
     form.title.trim().length >= 3 &&
-    form.date &&
+    form.startDate &&
     form.location.trim().length >= 2 &&
     Number(form.seats) > 0 &&
     form.managerId
@@ -96,7 +97,9 @@ export default function HRCreateActivity() {
       const payload = {
         title: form.title,
         description: form.description,
-        date: form.date,
+        startDate: form.startDate,
+        endDate: form.endDate || form.startDate,
+        date: form.startDate,
         location: form.location,
         duration: form.duration,
         seats: Number(form.seats),
@@ -179,9 +182,12 @@ export default function HRCreateActivity() {
           </Field>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <Field label="Date *">
-            <input type="date" name="date" value={form.date} onChange={onChange} style={inputStyle()} />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+          <Field label="Date debut *">
+            <input type="date" name="startDate" value={form.startDate} onChange={onChange} style={inputStyle()} />
+          </Field>
+          <Field label="Date fin">
+            <input type="date" name="endDate" value={form.endDate} onChange={onChange} style={inputStyle()} />
           </Field>
           <Field label="Lieu *">
             <input name="location" value={form.location} onChange={onChange}

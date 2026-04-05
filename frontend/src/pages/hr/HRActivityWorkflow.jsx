@@ -15,6 +15,11 @@ const STATUS_META = {
   NOTIFIED:          { label: "Employés notifiés",    bg: "#ede9fe", color: "#5b21b6" },
 };
 
+const AVAILABILITY_META = {
+  AVAILABLE: { label: "Disponible", bg: "#d1fae5", color: "#065f46" },
+  BUSY:      { label: "Occupe",     bg: "#fef3c7", color: "#92400e" },
+};
+
 const TYPE_ICONS = {
   formation: "📚", certification: "🏆", projet: "🛠️", mission: "🎯", audit: "🔍",
 };
@@ -42,6 +47,11 @@ function RecCard({ item, seats, onRemove, onPromoteToSelected }) {
   const [expanded, setExpanded] = useState(false);
   const isSelected = item.status === "Selected" || item.rank <= seats;
   const isBackup   = item.status === "Backup"   || item.rank > seats;
+  const availability = item.availability || {};
+  const availabilityMeta = AVAILABILITY_META[availability.status];
+  const availabilityTitle = availabilityMeta
+    ? `Charge: ${availability.assignmentCount ?? 0}/${availability.maxCapacity ?? "?"}`
+    : undefined;
 
   return (
     <div style={{
@@ -74,6 +84,14 @@ function RecCard({ item, seats, onRemove, onPromoteToSelected }) {
             }}>
               {isSelected ? "✅ Sélectionné" : "🔄 Backup"}
             </span>
+            {availabilityMeta && (
+              <span title={availabilityTitle} style={{
+                fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999,
+                background: availabilityMeta.bg, color: availabilityMeta.color,
+              }}>
+                {availabilityMeta.label}
+              </span>
+            )}
           </div>
 
           {/* Score bar */}
@@ -321,6 +339,7 @@ export default function HRActivityWorkflow() {
   const [loadingSave,  setLoadingSave]  = useState(false);
   const [error,  setError]  = useState("");
   const [success,setSuccess]= useState("");
+  const [onlyAvailable, setOnlyAvailable] = useState(false);
 
   const load = async () => {
     try {
@@ -345,6 +364,9 @@ export default function HRActivityWorkflow() {
 
   // ── Derived state ────────────────────────────────────────────────────
   const recList        = rec?.list || [];
+  const displayList    = onlyAvailable
+    ? recList.filter(r => r.availability?.status === "AVAILABLE")
+    : recList;
   const recIds         = new Set(recList.map(r => r.employeeId));
   const seats          = activity?.seats || 5;
 
@@ -457,9 +479,25 @@ export default function HRActivityWorkflow() {
 
   const st  = STATUS_META[activity.status] || STATUS_META.DRAFT;
   const icon = TYPE_ICONS[activity.type] || "📋";
-  const selectedCount = recList.filter(r => r.status === "Selected" || r.rank <= seats).length;
-  const backupCount   = recList.filter(r => r.status === "Backup"   || r.rank > seats).length;
+  const selectedCount = displayList.filter(r => r.status === "Selected" || r.rank <= seats).length;
+  const backupCount   = displayList.filter(r => r.status === "Backup"   || r.rank > seats).length;
   const isLocked      = ["HR_VALIDATED", "SENT_TO_MANAGER", "MANAGER_CONFIRMED", "NOTIFIED"].includes(activity.status);
+  const dateLabel = (() => {
+    const start = activity.startDate || activity.date;
+    const end = activity.endDate || activity.startDate || activity.date;
+    const format = (d) => {
+      if (!d) return null;
+      if (typeof d === "string") return d.slice(0, 10);
+      const parsed = new Date(d);
+      if (Number.isNaN(parsed.getTime())) return null;
+      return parsed.toISOString().slice(0, 10);
+    };
+    if (!start) return null;
+    const startLabel = format(start);
+    const endLabel = end ? format(end) : startLabel;
+    if (!startLabel) return null;
+    return endLabel && endLabel !== startLabel ? `${startLabel} - ${endLabel}` : startLabel;
+  })();
 
   return (
     <div style={{ padding: "20px 24px", maxWidth: 1200, margin: "0 auto" }}>
@@ -481,7 +519,7 @@ export default function HRActivityWorkflow() {
               }}>{st.label}</span>
             </div>
             <div style={{ color: "var(--text-2)", fontSize: 13 }}>
-              {activity.date && <span>📅 {activity.date}</span>}
+              {dateLabel && <span>📅 {dateLabel}</span>}
               {activity.location && <span style={{ marginLeft: 12 }}>📍 {activity.location}</span>}
               <span style={{ marginLeft: 12 }}>🪑 {seats} places</span>
               {activity.prioritization && (
@@ -551,29 +589,39 @@ export default function HRActivityWorkflow() {
                 )}
               </div>
 
-              <button
-                onClick={onRunAI}
-                disabled={loadingAI || isLocked}
-                style={{
-                  display: "flex", alignItems: "center", gap: 8,
-                  padding: "9px 18px", borderRadius: 10, border: "none",
-                  background: loadingAI || isLocked
-                    ? "#e2e8f0"
-                    : "linear-gradient(135deg,#3b6fd4,#2d58b0)",
-                  color: loadingAI || isLocked ? "#94a3b8" : "#fff",
-                  fontWeight: 700, fontSize: 13.5, cursor: loadingAI || isLocked ? "not-allowed" : "pointer",
-                  transition: "all 0.2s",
-                }}
-              >
-                {loadingAI ? (
-                  <>
-                    <span style={{ fontSize: 15, animation: "spin 1s linear infinite" }}>⏳</span>
-                    Analyse des profils…
-                  </>
-                ) : (
-                  <>🚀 Run AI Recommendation</>
-                )}
-              </button>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--text-2)" }}>
+                  <input
+                    type="checkbox"
+                    checked={onlyAvailable}
+                    onChange={(e) => setOnlyAvailable(e.target.checked)}
+                  />
+                  Uniquement disponibles
+                </label>
+                <button
+                  onClick={onRunAI}
+                  disabled={loadingAI || isLocked}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    padding: "9px 18px", borderRadius: 10, border: "none",
+                    background: loadingAI || isLocked
+                      ? "#e2e8f0"
+                      : "linear-gradient(135deg,#3b6fd4,#2d58b0)",
+                    color: loadingAI || isLocked ? "#94a3b8" : "#fff",
+                    fontWeight: 700, fontSize: 13.5, cursor: loadingAI || isLocked ? "not-allowed" : "pointer",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  {loadingAI ? (
+                    <>
+                      <span style={{ fontSize: 15, animation: "spin 1s linear infinite" }}>⏳</span>
+                      Analyse des profils…
+                    </>
+                  ) : (
+                    <>🚀 Run AI Recommendation</>
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* Empty state */}
@@ -608,13 +656,22 @@ export default function HRActivityWorkflow() {
             {/* Recommendation cards */}
             {!loadingAI && recList.length > 0 && (
               <>
+                {displayList.length === 0 && onlyAvailable && (
+                  <div style={{
+                    textAlign: "center", padding: "16px 14px",
+                    background: "#fffbfa", borderRadius: 10, border: "1px solid #fecdca",
+                    color: "#b42318", fontSize: 12,
+                  }}>
+                    Aucun employe disponible selon le filtre.
+                  </div>
+                )}
                 {/* Section: Selected */}
                 {selectedCount > 0 && (
                   <div style={{ marginBottom: 8 }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: "#059669", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
                       ✅ Sélectionnés ({selectedCount}/{seats} places)
                     </div>
-                    {recList
+                    {displayList
                       .filter(r => r.status === "Selected" || r.rank <= seats)
                       .map(r => (
                         <RecCard
@@ -635,7 +692,7 @@ export default function HRActivityWorkflow() {
                     <div style={{ fontSize: 11, fontWeight: 700, color: "#7c3aed", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
                       🔄 Backup ({backupCount})
                     </div>
-                    {recList
+                    {displayList
                       .filter(r => r.status === "Backup" || r.rank > seats)
                       .map(r => (
                         <RecCard
