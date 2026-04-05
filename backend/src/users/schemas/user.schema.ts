@@ -47,6 +47,12 @@ export class User {
   @Prop()
   githubId: string;
 
+  @Prop()
+  refreshTokenHash: string;
+
+  @Prop()
+  refreshTokenExpiresAt: Date;
+
   // ── Rôle & statut ─────────────────────────────────────────────────────
   @Prop({ required: true, enum: UserRole })
   role: UserRole;

@@ -15,7 +15,7 @@ export class ParticipationsService {
     return this.model.findOneAndUpdate(
       { activityId: dto.activityId, employeeId: dto.employeeId },
       { ...dto },
-      { upsert: true, new: true },
+      { upsert: true, returnDocument: 'after' },
     );
   }
 

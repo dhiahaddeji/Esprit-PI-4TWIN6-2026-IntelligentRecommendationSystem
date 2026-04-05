@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Post,
   Body,
@@ -8,29 +9,40 @@ import {
   Res,
   UseInterceptors,
   UploadedFiles,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import { mkdirSync } from 'fs';
+import type { Response } from 'express';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GithubAuthGuard } from './guards/github-auth.guard';
 import { UsersService } from '../users/users.service';
 import { MailService } from '../mail/mail.service';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { CompleteProfileDto } from './dto/complete-profile.dto';
+import { LoginDto } from './dto/login.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
-const uploadStorage = (folder: string) =>
-  diskStorage({
-    destination: (_req, _file, cb) => {
-      const dir = join(process.cwd(), 'uploads', folder);
-      mkdirSync(dir, { recursive: true });
-      cb(null, dir);
-    },
-    filename: (req, file, cb) => {
-      const userId = (req as any).user?.userId || 'unknown';
-      cb(null, `${userId}-${Date.now()}${extname(file.originalname)}`);
-    },
-  });
+const profileFileFilter = (_req: any, file: any, cb: any) => {
+  const photoTypes = ['image/jpeg', 'image/png', 'image/webp'];
+  const cvTypes = ['application/pdf'];
+
+  if (file.fieldname === 'photo') {
+    if (photoTypes.includes(file.mimetype)) return cb(null, true);
+    return cb(new BadRequestException('Format photo invalide.'), false);
+  }
+
+  if (file.fieldname === 'cv') {
+    if (cvTypes.includes(file.mimetype)) return cb(null, true);
+    return cb(new BadRequestException('Format CV invalide.'), false);
+  }
+
+  return cb(new BadRequestException('Champ de fichier non autorisé.'), false);
+};
 
 @Controller('auth')
 export class AuthController {
@@ -39,6 +51,29 @@ export class AuthController {
     private usersService: UsersService,
     private mailService: MailService,
   ) {}
+
+  private setRefreshCookie(
+    res: Response,
+    refreshToken: string,
+    expiresAt?: Date,
+  ) {
+    if (!refreshToken) return;
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      expires: expiresAt,
+      path: '/auth/refresh',
+    });
+  }
+
+  private clearRefreshCookie(res: Response) {
+    res.clearCookie('refreshToken', { path: '/auth/refresh' });
+  }
+
+  private getRefreshToken(req: any, bodyToken?: string) {
+    return bodyToken || req.cookies?.refreshToken;
+  }
 
   // ── Test email (diagnostic) ───────────────────────────────────────
 
@@ -50,9 +85,26 @@ export class AuthController {
 
   // ── Email / password ──────────────────────────────────────────────
 
+  @Throttle({ default: { limit: 5, ttl: 60 } })
   @Post('login')
-  async login(@Body() body: { email: string; password: string }) {
-    return this.authService.login(body.email, body.password);
+  async login(@Body() body: LoginDto, @Res({ passthrough: true }) res: Response) {
+    const result = await this.authService.login(body.email, body.password);
+    this.setRefreshCookie(res, result.refreshToken, result.refreshTokenExpiresAt);
+    return result;
+  }
+
+  @Throttle({ default: { limit: 10, ttl: 60 } })
+  @Post('refresh')
+  async refresh(
+    @Body() body: RefreshTokenDto,
+    @Request() req: any,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const refreshToken = this.getRefreshToken(req, body.refreshToken);
+    if (!refreshToken) throw new UnauthorizedException('Refresh token manquant');
+    const result = await this.authService.refresh(refreshToken);
+    this.setRefreshCookie(res, result.refreshToken, result.refreshTokenExpiresAt);
+    return result;
   }
 
   @UseGuards(JwtAuthGuard)
@@ -72,8 +124,10 @@ export class AuthController {
   @Get('github/callback')
   @UseGuards(GithubAuthGuard)
   async githubCallback(@Request() req, @Res() res) {
-    const { accessToken, user } = req.user;
+    const { accessToken, refreshToken, refreshTokenExpiresAt, user } = req.user;
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+    this.setRefreshCookie(res, refreshToken, refreshTokenExpiresAt);
 
     // Transmet le token et l'utilisateur via query params (encodés en base64)
     const userEncoded = Buffer.from(JSON.stringify(user)).toString('base64');
@@ -88,14 +142,22 @@ export class AuthController {
   @Post('change-password')
   async changePassword(
     @Request() req,
-    @Body() body: { newPassword: string },
+    @Body() body: ChangePasswordDto,
   ) {
     return this.authService.changePassword(req.user.userId, body.newPassword);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  async logout(@Request() req: any, @Res({ passthrough: true }) res: Response) {
+    this.clearRefreshCookie(res);
+    return this.authService.logout(req.user.userId);
   }
 
   // ── Complétion du profil ──────────────────────────────────────────
 
   @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 10, ttl: 60 } })
   @Post('complete-profile')
   @UseInterceptors(
     FileFieldsInterceptor(
@@ -116,13 +178,14 @@ export class AuthController {
             cb(null, `${userId}-${Date.now()}${extname(file.originalname)}`);
           },
         }),
+        fileFilter: profileFileFilter,
         limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
       },
     ),
   )
   async completeProfile(
     @Request() req,
-    @Body() body: { firstName: string; lastName: string; telephone?: string },
+    @Body() body: CompleteProfileDto,
     @UploadedFiles() files: { photo?: any[]; cv?: any[] },
   ) {
     const userId = req.user.userId;

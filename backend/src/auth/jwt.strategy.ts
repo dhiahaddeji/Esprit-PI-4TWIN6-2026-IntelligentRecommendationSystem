@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UsersService } from '../users/users.service';
@@ -13,6 +13,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
+    if (payload?.type && payload.type !== 'access') {
+      throw new UnauthorizedException('Token invalide');
+    }
     // Always fetch fresh role from DB — handles missing/stale role in token
     let role = payload.role;
     let name = payload.name || payload.email;

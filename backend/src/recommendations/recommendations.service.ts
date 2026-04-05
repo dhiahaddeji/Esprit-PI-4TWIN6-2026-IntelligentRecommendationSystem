@@ -26,7 +26,7 @@ export class RecommendationsService {
     return this.model.findOneAndUpdate(
       { activityId },
       { activityId, list, hrValidated },
-      { new: true, upsert: true },
+      { returnDocument: 'after', upsert: true },
     );
   }
 
