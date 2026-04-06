@@ -292,6 +292,24 @@ export class AuthService {
     return { message: 'Déconnexion réussie.' };
   }
 
+  // ── Face login (no password required — identity already verified) ────
+
+  async loginAsUser(user: any) {
+    const id = user._id.toString();
+    await this.usersService.updateOnlineStatus(id, true);
+
+    const accessToken = this.buildAccessToken(user);
+    const refreshBundle = this.buildRefreshToken(user);
+    await this.usersService.setRefreshToken(id, refreshBundle.token, refreshBundle.expiresAt);
+
+    return {
+      accessToken,
+      refreshToken: refreshBundle.token,
+      refreshTokenExpiresAt: refreshBundle.expiresAt,
+      user: this.buildUserPayload(user),
+    };
+  }
+
   // ── Changer le mot de passe (première connexion) ───────────────────
 
   async changePassword(userId: string, newPassword: string) {

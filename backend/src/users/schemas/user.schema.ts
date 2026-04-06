@@ -96,6 +96,10 @@ export class User {
 
   @Prop({ default: 2 })
   maxCapacity: number;
+
+  // ── Face Recognition ──────────────────────────────────────────────────
+  @Prop({ type: [Number], default: [] })
+  faceDescriptor: number[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

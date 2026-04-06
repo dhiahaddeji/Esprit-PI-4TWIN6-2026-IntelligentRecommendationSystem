@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import http from "../../api/http";
+import MicButton from "../../components/MicButton";
 
 export default function EditUser() {
   const { id } = useParams(); // Récupère l'ID depuis l'URL
@@ -138,58 +139,61 @@ export default function EditUser() {
           <label style={{ fontWeight: 600, display: "block", marginBottom: "8px" }}>
             Nom complet
           </label>
-          <input
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            required
-            style={{
-              width: "100%",
-              padding: "12px",
-              border: "1px solid #d1d5db",
-              borderRadius: "6px",
-              fontSize: "16px"
-            }}
-          />
+          <div style={{ position: "relative" }}>
+            <input
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              required
+              style={{
+                width: "100%", padding: "12px", paddingRight: 42,
+                border: "1px solid #d1d5db", borderRadius: "6px",
+                fontSize: "16px", boxSizing: "border-box",
+              }}
+            />
+            <MicButton onResult={(t) => setForm((f) => ({ ...f, name: t }))} />
+          </div>
         </div>
 
         <div>
           <label style={{ fontWeight: 600, display: "block", marginBottom: "8px" }}>
             Email
           </label>
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            required
-            style={{
-              width: "100%",
-              padding: "12px",
-              border: "1px solid #d1d5db",
-              borderRadius: "6px",
-              fontSize: "16px"
-            }}
-          />
+          <div style={{ position: "relative" }}>
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              required
+              style={{
+                width: "100%", padding: "12px", paddingRight: 42,
+                border: "1px solid #d1d5db", borderRadius: "6px",
+                fontSize: "16px", boxSizing: "border-box",
+              }}
+            />
+            <MicButton onResult={(t) => setForm((f) => ({ ...f, email: t }))} />
+          </div>
         </div>
 
         <div>
           <label style={{ fontWeight: 600, display: "block", marginBottom: "8px" }}>
             Matricule
           </label>
-          <input
-            name="matricule"
-            value={form.matricule}
-            onChange={handleChange}
-            required
-            style={{
-              width: "100%",
-              padding: "12px",
-              border: "1px solid #d1d5db",
-              borderRadius: "6px",
-              fontSize: "16px"
-            }}
-          />
+          <div style={{ position: "relative" }}>
+            <input
+              name="matricule"
+              value={form.matricule}
+              onChange={handleChange}
+              required
+              style={{
+                width: "100%", padding: "12px", paddingRight: 42,
+                border: "1px solid #d1d5db", borderRadius: "6px",
+                fontSize: "16px", boxSizing: "border-box",
+              }}
+            />
+            <MicButton onResult={(t) => setForm((f) => ({ ...f, matricule: t }))} />
+          </div>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import http from "../../api/http";
 import { getStoredUser } from "../../auth/authService";
+import MicButton from "../../components/MicButton";
 
 const ROLE_LABELS = {
   SUPERADMIN: "Super Admin",
@@ -103,22 +104,26 @@ export default function UsersList() {
 
       {/* Filters */}
       <div style={{ display: "flex", gap: "12px", marginBottom: "20px", flexWrap: "wrap" }}>
-        <input
-          type="text"
-          placeholder="Rechercher nom, email, matricule…"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          style={{
-            flex: "1 1 240px",
-            padding: "9px 14px",
-            border: "1.5px solid var(--border)",
-            borderRadius: "10px",
-            background: "var(--surface-2)",
-            color: "var(--text-1)",
-            fontSize: "14px",
-            outline: "none",
-          }}
-        />
+        <div style={{ position: "relative", flex: "1 1 240px" }}>
+          <input
+            type="text"
+            placeholder="Rechercher nom, email, matricule…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "9px 42px 9px 14px",
+              border: "1.5px solid var(--border)",
+              borderRadius: "10px",
+              background: "var(--surface-2)",
+              color: "var(--text-1)",
+              fontSize: "14px",
+              outline: "none",
+              boxSizing: "border-box",
+            }}
+          />
+          <MicButton onResult={(t) => setSearch(t)} />
+        </div>
         <select
           value={roleFilter}
           onChange={e => setRoleFilter(e.target.value)}

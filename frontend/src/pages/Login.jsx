@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/auth.css";
 import { login, LS_TOKEN, LS_USER } from "../auth/authService";
+import FaceLogin from "../components/FaceLogin";
+import MicButton from "../components/MicButton";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -64,15 +66,19 @@ export default function Login() {
         <form onSubmit={onSubmit} className="authForm">
           <label className="authLabel">
             Email
-            <input
-              className="authInput"
-              type="email"
-              placeholder="ex: sarah.hr@assur.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              required
-            />
+            <div style={{ position: "relative" }}>
+              <input
+                className="authInput"
+                type="email"
+                placeholder="ex: sarah.hr@assur.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                required
+                style={{ paddingRight: 42 }}
+              />
+              <MicButton onResult={(t) => setEmail(t)} />
+            </div>
           </label>
 
           <label className="authLabel">
@@ -107,6 +113,12 @@ export default function Login() {
             Se connecter
           </button>
         </form>
+
+        <div className="authDivider">
+          <span>ou</span>
+        </div>
+
+        <FaceLogin />
 
         
 

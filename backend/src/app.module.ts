@@ -25,6 +25,7 @@ import { DepartmentsModule } from './departments/departments.module';
 import { MessagingModule } from './messaging/messaging.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
+import { FaceModule } from './face/face.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { AuditLogsModule } from './audit-logs/audit-logs.module';
     MessagingModule,
     NotificationsModule,
     AuditLogsModule,
+    FaceModule,
   ],
   controllers: [AppController],
   providers: [

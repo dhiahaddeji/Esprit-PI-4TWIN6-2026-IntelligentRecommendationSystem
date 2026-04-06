@@ -1,7 +1,8 @@
 // src/pages/superadmin/CreateUser.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import http from "../../api/http";
+import MicButton from "../../components/MicButton";
 
 // ─── Role config ────────────────────────────────────────────────────────────
 
@@ -83,6 +84,13 @@ export default function CreateUser() {
   const [success,     setSuccess]     = useState(false);
   const [loading,     setLoading]     = useState(false);
 
+  // ── CSV import state ────────────────────────────────────────────────
+  const [csvFile,       setCsvFile]       = useState(null);
+  const [csvUploading,  setCsvUploading]  = useState(false);
+  const [csvResult,     setCsvResult]     = useState(null); // { success, failed, errors }
+  const [csvError,      setCsvError]      = useState("");
+  const csvInputRef = useRef(null);
+
   // Fetch next matricule whenever role changes
   useEffect(() => {
     let cancelled = false;
@@ -104,6 +112,54 @@ export default function CreateUser() {
 
   const selectRole = (role) => {
     setForm(p => ({ ...p, role }));
+  };
+
+  // ── CSV handlers ─────────────────────────────────────────────────────
+
+  const handleCsvChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setCsvFile(file);
+    setCsvResult(null);
+    setCsvError("");
+  };
+
+  const handleCsvUpload = async () => {
+    if (!csvFile) return;
+    setCsvUploading(true);
+    setCsvResult(null);
+    setCsvError("");
+    try {
+      const formData = new FormData();
+      formData.append("file", csvFile);
+      const res = await http.post("/admin/upload-csv", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setCsvResult(res.data);
+      setCsvFile(null);
+      if (csvInputRef.current) csvInputRef.current.value = "";
+    } catch (err) {
+      setCsvError(
+        err?.response?.data?.message || err.message || "CSV upload failed"
+      );
+    } finally {
+      setCsvUploading(false);
+    }
+  };
+
+  const downloadCsvTemplate = () => {
+    const header = "name,email,role,date_embauche";
+    const example1 = "Jean Dupont,jean.dupont@entreprise.com,EMPLOYEE,2024-01-15";
+    const example2 = "Marie Martin,marie.martin@entreprise.com,HR,2024-02-01";
+    const example3 = "Paul Durand,paul.durand@entreprise.com,MANAGER,";
+    const content = [header, example1, example2, example3].join("\n");
+    const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "template_utilisateurs.csv";
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleSubmit = async (e) => {
@@ -203,6 +259,158 @@ export default function CreateUser() {
           </div>
         </div>
       </div>
+
+      {/* ── CSV Import Section ── */}
+      <Section title="Import CSV — Création en masse" icon="📂">
+        {/* Top row: file picker + template download */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+          <div style={{
+            flex: 1, minWidth: 220,
+            display: "flex", alignItems: "center", gap: 10,
+            padding: "10px 14px", borderRadius: 10,
+            border: `1.5px dashed ${csvFile ? "#16a34a" : "var(--input-border)"}`,
+            background: csvFile ? "#f0fdf4" : "var(--input-bg)",
+            cursor: "pointer", transition: "all 0.15s",
+          }}
+            onClick={() => csvInputRef.current?.click()}
+          >
+            <span style={{ fontSize: 20 }}>{csvFile ? "📄" : "📁"}</span>
+            <span style={{ fontSize: 13.5, color: csvFile ? "#15803d" : "var(--text-3)", fontWeight: csvFile ? 600 : 400 }}>
+              {csvFile ? csvFile.name : "Choisir un fichier .csv…"}
+            </span>
+            <input
+              ref={csvInputRef}
+              type="file"
+              accept=".csv,text/csv"
+              style={{ display: "none" }}
+              onChange={handleCsvChange}
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleCsvUpload}
+            disabled={!csvFile || csvUploading}
+            style={{
+              display: "flex", alignItems: "center", gap: 8,
+              padding: "10px 20px", borderRadius: 10, border: "none",
+              background: !csvFile || csvUploading ? "#e2e8f0" : "linear-gradient(135deg,#0b2b4b,#1e3a5f)",
+              color: !csvFile || csvUploading ? "#94a3b8" : "#fff",
+              fontWeight: 700, fontSize: 13.5, cursor: !csvFile || csvUploading ? "not-allowed" : "pointer",
+              whiteSpace: "nowrap", transition: "all 0.15s",
+            }}
+          >
+            {csvUploading ? (
+              <><span style={{ animation: "spin 1s linear infinite", display: "inline-block" }}>⏳</span> Import en cours…</>
+            ) : (
+              <>⬆️ Importer CSV</>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={downloadCsvTemplate}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "10px 16px", borderRadius: 10,
+              border: "1.5px solid #bae6fd", background: "#f0f9ff",
+              color: "#0369a1", fontWeight: 600, fontSize: 13,
+              cursor: "pointer", whiteSpace: "nowrap",
+            }}
+          >
+            ⬇️ Télécharger le modèle
+          </button>
+        </div>
+
+        {/* Format hint */}
+        <div style={{
+          fontSize: 12.5, color: "var(--text-3)",
+          padding: "8px 12px", borderRadius: 8,
+          background: "var(--bg)", border: "1px solid var(--border-2)",
+          fontFamily: "monospace", marginBottom: 10,
+        }}>
+          Format attendu : <strong>name, email, role, date_embauche</strong>
+          &nbsp;— rôles valides : EMPLOYEE · HR · MANAGER · date_embauche optionnelle
+        </div>
+
+        {/* Upload error */}
+        {csvError && (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 10,
+            color: "#b42318", background: "#fff5f5", border: "1px solid #fecdca",
+            padding: "10px 14px", borderRadius: 10, fontSize: 13.5,
+          }}>
+            <span>⚠️</span> {csvError}
+          </div>
+        )}
+
+        {/* Results */}
+        {csvResult && (
+          <div style={{ marginTop: 4 }}>
+            {/* Summary badges */}
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 7,
+                padding: "8px 16px", borderRadius: 10,
+                background: "#f0fdf4", border: "1px solid #bbf7d0",
+              }}>
+                <span style={{ fontSize: 18 }}>✅</span>
+                <div>
+                  <div style={{ fontSize: 11, color: "#15803d", fontWeight: 600, textTransform: "uppercase" }}>Créés</div>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: "#16a34a", lineHeight: 1 }}>{csvResult.success}</div>
+                </div>
+              </div>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 7,
+                padding: "8px 16px", borderRadius: 10,
+                background: csvResult.failed > 0 ? "#fff5f5" : "#f8fafc",
+                border: `1px solid ${csvResult.failed > 0 ? "#fecdca" : "#e2e8f0"}`,
+              }}>
+                <span style={{ fontSize: 18 }}>❌</span>
+                <div>
+                  <div style={{ fontSize: 11, color: csvResult.failed > 0 ? "#b42318" : "#64748b", fontWeight: 600, textTransform: "uppercase" }}>Échoués</div>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: csvResult.failed > 0 ? "#dc2626" : "#94a3b8", lineHeight: 1 }}>{csvResult.failed}</div>
+                </div>
+              </div>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 7,
+                padding: "8px 16px", borderRadius: 10,
+                background: "#f8fafc", border: "1px solid #e2e8f0",
+              }}>
+                <span style={{ fontSize: 18 }}>📊</span>
+                <div>
+                  <div style={{ fontSize: 11, color: "#64748b", fontWeight: 600, textTransform: "uppercase" }}>Total</div>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: "#334155", lineHeight: 1 }}>{csvResult.success + csvResult.failed}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Error list */}
+            {csvResult.errors?.length > 0 && (
+              <div style={{
+                border: "1px solid #fecdca", borderRadius: 10,
+                overflow: "hidden",
+              }}>
+                <div style={{
+                  padding: "8px 14px", background: "#fff5f5",
+                  fontSize: 12.5, fontWeight: 700, color: "#b42318",
+                  borderBottom: "1px solid #fecdca",
+                }}>
+                  ⚠️ {csvResult.errors.length} ligne(s) avec erreur
+                </div>
+                <ul style={{ margin: 0, padding: "8px 14px 10px 28px", listStyle: "disc" }}>
+                  {csvResult.errors.map((msg, i) => (
+                    <li key={i} style={{
+                      fontSize: 12.5, color: "#7f1d1d", padding: "2px 0",
+                      fontFamily: "monospace",
+                    }}>{msg}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </Section>
 
       {error && (
         <div style={{
@@ -316,25 +524,41 @@ export default function CreateUser() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             <div style={{ gridColumn: "1 / -1" }}>
               <FormField label="Nom complet" required error={fieldErrors.name}>
-                <input
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  placeholder="Ex : Marie Dupont"
-                  style={inp(!!fieldErrors.name)}
-                />
+                <div style={{ position: "relative" }}>
+                  <input
+                    name="name"
+                    value={form.name}
+                    onChange={handleChange}
+                    placeholder="Ex : Marie Dupont"
+                    style={{ ...inp(!!fieldErrors.name), paddingRight: 42 }}
+                  />
+                  <MicButton
+                    onResult={(text) => {
+                      setForm(p => ({ ...p, name: text }));
+                      setFieldErrors(p => ({ ...p, name: validateName(text) }));
+                    }}
+                  />
+                </div>
               </FormField>
             </div>
             <div style={{ gridColumn: "1 / -1" }}>
               <FormField label="Email professionnel" required error={fieldErrors.email}>
-                <input
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  placeholder="marie.dupont@entreprise.com"
-                  style={inp(!!fieldErrors.email)}
-                />
+                <div style={{ position: "relative" }}>
+                  <input
+                    name="email"
+                    type="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    placeholder="marie.dupont@entreprise.com"
+                    style={{ ...inp(!!fieldErrors.email), paddingRight: 42 }}
+                  />
+                  <MicButton
+                    onResult={(text) => {
+                      setForm(p => ({ ...p, email: text }));
+                      setFieldErrors(p => ({ ...p, email: validateEmail(text) }));
+                    }}
+                  />
+                </div>
               </FormField>
             </div>
             <FormField label="Date d'embauche" hint="Optionnel">
@@ -466,3 +690,4 @@ function inp(hasError) {
     transition: "border-color 0.15s",
   };
 }
+
