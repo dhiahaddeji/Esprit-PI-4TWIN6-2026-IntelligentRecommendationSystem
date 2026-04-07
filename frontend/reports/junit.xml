@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="1" failures="0" errors="0" time="0.1889092">
+    <testsuite name="src/App.test.jsx" timestamp="2026-02-24T23:37:24.808Z" hostname="DESKTOP-9K0CQ1B" tests="1" failures="0" errors="0" skipped="0" time="0.1889092">
+        <testcase classname="src/App.test.jsx" name="App &gt; renders login screen when visiting /login" time="0.1873308">
+        </testcase>
+    </testsuite>
+</testsuites>
