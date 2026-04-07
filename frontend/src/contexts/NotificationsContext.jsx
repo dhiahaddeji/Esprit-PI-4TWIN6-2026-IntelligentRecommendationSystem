@@ -14,6 +14,8 @@ export const NOTIF_META = {
   new_message:         { icon: "💬", color: "#1D7A91", label: "Message" },
   activity_invitation: { icon: "🎯", color: "#1D7A91", label: "Activité" },
   activity_response:   { icon: "📩", color: "#145C2B", label: "Activité" },
+  activity_refused:    { icon: "🚫", color: "#8B1A1A", label: "Refus" },
+  list_refused:        { icon: "⚠️", color: "#7A4A00", label: "Regénération" },
 };
 
 function getToken() { return localStorage.getItem("access_token"); }

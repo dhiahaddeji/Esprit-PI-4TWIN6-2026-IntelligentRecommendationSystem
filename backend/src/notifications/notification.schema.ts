@@ -10,7 +10,9 @@ export type NotifType =
   | 'cv_import'            // employee imported skills from CV → manager
   | 'new_message'          // new message received
   | 'activity_invitation'  // employee invited to activity
-  | 'activity_response';   // employee responded to invitation → manager
+  | 'activity_response'    // employee responded to invitation → manager
+  | 'activity_refused'     // manager refused entire activity → HR
+  | 'list_refused';        // manager refused some employees → HR must regen
 
 @Schema({ timestamps: true, collection: 'notifications' })
 export class Notification {

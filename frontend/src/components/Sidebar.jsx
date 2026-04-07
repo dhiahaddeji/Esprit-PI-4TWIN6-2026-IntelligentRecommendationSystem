@@ -92,7 +92,6 @@ export default function Sidebar() {
             <NavLink className={cls} to="/admin/users">📋 Liste des comptes</NavLink>
             <div className="menuSection">Compétences</div>
             <NavLink className={cls} to="/manager/skills">🎯 Validation compétences</NavLink>
-            <NavLink className={cls} to="/hr/skills-dashboard">📊 Dashboard compétences</NavLink>
           </>
         )}
 

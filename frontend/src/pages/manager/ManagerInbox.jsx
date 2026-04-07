@@ -5,9 +5,11 @@ import { getStoredUser } from "../../auth/authService";
 import http from "../../api/http";
 
 const STATUS_LABEL = {
-  SENT_TO_MANAGER:   { label: "À confirmer",         bg: "#FEF6E4", color: "#92400e" },
-  MANAGER_CONFIRMED: { label: "Confirmée",            bg: "#E8F5ED", color: "#065f46" },
-  NOTIFIED:          { label: "Employés notifiés",    bg: "#D6EEF3", color: "#155B6E" },
+  SENT_TO_MANAGER:   { label: "À valider",            bg: "#FEF6E4", color: "#92400e"  },
+  HR_REGEN_NEEDED:   { label: "Liste en cours de regénération", bg: "#FFF3CD", color: "#856404" },
+  MANAGER_CONFIRMED: { label: "Confirmée",            bg: "#E8F5ED", color: "#065f46"  },
+  MANAGER_REFUSED:   { label: "Refusée",              bg: "#FBE9E9", color: "#8B1A1A"  },
+  NOTIFIED:          { label: "Employés notifiés",    bg: "#D6EEF3", color: "#155B6E"  },
 };
 
 export default function ManagerInbox() {
@@ -24,7 +26,7 @@ export default function ManagerInbox() {
         const all = Array.isArray(res.data) ? res.data : [];
         const forwarded = all.filter(a =>
           a.managerId === myId &&
-          ["SENT_TO_MANAGER", "MANAGER_CONFIRMED", "NOTIFIED"].includes(a.status)
+          ["SENT_TO_MANAGER", "HR_REGEN_NEEDED", "MANAGER_CONFIRMED", "MANAGER_REFUSED", "NOTIFIED"].includes(a.status)
         );
         setActivities(forwarded);
       })
@@ -35,7 +37,7 @@ export default function ManagerInbox() {
   return (
     <div style={{ padding: 18 }}>
       <h1 style={{ margin: 0 }}>Approbations</h1>
-      <p style={{ marginTop: 6, color: "var(--text-2)" }}>Activités transmises par HR (à confirmer puis notifier).</p>
+      <p style={{ marginTop: 6, color: "var(--text-2)" }}>Activités transmises par HR — validez, refusez ou notifiez les participants.</p>
 
       {error && (
         <div style={{ marginTop: 12, padding: 12, background: "#FDF8EE", border: "1px solid #F28080", borderRadius: 12, color: "#8B1A1A" }}>

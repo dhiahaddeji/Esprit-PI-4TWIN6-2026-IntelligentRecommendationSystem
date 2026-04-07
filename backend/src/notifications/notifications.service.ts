@@ -126,6 +126,45 @@ export class NotificationsService {
     })));
   }
 
+  // ── Activity: manager refused entire activity → HR ────────────────────
+  async notifyHRActivityRefused(
+    hrId: string,
+    activityTitle: string,
+    activityId: string,
+    reason: string,
+    managerName: string,
+  ) {
+    await this.create({
+      userId:  hrId,
+      type:    'activity_refused',
+      title:   `Activité refusée par le manager`,
+      message: `"${activityTitle}" a été refusée par ${managerName}. Motif : "${reason}"`,
+      link:    `/hr/activities/${activityId}`,
+      meta:    { activityId, activityTitle, reason, managerName },
+    });
+  }
+
+  // ── Activity: manager refused some employees → HR must regenerate ─────
+  async notifyHRListRefused(
+    hrId: string,
+    activityTitle: string,
+    activityId: string,
+    refusedCount: number,
+    refusedNames: string[],
+    managerName: string,
+  ) {
+    const names = refusedNames.slice(0, 3).join(', ');
+    const suffix = refusedCount > 3 ? ` (+${refusedCount - 3} autres)` : '';
+    await this.create({
+      userId:  hrId,
+      type:    'list_refused',
+      title:   `Liste à regénérer — ${refusedCount} refus`,
+      message: `${managerName} a refusé ${refusedCount} candidat(s) pour "${activityTitle}"${names ? ` : ${names}${suffix}` : ''}. Regénérez la liste IA.`,
+      link:    `/hr/activities/${activityId}`,
+      meta:    { activityId, activityTitle, refusedCount: String(refusedCount), managerName },
+    });
+  }
+
   // ── Get my notifications ──────────────────────────────────────────────
   async getMyNotifications(userId: string) {
     const items  = await this.notifModel.find({ userId }).sort({ createdAt: -1 }).limit(40);

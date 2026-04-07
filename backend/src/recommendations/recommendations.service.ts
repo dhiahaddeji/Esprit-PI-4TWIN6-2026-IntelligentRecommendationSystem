@@ -22,10 +22,12 @@ export class RecommendationsService {
   }
 
   /* ---------------- UPSERT ---------------- */
-  async upsert(activityId: string, list: any[], hrValidated = false) {
+  async upsert(activityId: string, list: any[], hrValidated = false, refusedEmployees?: string[]) {
+    const update: any = { activityId, list, hrValidated };
+    if (refusedEmployees !== undefined) update.refusedEmployees = refusedEmployees;
     return this.model.findOneAndUpdate(
       { activityId },
-      { activityId, list, hrValidated },
+      update,
       { new: true, upsert: true },
     );
   }

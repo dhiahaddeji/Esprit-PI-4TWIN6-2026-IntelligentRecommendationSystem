@@ -7,12 +7,14 @@ import http from "../../api/http";
 const EVAL_LABELS = ["Pas de compétence", "Notions", "Pratique", "Maîtrise", "Expert"];
 
 const STATUS_META = {
-  DRAFT:             { label: "Brouillon",           bg: "#f1f5f9", color: "var(--text-2)" },
-  AI_SUGGESTED:      { label: "IA lancée",            bg: "#FEF6E4", color: "#92400e" },
-  HR_VALIDATED:      { label: "Validée HR",           bg: "#E8F5ED", color: "#065f46" },
-  SENT_TO_MANAGER:   { label: "Envoyée au manager",   bg: "#D6EEF3", color: "#155B6E" },
-  MANAGER_CONFIRMED: { label: "Confirmée manager",    bg: "#E8F5ED", color: "#065f46" },
-  NOTIFIED:          { label: "Employés notifiés",    bg: "#FBF0DC", color: "#1D7A91" },
+  DRAFT:             { label: "Brouillon",            bg: "#f1f5f9", color: "var(--text-2)" },
+  AI_SUGGESTED:      { label: "IA lancée",             bg: "#FEF6E4", color: "#92400e" },
+  HR_VALIDATED:      { label: "Validée HR",            bg: "#E8F5ED", color: "#065f46" },
+  SENT_TO_MANAGER:   { label: "Envoyée au manager",    bg: "#D6EEF3", color: "#155B6E" },
+  HR_REGEN_NEEDED:   { label: "Regénération requise",  bg: "#FFF3CD", color: "#856404" },
+  MANAGER_CONFIRMED: { label: "Confirmée manager",     bg: "#E8F5ED", color: "#065f46" },
+  MANAGER_REFUSED:   { label: "Refusée par manager",   bg: "#FBE9E9", color: "#8B1A1A" },
+  NOTIFIED:          { label: "Employés notifiés",     bg: "#FBF0DC", color: "#1D7A91" },
 };
 
 const TYPE_ICONS = {
@@ -22,23 +24,28 @@ const TYPE_ICONS = {
 const COMP_TYPE_LABELS = { savoir: "Savoir", savoir_faire: "Savoir-faire", savoir_etre: "Savoir-être" };
 
 // ── Score bar component ────────────────────────────────────────────────────────
-function ScoreBar({ score }) {
+function ScoreBar({ score, isCert = false }) {
+  // For certification: high score = high NEED (red→orange→teal→green)
+  // For others: high score = high FIT (red→orange→teal→green)
   const color =
-    score >= 80 ? "#145C2B" :
-    score >= 60 ? "#155B6E" :
-    score >= 40 ? "#C9952A" : "#8B1A1A";
+    score >= 80 ? (isCert ? "#8B1A1A" : "#145C2B") :
+    score >= 60 ? (isCert ? "#C9952A" : "#155B6E") :
+    score >= 40 ? (isCert ? "#155B6E" : "#C9952A") : (isCert ? "#145C2B" : "#8B1A1A");
+  const label = isCert
+    ? (score >= 80 ? "Besoin élevé" : score >= 60 ? "Besoin moyen" : score >= 40 ? "Besoin faible" : "Déjà maîtrisé")
+    : `${score}%`;
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
       <div style={{ flex: 1, height: 6, borderRadius: 3, background: "var(--bg)", overflow: "hidden" }}>
         <div style={{ width: `${score}%`, height: "100%", background: color, borderRadius: 3, transition: "width 0.6s ease" }} />
       </div>
-      <span style={{ fontSize: 13, fontWeight: 800, color, minWidth: 38, textAlign: "right" }}>{score}%</span>
+      <span style={{ fontSize: 12, fontWeight: 800, color, minWidth: 70, textAlign: "right" }}>{label}</span>
     </div>
   );
 }
 
 // ── Employee recommendation card ───────────────────────────────────────────────
-function RecCard({ item, seats, onRemove, onPromoteToSelected }) {
+function RecCard({ item, seats, onRemove, onPromoteToSelected, isCert = false }) {
   const [expanded, setExpanded] = useState(false);
   const isSelected = item.status === "Selected" || item.rank <= seats;
   const isBackup   = item.status === "Backup"   || item.rank > seats;
@@ -78,7 +85,7 @@ function RecCard({ item, seats, onRemove, onPromoteToSelected }) {
 
           {/* Score bar */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
-            <ScoreBar score={item.score ?? 0} />
+            <ScoreBar score={item.score ?? 0} isCert={isCert} />
           </div>
 
           {/* Explanation */}
@@ -347,6 +354,7 @@ export default function HRActivityWorkflow() {
   const recList        = rec?.list || [];
   const recIds         = new Set(recList.map(r => r.employeeId));
   const seats          = activity?.seats || 5;
+  const isCert         = activity?.type === 'certification';
 
   const filteredEmployees = employees.filter(e => {
     const name = (e.name || e.firstName || "").toLowerCase();
@@ -459,7 +467,10 @@ export default function HRActivityWorkflow() {
   const icon = TYPE_ICONS[activity.type] || "📋";
   const selectedCount = recList.filter(r => r.status === "Selected" || r.rank <= seats).length;
   const backupCount   = recList.filter(r => r.status === "Backup"   || r.rank > seats).length;
-  const isLocked      = ["HR_VALIDATED", "SENT_TO_MANAGER", "MANAGER_CONFIRMED", "NOTIFIED"].includes(activity.status);
+  const isLocked      = ["HR_VALIDATED", "SENT_TO_MANAGER", "MANAGER_CONFIRMED", "NOTIFIED", "MANAGER_REFUSED"].includes(activity.status);
+  const isRegenNeeded = activity.status === "HR_REGEN_NEEDED";
+  const isRefused     = activity.status === "MANAGER_REFUSED";
+  const refusedEmployees = rec?.refusedEmployees || [];
 
   return (
     <div style={{ padding: "20px 24px", maxWidth: 1200, margin: "0 auto" }}>
@@ -533,6 +544,51 @@ export default function HRActivityWorkflow() {
         }}>{success}</div>
       )}
 
+      {/* ── Refused by manager banner ───────────────────────────────── */}
+      {isRefused && (
+        <div style={{
+          marginBottom: 16, padding: "16px 20px", borderRadius: 14,
+          background: "#FBE9E9", border: "1.5px solid #F28080", color: "#8B1A1A",
+        }}>
+          <div style={{ fontWeight: 900, fontSize: 15, marginBottom: 4 }}>🚫 Activité refusée par le manager</div>
+          {activity.refusalReason && (
+            <div style={{ fontSize: 13 }}>Motif : <em>"{activity.refusalReason}"</em></div>
+          )}
+          <div style={{ fontSize: 12, marginTop: 8, color: "#7A1A1A" }}>
+            Vous pouvez modifier l'activité et la renvoyer au manager.
+          </div>
+        </div>
+      )}
+
+      {/* ── Regen needed banner ─────────────────────────────────────── */}
+      {isRegenNeeded && (
+        <div style={{
+          marginBottom: 16, padding: "16px 20px", borderRadius: 14,
+          background: "#FFF3CD", border: "1.5px solid #FBBF24", color: "#856404",
+        }}>
+          <div style={{ fontWeight: 900, fontSize: 15, marginBottom: 4 }}>
+            ⚠️ Le manager a refusé {refusedEmployees.length} candidat{refusedEmployees.length !== 1 ? "s" : ""}
+          </div>
+          {refusedEmployees.length > 0 && (
+            <div style={{ fontSize: 12, marginBottom: 10 }}>
+              Ces employés sont exclus des prochaines recommandations IA :&nbsp;
+              <strong>{refusedEmployees.join(", ")}</strong>
+            </div>
+          )}
+          <button
+            onClick={onRunAI}
+            disabled={loadingAI}
+            style={{
+              padding: "9px 18px", borderRadius: 10, border: "none",
+              background: loadingAI ? "#e2e8f0" : "#C9952A",
+              color: "#fff", fontWeight: 800, fontSize: 13, cursor: loadingAI ? "not-allowed" : "pointer",
+            }}
+          >
+            {loadingAI ? "Analyse…" : "🚀 Regénérer la liste IA (sans les exclus)"}
+          </button>
+        </div>
+      )}
+
       <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 18, alignItems: "start" }}>
 
         {/* ── LEFT: Recommendations ──────────────────────────────── */}
@@ -549,19 +605,26 @@ export default function HRActivityWorkflow() {
                     {selectedCount} sélectionné{selectedCount !== 1 ? "s" : ""} · {backupCount} backup
                   </div>
                 )}
+                {isCert && (
+                  <div style={{ marginTop: 6, fontSize: 11, padding: "4px 10px", borderRadius: 6, background: "#FEF6E4", color: "#7A4A00", border: "1px solid #FBBF24", display: "inline-block" }}>
+                    🎓 Mode certification — classé par <strong>besoin</strong> (moins compétents en priorité)
+                  </div>
+                )}
               </div>
 
               <button
                 onClick={onRunAI}
-                disabled={loadingAI || isLocked}
+                disabled={loadingAI || (isLocked && !isRegenNeeded)}
                 style={{
                   display: "flex", alignItems: "center", gap: 8,
                   padding: "9px 18px", borderRadius: 10, border: "none",
-                  background: loadingAI || isLocked
+                  background: loadingAI || (isLocked && !isRegenNeeded)
                     ? "#e2e8f0"
+                    : isRegenNeeded
+                    ? "#C9952A"
                     : "linear-gradient(135deg,#1D7A91,#2d58b0)",
-                  color: loadingAI || isLocked ? "#638899" : "#fff",
-                  fontWeight: 700, fontSize: 13.5, cursor: loadingAI || isLocked ? "not-allowed" : "pointer",
+                  color: loadingAI || (isLocked && !isRegenNeeded) ? "#638899" : "#fff",
+                  fontWeight: 700, fontSize: 13.5, cursor: loadingAI || (isLocked && !isRegenNeeded) ? "not-allowed" : "pointer",
                   transition: "all 0.2s",
                 }}
               >
@@ -623,6 +686,7 @@ export default function HRActivityWorkflow() {
                           seats={seats}
                           onRemove={removeFromList}
                           onPromoteToSelected={null}
+                          isCert={isCert}
                         />
                       ))
                     }
@@ -644,6 +708,7 @@ export default function HRActivityWorkflow() {
                           seats={seats}
                           onRemove={removeFromList}
                           onPromoteToSelected={promoteToSelected}
+                          isCert={isCert}
                         />
                       ))
                     }
@@ -656,20 +721,20 @@ export default function HRActivityWorkflow() {
             <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--border)" }}>
               <button
                 onClick={onValidateForward}
-                disabled={!recList.length || loadingSave || isLocked}
+                disabled={!recList.length || loadingSave || (isLocked && !isRegenNeeded)}
                 style={{
                   width: "100%", padding: "11px", borderRadius: 11, border: "none",
-                  background: !recList.length || isLocked
+                  background: !recList.length || (isLocked && !isRegenNeeded)
                     ? "#e2e8f0"
                     : "linear-gradient(135deg,#145C2B,#145C2B)",
-                  color: !recList.length || isLocked ? "#638899" : "#fff",
+                  color: !recList.length || (isLocked && !isRegenNeeded) ? "#638899" : "#fff",
                   fontWeight: 800, fontSize: 14,
-                  cursor: !recList.length || isLocked ? "not-allowed" : "pointer",
+                  cursor: !recList.length || (isLocked && !isRegenNeeded) ? "not-allowed" : "pointer",
                 }}
               >
-                {loadingSave ? "Envoi en cours…" : isLocked ? `Déjà validée (${st.label})` : "✅ Valider & envoyer les invitations"}
+                {loadingSave ? "Envoi en cours…" : (isLocked && !isRegenNeeded) ? `Déjà envoyée (${st.label})` : isRegenNeeded ? "✅ Renvoyer la nouvelle liste au manager" : "✅ Valider & envoyer au manager"}
               </button>
-              {!isLocked && recList.length > 0 && (
+              {(!isLocked || isRegenNeeded) && recList.length > 0 && (
                 <div style={{ textAlign: "center", marginTop: 6, fontSize: 11, color: "var(--text-2)" }}>
                   Enverra des invitations à {recList.length} employé{recList.length !== 1 ? "s" : ""}
                 </div>

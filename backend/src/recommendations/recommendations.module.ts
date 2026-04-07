@@ -5,6 +5,7 @@ import { UsersModule } from '../users/users.module';
 import { ActivityModule } from '../activity/activity.module';
 import { CompetencesModule } from '../competences/competences.module';
 import { InvitationsModule } from '../invitations/invitations.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 import { Recommendation, RecommendationSchema } from './recommendation.schema';
 import { Activity, ActivitySchema } from '../activity/activity.schema';
@@ -23,6 +24,7 @@ import { RecommendationsController } from './recommendations.controller';
     ActivityModule,
     CompetencesModule,
     InvitationsModule,
+    NotificationsModule,
   ],
   controllers: [RecommendationsController],
   providers: [RecommendationsService],
