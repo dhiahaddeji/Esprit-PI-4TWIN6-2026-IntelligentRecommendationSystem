@@ -5,6 +5,7 @@ import FingerScrollController from "./FingerScrollController";
 import { getStoredUser, logout } from "../auth/authService";
 import { useTheme } from "../contexts/ThemeContext";
 import { useNotifications, NOTIF_META } from "../contexts/NotificationsContext";
+import { useTranslation } from "../contexts/TranslationContext";
 import "../styles/topbar.css";
 
 export default function Topbar() {
@@ -13,25 +14,30 @@ export default function Topbar() {
   const [a11yOpen,      setA11yOpen]      = useState(false);
   const [profileOpen,   setProfileOpen]   = useState(false);
   const [notifOpen,     setNotifOpen]     = useState(false);
+  const [langOpen,      setLangOpen]      = useState(false);
   const [fingerActive,  setFingerActive]  = useState(false);
 
   const profileRef = useRef(null);
   const notifRef   = useRef(null);
+  const langRef    = useRef(null);
   const navigate   = useNavigate();
+  const { lang, changeLanguage } = useTranslation();
 
   const user = getStoredUser() || { name: "—", role: null };
 
   // ── Close dropdowns on outside click ──────────────────────────────────
-  useEffect(() => {
-    const onDocClick = (e) => {
-      if (profileRef.current && !profileRef.current.contains(e.target))
-        setProfileOpen(false);
-      if (notifRef.current && !notifRef.current.contains(e.target))
-        setNotifOpen(false);
-    };
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, []);
+useEffect(() => {
+  const onDocClick = (e) => {
+    if (profileRef.current && !profileRef.current.contains(e.target))
+      setProfileOpen(false);
+    if (notifRef.current && !notifRef.current.contains(e.target))
+      setNotifOpen(false);
+    if (langRef.current && !langRef.current.contains(e.target))
+      setLangOpen(false);
+  };
+  document.addEventListener("mousedown", onDocClick);
+  return () => document.removeEventListener("mousedown", onDocClick);
+}, []);
 
   // ── Block scroll when accessibility popup open ─────────────────────────
   useEffect(() => {
@@ -72,6 +78,7 @@ export default function Topbar() {
     if (h < 24) return `Il y a ${h}h`;
     return `Il y a ${Math.floor(h / 24)}j`;
   };
+  const roleLabel = getRoleLabel(user.role);
 
   const displayName =
     user.firstName && user.lastName
@@ -92,7 +99,6 @@ export default function Topbar() {
         </div>
 
         <div className="topRight">
-
           {/* DARK / LIGHT MODE */}
           <button
             type="button"
@@ -125,7 +131,7 @@ export default function Topbar() {
             ♿
           </button>
 
-          {/* ── NOTIFICATION BELL ─────────────────────────────────────── */}
+          {/* NOTIFICATION BELL */}
           <div className="notifWrap" ref={notifRef}>
             <button
               className="notifBtn"
@@ -141,7 +147,6 @@ export default function Topbar() {
 
             {notifOpen && (
               <div className="notifPanel">
-                {/* Header */}
                 <div className="notifHeader">
                   <span className="notifTitle">Notifications</span>
                   {unread > 0 && (
@@ -151,7 +156,6 @@ export default function Topbar() {
                   )}
                 </div>
 
-                {/* List */}
                 <div className="notifList">
                   {notifications.length === 0 ? (
                     <div className="notifEmpty">
@@ -169,7 +173,7 @@ export default function Topbar() {
                           className="notifIcon"
                           style={{
                             background: (NOTIF_META[n.type]?.color ?? "#3b6fd4") + "1a",
-                            color:      NOTIF_META[n.type]?.color ?? "#3b6fd4",
+                            color: NOTIF_META[n.type]?.color ?? "#3b6fd4",
                           }}
                         >
                           {NOTIF_META[n.type]?.icon ?? "🔔"}
@@ -184,6 +188,52 @@ export default function Topbar() {
                     ))
                   )}
                 </div>
+              </div>
+            )}
+          </div>
+
+          {/* TRADUCTION */}
+          <div className="menuWrap" ref={langRef}>
+            <button
+              className="iconBtn"
+              type="button"
+              onClick={() => setLangOpen((v) => !v)}
+              title="Changer de langue"
+              aria-label="Changer de langue"
+              style={{ fontSize: "1.2rem" }}
+            >
+              {lang === "fr" ? "🇫🇷" : lang === "en" ? "🇬🇧" : "🇸🇦"}
+            </button>
+
+            {langOpen && (
+              <div className="profileMenu" style={{ minWidth: "120px" }}>
+                <button
+                  onClick={() => {
+                    changeLanguage("fr");
+                    setLangOpen(false);
+                  }}
+                  disabled={lang === "fr"}
+                >
+                  🇫🇷 Français
+                </button>
+                <button
+                  onClick={() => {
+                    changeLanguage("en");
+                    setLangOpen(false);
+                  }}
+                  disabled={lang === "en"}
+                >
+                  🇬🇧 English
+                </button>
+                <button
+                  onClick={() => {
+                    changeLanguage("ar");
+                    setLangOpen(false);
+                  }}
+                  disabled={lang === "ar"}
+                >
+                  🇸🇦 العربية
+                </button>
               </div>
             )}
           </div>
@@ -209,7 +259,6 @@ export default function Topbar() {
               </div>
             )}
           </div>
-
         </div>
       </header>
 

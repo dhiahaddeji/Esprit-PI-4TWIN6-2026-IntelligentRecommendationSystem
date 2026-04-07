@@ -44,6 +44,19 @@ const profileFileFilter = (_req: any, file: any, cb: any) => {
   return cb(new BadRequestException('Champ de fichier non autorisé.'), false);
 };
 
+const uploadStorage = (folder: string) =>
+  diskStorage({
+    destination: (_req, _file, cb) => {
+      const dir = join(process.cwd(), 'uploads', folder);
+      mkdirSync(dir, { recursive: true });
+      cb(null, dir);
+    },
+    filename: (req, file, cb) => {
+      const userId = (req as any).user?.userId || 'unknown';
+      cb(null, `${userId}-${Date.now()}${extname(file.originalname)}`);
+    },
+  });
+
 @Controller('auth')
 export class AuthController {
   constructor(

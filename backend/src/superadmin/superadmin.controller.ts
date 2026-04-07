@@ -316,4 +316,34 @@ export class SuperAdminController {
     const matricule = await this.usersService.nextMatricule(role);
     return { matricule };
   }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SUPERADMIN')
+  @Patch('suspend-user/:id')
+  async suspendUser(
+    @Param('id') id: string,
+    @Body() body: { reason?: string },
+  ) {
+    // Récupérer l'utilisateur existant
+    const user = await this.usersService.findById(id);
+
+    // Mettre à jour le statut à 'SUSPENDED'
+    const suspendedUser = await this.usersService.update(id, {
+      status: 'SUSPENDED',
+    });
+
+    // Envoyer l'email de notification
+    await this.mailService.sendAccountSuspendedEmail({
+      to: user.email,
+      name: user.name,
+      reason: body.reason,
+    });
+
+    return {
+      message: 'Utilisateur suspendu et email envoyé.',
+      userId: suspendedUser._id,
+      email: suspendedUser.email,
+      status: suspendedUser.status,
+    };
+  }
 }
