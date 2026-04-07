@@ -35,9 +35,11 @@ export class Activity {
 
   @Prop({
     default: 'DRAFT',
-    enum: ['DRAFT', 'AI_SUGGESTED', 'HR_VALIDATED', 'SENT_TO_MANAGER', 'MANAGER_CONFIRMED', 'NOTIFIED'],
+    enum: ['DRAFT', 'AI_SUGGESTED', 'HR_VALIDATED', 'SENT_TO_MANAGER', 'MANAGER_CONFIRMED', 'NOTIFIED', 'MANAGER_REFUSED', 'HR_REGEN_NEEDED'],
   })
   status: string;
+
+  @Prop() refusalReason?: string;
 
   @Prop({ type: [String], default: [] })
   participants: string[];

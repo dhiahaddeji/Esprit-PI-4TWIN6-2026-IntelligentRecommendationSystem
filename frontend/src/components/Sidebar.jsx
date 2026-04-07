@@ -73,12 +73,11 @@ export default function Sidebar() {
         {role === "HR" && (
           <>
             <div className="menuSection">Ressources Humaines</div>
-            <NavLink className={cls} to="/hr/employees">👥 Employés</NavLink>
             <NavLink className={cls} to="/hr/activities">📅 Activités</NavLink>
             <NavLink className={cls} to="/hr/activities/new">➕ Créer une activité</NavLink>
             <NavLink className={cls} to="/hr/departments">🏢 Départements</NavLink>
             <NavLink className={cls} to="/admin/users">📋 Liste des comptes</NavLink>
-            <div className="menuSection">Intelligence IA</div>
+            <div className="menuSection">Intelligence Artificiel</div>
             <NavLink className={cls} to="/hr/skills-dashboard">📊 Dashboard compétences</NavLink>
             <NavLink className={cls} to="/hr/ai-chat">🤖 Assistant IA</NavLink>
           </>
@@ -92,7 +91,6 @@ export default function Sidebar() {
             <NavLink className={cls} to="/admin/users">📋 Liste des comptes</NavLink>
             <div className="menuSection">Compétences</div>
             <NavLink className={cls} to="/manager/skills">🎯 Validation compétences</NavLink>
-            <NavLink className={cls} to="/hr/skills-dashboard">📊 Dashboard compétences</NavLink>
           </>
         )}
 
@@ -113,7 +111,7 @@ export default function Sidebar() {
           <span>💬 Messagerie</span>
           {unread > 0 && (
             <span style={{
-              background: "#e74c3c", color: "#fff", borderRadius: "10px",
+              background: "#8B1A1A", color: "#fff", borderRadius: "10px",
               fontSize: "11px", fontWeight: 700, padding: "1px 7px", minWidth: "18px", textAlign: "center"
             }}>
               {unread > 99 ? "99+" : unread}

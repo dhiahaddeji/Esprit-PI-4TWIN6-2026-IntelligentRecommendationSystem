@@ -398,20 +398,27 @@ Réponds en JSON:
     const keywords       = this.matching.extractKeywords(msg);
     const prioritization = context?.prioritization || this.matching.detectPrioritization(msg);
 
-    const scored = await this.matching.scoreEmployees(allEmployees as any[], keywords, prioritization);
-    const top    = scored.slice(0, topN);
-    const reply  = this.buildReply(top, keywords, topN, prioritization);
+    try {
+      const scored = await this.matching.scoreEmployees(allEmployees as any[], keywords, prioritization);
+      const top    = scored.slice(0, topN);
+      const reply  = this.buildReply(top, keywords, topN, prioritization);
 
-    return {
-      reply,
-      employees: top.map(e => ({
-        employee_id: e.employee_id,
-        name:        e.employee_name,
-        score:       e.computedScore,
-        matched:     e.matched,
-        competences: e.competences,
-      })),
-    };
+      return {
+        reply,
+        employees: top.map(e => ({
+          employee_id: e.employee_id,
+          name:        e.employee_name,
+          score:       e.computedScore,
+          matched:     e.matched,
+          competences: e.competences,
+        })),
+      };
+    } catch {
+      return {
+        reply: '⚠️ Erreur lors de l\'analyse. Réessayez avec un autre message.',
+        employees: [],
+      };
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────

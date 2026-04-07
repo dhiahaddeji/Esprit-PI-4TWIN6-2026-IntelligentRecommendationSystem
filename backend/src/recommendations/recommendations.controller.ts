@@ -7,6 +7,7 @@ import { ActivitiesService } from '../activity/activity.service';
 import { CompetencesService } from '../competences/competences.service';
 import { InvitationsService } from '../invitations/invitations.service';
 import { UsersService } from '../users/users.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 // Context weights by prioritization strategy
 const CONTEXT_WEIGHTS: Record<string, Record<number, number>> = {
@@ -26,6 +27,7 @@ export class RecommendationsController {
     private readonly compSvc: CompetencesService,
     private readonly invService: InvitationsService,
     private readonly usersService: UsersService,
+    private readonly notifService: NotificationsService,
   ) {}
 
   // ── GET recommendation for an activity ──────────────────────────────
@@ -42,11 +44,20 @@ export class RecommendationsController {
     const activity = await this.activitiesService.findById(activityId);
     if (!activity) throw new NotFoundException('Activité introuvable');
 
-    const allEmployees = await this.compSvc.getAllEmployeesCompetences() as any[];
+    // Fetch existing recommendation to get previously refused employees
+    const existingRec = await this.recService.getByActivity(activityId);
+    const refusedIds: string[] = (existingRec as any)?.refusedEmployees || [];
+
+    let allEmployees = await this.compSvc.getAllEmployeesCompetences() as any[];
+
+    // Exclude employees the manager explicitly refused
+    if (refusedIds.length > 0) {
+      allEmployees = allEmployees.filter((e: any) => !refusedIds.includes(e.employee_id));
+    }
 
     if (allEmployees.length === 0) {
       throw new BadRequestException(
-        'Aucun employé avec des compétences validées. Les employés doivent soumettre et faire valider leurs compétences.',
+        'Aucun employé éligible avec des compétences validées (certains ont été exclus par le manager).',
       );
     }
 
@@ -55,16 +66,18 @@ export class RecommendationsController {
     const reqs: any[]        = (activity as any).competences_requises || [];
     const seats: number      = (activity as any).seats || 5;
     const prioritization     = (activity as any).prioritization || 'expertise';
+    const activityType       = (activity as any).type || 'formation';
+    const isCertification    = activityType === 'certification';
     const ctxW               = CONTEXT_WEIGHTS[prioritization] || CONTEXT_WEIGHTS.expertise;
     const totalReqs          = reqs.length;
 
     const scored = allEmployees.map(emp => {
-      const details: any[]       = [];
+      const details: any[]          = [];
       const matchedSkills: string[] = [];
       const missingSkills: string[] = [];
-      let levelRatioSum    = 0;
-      let matchedCount     = 0;
-      let ctxScoreSum      = 0;
+      let levelRatioSum = 0;
+      let matchedCount  = 0;
+      let ctxScoreSum   = 0;
 
       const availability = availabilityMap.get(emp.employee_id);
 
@@ -77,10 +90,10 @@ export class RecommendationsController {
         );
 
         if (match) {
-          const evalScore    = match.hierarchie_eval >= 0 ? match.hierarchie_eval : match.auto_eval;
-          const reqLevel     = req.niveau_min ?? 2;
-          const levelRatio   = reqLevel > 0 ? Math.min(1, evalScore / reqLevel) : (evalScore > 0 ? 1 : 0);
-          const ctxWeight    = ctxW[evalScore] ?? 1;
+          const evalScore  = match.hierarchie_eval >= 0 ? match.hierarchie_eval : match.auto_eval;
+          const reqLevel   = req.niveau_min ?? 2;
+          const levelRatio = reqLevel > 0 ? Math.min(1, evalScore / reqLevel) : (evalScore > 0 ? 1 : 0);
+          const ctxWeight  = ctxW[evalScore] ?? 1;
 
           levelRatioSum += levelRatio;
           ctxScoreSum   += evalScore * ctxWeight;
@@ -114,24 +127,43 @@ export class RecommendationsController {
 
       const meetsCount = details.filter(d => d.meets_minimum).length;
       const meetsAll   = totalReqs > 0 && meetsCount === totalReqs;
+      const avgLevelRatio = matchedCount > 0 ? levelRatioSum / matchedCount : 0;
 
-      // ── Multi-factor score (0–100) ─────────────────────────────────
-      // skill_match  (50%): proportion of required skills covered
-      // level_match  (30%): average ratio of employee level / required level for matched skills
-      // exp_bonus    (10%): validated competence breadth (caps at 15)
-      // meets_bonus  (10%): proportion of skills where employee meets the minimum level
-      const skillMatchScore = totalReqs > 0 ? (matchedCount / totalReqs) * 50 : 50;
-      const levelMatchScore = matchedCount > 0 ? (levelRatioSum / matchedCount) * 30 : 0;
-      const expBonus        = Math.min(1, emp.competences.length / 15) * 10;
-      const meetsBonus      = totalReqs > 0 ? (meetsCount / totalReqs) * 10 : 10;
+      let rawScore: number;
+      let finalScore: number;
 
-      const rawScore   = skillMatchScore + levelMatchScore + expBonus + meetsBonus;
-      const finalScore = Math.min(100, Math.round(rawScore));
+      if (isCertification) {
+        // ── Certification mode: rank by NEED (who lacks the skills most) ──
+        // skill_gap   (55%): proportion of required skills completely MISSING
+        // level_gap   (35%): how far BELOW the required level for matched skills
+        // active_emp  (10%): has some validated competences (active employee profile)
+        //
+        // Employees who already meet all requirements score 0 — they don't need it.
+        const skillGap   = totalReqs > 0 ? ((totalReqs - matchedCount) / totalReqs) * 55 : 0;
+        const levelGap   = matchedCount > 0 ? (1 - avgLevelRatio) * 35 : 35; // max gap if all missing
+        const activeEmp  = Math.min(1, emp.competences.length / 10) * 10;
 
-      // ── Human-readable explanation ────────────────────────────────
-      const explanation = this.buildExplanation(
-        reqs, matchedSkills, missingSkills, meetsCount, totalReqs, emp.competences.length,
-      );
+        rawScore   = skillGap + levelGap + activeEmp;
+        finalScore = Math.min(100, Math.round(rawScore));
+      } else {
+        // ── Standard mode: rank by FIT (who matches best) ────────────────
+        // skill_match (50%): proportion of required skills covered
+        // level_match (30%): average ratio of employee level / required level
+        // exp_bonus   (10%): validated competence breadth (caps at 15)
+        // meets_bonus (10%): proportion of skills where employee meets minimum
+        const skillMatchScore = totalReqs > 0 ? (matchedCount / totalReqs) * 50 : 50;
+        const levelMatchScore = matchedCount > 0 ? (avgLevelRatio) * 30 : 0;
+        const expBonus        = Math.min(1, emp.competences.length / 15) * 10;
+        const meetsBonus      = totalReqs > 0 ? (meetsCount / totalReqs) * 10 : 10;
+
+        rawScore   = skillMatchScore + levelMatchScore + expBonus + meetsBonus;
+        finalScore = Math.min(100, Math.round(rawScore));
+      }
+
+      // ── Human-readable explanation ──────────────────────────────────
+      const explanation = isCertification
+        ? this.buildCertExplanation(missingSkills, meetsCount, totalReqs, matchedCount, avgLevelRatio)
+        : this.buildExplanation(reqs, matchedSkills, missingSkills, meetsCount, totalReqs, emp.competences.length);
 
       return {
         employeeId:       emp.employee_id,
@@ -149,7 +181,7 @@ export class RecommendationsController {
       };
     });
 
-    // Sort DESC by rank_score
+    // Sort DESC by rank_score (highest need first for cert, best fit first for others)
     scored.sort((a, b) => b.rank_score - a.rank_score);
 
     // Keep only top (seats + 2)
@@ -173,7 +205,8 @@ export class RecommendationsController {
     }));
 
     await this.activitiesService.update(activityId, { status: 'AI_SUGGESTED' });
-    return this.recService.upsert(activityId, list, false);
+    // Preserve the refusedEmployees list so exclusions survive re-runs
+    return this.recService.upsert(activityId, list, false, refusedIds);
   }
 
   // ── HR: update the selection (add/remove employees) ──────────────────
@@ -186,7 +219,7 @@ export class RecommendationsController {
     return this.recService.upsert(activityId, body.list || [], false);
   }
 
-  // ── HR: validate + send invitations to selected employees ────────────
+  // ── HR: validate list → send to manager for review (NOT to employees) ─
   @Roles('HR', 'SUPERADMIN')
   @Patch(':activityId/validate')
   async validate(@Param('activityId') activityId: string) {
@@ -218,16 +251,51 @@ export class RecommendationsController {
 
     const employeeIds = (rec.list as any[]).map((item: any) => item.employeeId);
 
-    await this.invService.bulkUpsert(activityId, employeeIds);
+    // Set participants list + send to manager for review
     await this.activitiesService.update(activityId, {
-      status: 'NOTIFIED',
+      status: 'SENT_TO_MANAGER',
       participants: employeeIds,
     });
 
-    return this.recService.upsert(activityId, rec.list, true);
+    // Notify the assigned manager
+    if ((activity as any).managerId) {
+      await this.notifService.create({
+        userId:  (activity as any).managerId,
+        type:    'activity_invitation',
+        title:   'Activité à valider',
+        message: `L'activité "${(activity as any).title}" vous a été envoyée pour validation.`,
+        link:    `/manager/activities/${activityId}`,
+        meta:    { activityId, activityTitle: (activity as any).title },
+      });
+    }
+
+    return this.recService.upsert(activityId, rec.list, true, (rec as any).refusedEmployees || []);
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────
+
+  /** Explains WHY an employee is recommended for a certification (gap-based) */
+  private buildCertExplanation(
+    missingSkills: string[],
+    meetsCount: number,
+    totalReqs: number,
+    matchedCount: number,
+    avgLevelRatio: number,
+  ): string {
+    if (totalReqs === 0) return 'Aucun critère spécifique — certification générale.';
+
+    if (missingSkills.length === totalReqs) {
+      const top = missingSkills.slice(0, 2).join(', ');
+      return `Profil prioritaire — ne possède aucune des ${totalReqs} compétences requises (${top}). Certification très recommandée.`;
+    }
+    if (meetsCount === totalReqs) {
+      return `Compétences déjà maîtrisées — employé moins prioritaire pour cette certification.`;
+    }
+    const gapCount = totalReqs - meetsCount;
+    const pct      = Math.round((1 - avgLevelRatio) * 100);
+    const top      = missingSkills.slice(0, 2).join(', ');
+    return `${gapCount}/${totalReqs} compétence${gapCount > 1 ? 's' : ''} en dessous du niveau requis (écart moyen : ${pct}%)${top ? ` — lacunes : ${top}` : ''}. Bénéficierait de cette certification.`;
+  }
 
   private buildExplanation(
     _reqs: any[],

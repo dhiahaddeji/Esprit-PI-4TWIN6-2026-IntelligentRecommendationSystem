@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import http from "../../api/http";
 
 const DEPT_COLORS = [
-  "#0b2b4b", "#0ea5a0", "#6366f1", "#10b981",
-  "#f59e0b", "#ef4444", "#8b5cf6", "#0891b2",
+  "#0B2D38", "#1D7A91", "#155B6E", "#145C2B",
+  "#C9952A", "#8B1A1A", "#1D7A91", "#1D7A91",
 ];
 
 // ── Avatar initials ────────────────────────────────────────────────────────────
@@ -68,7 +68,7 @@ function ManagerSelector({ deptId, currentManagerId, managers, color, onSaved })
               padding: "9px 14px", cursor: "pointer", fontSize: 12.5,
               color: "var(--text-3)", borderBottom: "1px solid var(--border)",
             }}
-            onMouseEnter={e => e.currentTarget.style.background = "#f8fafc"}
+            onMouseEnter={e => e.currentTarget.style.background = "#EEF7FA"}
             onMouseLeave={e => e.currentTarget.style.background = "#fff"}
           >✕ Retirer le manager</div>
           {managers.map(m => (
@@ -167,7 +167,7 @@ function AddEmployeePanel({ deptId, allEmployees, currentMembers, color, onSaved
                     padding: "8px 12px", cursor: saving ? "not-allowed" : "pointer",
                     opacity: saving === e._id ? 0.5 : 1,
                   }}
-                  onMouseEnter={el => el.currentTarget.style.background = "#f8fafc"}
+                  onMouseEnter={el => el.currentTarget.style.background = "#EEF7FA"}
                   onMouseLeave={el => el.currentTarget.style.background = "#fff"}
                 >
                   <Avatar name={e.name} color={color} size={28} />
@@ -283,11 +283,11 @@ function DeptCard({ dept, idx, managers, allEmployees, onRefresh }) {
                 title="Retirer du département"
                 style={{
                   background: "transparent", border: "none", cursor: removing === emp._id ? "not-allowed" : "pointer",
-                  color: "#cbd5e1", fontSize: 15, padding: "2px 4px", borderRadius: 5,
+                  color: "#9BBCC7", fontSize: 15, padding: "2px 4px", borderRadius: 5,
                   transition: "color 0.15s",
                 }}
-                onMouseEnter={e => e.currentTarget.style.color = "#ef4444"}
-                onMouseLeave={e => e.currentTarget.style.color = "#cbd5e1"}
+                onMouseEnter={e => e.currentTarget.style.color = "#8B1A1A"}
+                onMouseLeave={e => e.currentTarget.style.color = "#9BBCC7"}
               >✕</button>
             </div>
           ))
@@ -328,7 +328,7 @@ function UnassignedSection({ unassigned, departments, onRefresh }) {
     <div style={{
       marginTop: 28,
       background: "var(--surface)", borderRadius: 16,
-      border: "1.5px dashed #dde3f0",
+      border: "1.5px dashed #DDD7C8",
       padding: "18px 22px",
     }}>
       <div style={{ fontWeight: 800, fontSize: 15, color: "var(--text-1)", marginBottom: 14 }}>
@@ -342,7 +342,7 @@ function UnassignedSection({ unassigned, departments, onRefresh }) {
             padding: "10px 14px", borderRadius: 12,
             border: "1px solid #f1f5f9", background: "var(--input-bg)",
           }}>
-            <Avatar name={emp.name} color="#6366f1" size={36} />
+            <Avatar name={emp.name} color="#155B6E" size={36} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontWeight: 600, fontSize: 13.5, color: "var(--text-1)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                 {emp.name}
@@ -413,7 +413,7 @@ function CreateDeptModal({ onClose, onCreated }) {
         </h2>
 
         {error && (
-          <div style={{ marginBottom: 14, padding: "9px 14px", borderRadius: 9, background: "#fffbfa", border: "1px solid #fecdca", color: "#b42318", fontSize: 13 }}>
+          <div style={{ marginBottom: 14, padding: "9px 14px", borderRadius: 9, background: "#FDF8EE", border: "1px solid #F28080", color: "#8B1A1A", fontSize: 13 }}>
             {error}
           </div>
         )}
@@ -453,7 +453,7 @@ function CreateDeptModal({ onClose, onCreated }) {
               disabled={saving}
               style={{
                 flex: 1, padding: "10px", borderRadius: 10, border: "none",
-                background: "linear-gradient(135deg,#0b2b4b,#1e3a5f)",
+                background: "linear-gradient(135deg,#0B2D38,#1e3a5f)",
                 color: "#fff", fontWeight: 800, fontSize: 14,
                 cursor: saving ? "not-allowed" : "pointer",
               }}
@@ -503,8 +503,8 @@ export default function HRDepartments() {
     return (
       <div style={{ padding: 32 }}>
         <div style={{
-          padding: 16, borderRadius: 12, background: "#fffbfa",
-          border: "1px solid #fecdca", color: "#b42318",
+          padding: 16, borderRadius: 12, background: "#FDF8EE",
+          border: "1px solid #F28080", color: "#8B1A1A",
         }}>{error}</div>
       </div>
     );
@@ -526,12 +526,12 @@ export default function HRDepartments() {
             {departments.length} département{departments.length !== 1 ? "s" : ""} ·{" "}
             {totalEmployees} employé{totalEmployees !== 1 ? "s" : ""} ·{" "}
             {unassigned.length > 0 && (
-              <span style={{ color: "#f59e0b", fontWeight: 600 }}>
+              <span style={{ color: "#C9952A", fontWeight: 600 }}>
                 {unassigned.length} non assigné{unassigned.length !== 1 ? "s" : ""}
               </span>
             )}
             {unassigned.length === 0 && (
-              <span style={{ color: "#10b981", fontWeight: 600 }}>tous assignés ✓</span>
+              <span style={{ color: "#145C2B", fontWeight: 600 }}>tous assignés ✓</span>
             )}
           </p>
         </div>
@@ -539,7 +539,7 @@ export default function HRDepartments() {
           onClick={() => setShowCreate(true)}
           style={{
             padding: "10px 18px", borderRadius: 12, border: "none",
-            background: "linear-gradient(135deg,#0b2b4b,#1e3a5f)",
+            background: "linear-gradient(135deg,#0B2D38,#1e3a5f)",
             color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer",
             boxShadow: "0 4px 12px rgba(11,43,75,0.25)",
           }}
@@ -551,7 +551,7 @@ export default function HRDepartments() {
         <div style={{
           textAlign: "center", padding: "60px 20px",
           background: "var(--surface-2)", borderRadius: 16,
-          border: "1.5px dashed #dde3f0", color: "var(--text-3)",
+          border: "1.5px dashed #DDD7C8", color: "var(--text-3)",
         }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>🏢</div>
           <div style={{ fontWeight: 700, marginBottom: 6 }}>Aucun département créé</div>

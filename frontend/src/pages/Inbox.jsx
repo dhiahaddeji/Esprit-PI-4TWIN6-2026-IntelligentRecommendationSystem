@@ -9,10 +9,10 @@ import { getStoredUser } from "../auth/authService";
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ROLE_COLORS = {
-  HR:         { bg: "#dbeafe", color: "#1e40af", label: "RH" },
-  MANAGER:    { bg: "#d1fae5", color: "#065f46", label: "Manager" },
-  EMPLOYEE:   { bg: "#f3f4f6", color: "#374151", label: "Employé" },
-  SUPERADMIN: { bg: "#ede9fe", color: "#5b21b6", label: "Admin" },
+  HR:         { bg: "#D6EEF3", color: "#155B6E", label: "RH" },
+  MANAGER:    { bg: "#E8F5ED", color: "#065f46", label: "Manager" },
+  EMPLOYEE:   { bg: "#EEF7FA", color: "#456070", label: "Employé" },
+  SUPERADMIN: { bg: "#FBF0DC", color: "#1D7A91", label: "Admin" },
 };
 
 const CONV_ICONS = { dm: "💬", group: "👥", announcement: "📢" };
@@ -118,8 +118,8 @@ function NewConvModal({ me, users, onClose, onCreate }) {
           ].map(t => (
             <button key={t.v} onClick={() => { setType(t.v); setSelected([]); }} style={{
               flex: 1, padding: "8px 4px", borderRadius: 10, border: "none",
-              background: type === t.v ? "#0b2b4b" : "#f1f5f9",
-              color: type === t.v ? "#fff" : "#64748b",
+              background: type === t.v ? "#0B2D38" : "#f1f5f9",
+              color: type === t.v ? "#fff" : "#638899",
               fontWeight: 700, fontSize: 13, cursor: "pointer",
             }}>{t.label}</button>
           ))}
@@ -129,7 +129,7 @@ function NewConvModal({ me, users, onClose, onCreate }) {
         {type === "announcement" && (
           <div style={{
             marginBottom: 12, padding: "10px 14px", borderRadius: 10,
-            background: "#fffbeb", border: "1px solid #fde68a", fontSize: 12.5, color: "#92400e",
+            background: "#FEF6E4", border: "1px solid #FEF6E4", fontSize: 12.5, color: "#92400e",
           }}>
             📢 <strong>Mode Annonce</strong> — les destinataires <strong>ne pourront pas répondre</strong>. Idéal pour informer vos équipes.
           </div>
@@ -173,8 +173,8 @@ function NewConvModal({ me, users, onClose, onCreate }) {
                 style={{
                   display: "flex", alignItems: "center", gap: 10,
                   padding: "9px 12px", borderRadius: 10, cursor: "pointer", marginBottom: 4,
-                  background: isSelected ? "#eff6ff" : "#fff",
-                  border: `1.5px solid ${isSelected ? "#3b6fd4" : "#f1f5f9"}`,
+                  background: isSelected ? "#EEF7FA" : "#fff",
+                  border: `1.5px solid ${isSelected ? "#1D7A91" : "#f1f5f9"}`,
                   transition: "all 0.12s",
                 }}
               >
@@ -187,7 +187,7 @@ function NewConvModal({ me, users, onClose, onCreate }) {
                   fontSize: 10.5, fontWeight: 700, padding: "2px 7px",
                   borderRadius: 999, background: meta.bg, color: meta.color,
                 }}>{meta.label}</span>
-                {isSelected && <span style={{ color: "#3b6fd4", fontSize: 16, fontWeight: 700 }}>✓</span>}
+                {isSelected && <span style={{ color: "#1D7A91", fontSize: 16, fontWeight: 700 }}>✓</span>}
               </div>
             );
           })}
@@ -199,7 +199,7 @@ function NewConvModal({ me, users, onClose, onCreate }) {
         </div>
 
         {error && (
-          <div style={{ marginBottom: 10, padding: "8px 12px", borderRadius: 8, background: "#fffbfa", border: "1px solid #fecdca", color: "#b42318", fontSize: 12.5 }}>
+          <div style={{ marginBottom: 10, padding: "8px 12px", borderRadius: 8, background: "#FDF8EE", border: "1px solid #F28080", color: "#8B1A1A", fontSize: 12.5 }}>
             {error}
           </div>
         )}
@@ -207,7 +207,7 @@ function NewConvModal({ me, users, onClose, onCreate }) {
         <div style={{ display: "flex", gap: 10 }}>
           <button onClick={handleCreate} disabled={saving} style={{
             flex: 2, padding: "10px", borderRadius: 10, border: "none",
-            background: "linear-gradient(135deg,#0b2b4b,#1e3a5f)",
+            background: "linear-gradient(135deg,#0B2D38,#1e3a5f)",
             color: "#fff", fontWeight: 800, fontSize: 14,
             cursor: saving ? "not-allowed" : "pointer",
           }}>{saving ? "Création…" : "Créer"}</button>
@@ -240,11 +240,11 @@ function ConvItem({ conv, isActive, me, onClick }) {
       style={{
         display: "flex", alignItems: "center", gap: 11,
         padding: "12px 16px", cursor: "pointer", borderRadius: 12,
-        background: isActive ? "#eff6ff" : "transparent",
-        border: isActive ? "1px solid #bfdbfe" : "1px solid transparent",
+        background: isActive ? "#EEF7FA" : "transparent",
+        border: isActive ? "1px solid #D6EEF3" : "1px solid transparent",
         marginBottom: 4, transition: "all 0.12s",
       }}
-      onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "#f8fafc"; }}
+      onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "#EEF7FA"; }}
       onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
     >
       {/* Icon */}
@@ -253,11 +253,11 @@ function ConvItem({ conv, isActive, me, onClick }) {
         display: "flex", alignItems: "center", justifyContent: "center",
         fontSize: 18,
         background: conv.type === "announcement"
-          ? "#fffbeb"
+          ? "#FEF6E4"
           : conv.type === "group"
-          ? "#f0fdf4"
-          : "#f0f4ff",
-        border: `2px solid ${conv.type === "announcement" ? "#fde68a" : conv.type === "group" ? "#bbf7d0" : "#c7d2fe"}`,
+          ? "#E8F5ED"
+          : "#EEF7FA",
+        border: `2px solid ${conv.type === "announcement" ? "#FEF6E4" : conv.type === "group" ? "#E8F5ED" : "#A8D8E3"}`,
       }}>{icon}</div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -281,7 +281,7 @@ function ConvItem({ conv, isActive, me, onClick }) {
           {unread > 0 && (
             <span style={{
               minWidth: 20, height: 20, borderRadius: 999,
-              background: "#3b6fd4", color: "#fff",
+              background: "#1D7A91", color: "#fff",
               fontSize: 11, fontWeight: 800,
               display: "flex", alignItems: "center", justifyContent: "center",
               padding: "0 5px", flexShrink: 0, marginLeft: 6,
@@ -326,12 +326,12 @@ function MessageBubble({ msg, isMe }) {
           padding: "10px 14px",
           borderRadius: isMe ? "16px 4px 16px 16px" : "4px 16px 16px 16px",
           background: isMe
-            ? "linear-gradient(135deg,#0b2b4b,#1e3a5f)"
+            ? "linear-gradient(135deg,#0B2D38,#1e3a5f)"
             : "#fff",
-          color: isMe ? "#fff" : "#1a2340",
+          color: isMe ? "#fff" : "#0B2D38",
           fontSize: 14, lineHeight: 1.55,
           boxShadow: "0 1px 6px rgba(0,0,0,0.08)",
-          border: isMe ? "none" : "1px solid #e8ecf4",
+          border: isMe ? "none" : "1px solid #DDD7C8",
           wordBreak: "break-word",
         }}>
           {msg.content}
@@ -367,8 +367,8 @@ function AnnouncementCard({ msg, isFirst }) {
       <div style={{
         display: "flex", alignItems: "center", gap: 12,
         padding: "14px 18px",
-        background: "linear-gradient(135deg,#fffbeb,#fef3c7)",
-        borderBottom: "1px solid #fde68a",
+        background: "linear-gradient(135deg,#FEF6E4,#FEF6E4)",
+        borderBottom: "1px solid #FEF6E4",
       }}>
         <div style={{
           width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
@@ -402,7 +402,7 @@ function AnnouncementCard({ msg, isFirst }) {
       {/* Content */}
       <div style={{
         padding: "18px 20px",
-        fontSize: 14.5, lineHeight: 1.7, color: "#1e293b",
+        fontSize: 14.5, lineHeight: 1.7, color: "#1A1A2A",
         whiteSpace: "pre-wrap", wordBreak: "break-word",
       }}>
         {msg.content}
@@ -464,7 +464,7 @@ function AnnouncementView({ conv, me, onNewMessage }) {
   const recipientCount = (conv.participants?.length || 1) - 1;
 
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, background: "#f4f6fb" }}>
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, background: "#EEF7FA" }}>
 
       {/* ── Top banner ── */}
       <div style={{
@@ -514,8 +514,8 @@ function AnnouncementView({ conv, me, onNewMessage }) {
         }}>
           <div style={{
             padding: "11px 16px",
-            background: "linear-gradient(135deg,#fffbeb,#fef3c7)",
-            borderBottom: "1px solid #fde68a",
+            background: "linear-gradient(135deg,#FEF6E4,#FEF6E4)",
+            borderBottom: "1px solid #FEF6E4",
             fontSize: 12.5, fontWeight: 700, color: "#92400e",
             display: "flex", alignItems: "center", gap: 6,
           }}>
@@ -543,7 +543,7 @@ function AnnouncementView({ conv, me, onNewMessage }) {
                 style={{
                   padding: "9px 20px", borderRadius: 10, border: "none",
                   background: sending || !input.trim()
-                    ? "#cbd5e1"
+                    ? "#9BBCC7"
                     : "linear-gradient(135deg,#b45309,#78350f)",
                   color: "#fff", fontWeight: 700, fontSize: 13.5,
                   cursor: sending || !input.trim() ? "not-allowed" : "pointer",
@@ -576,7 +576,7 @@ function AnnouncementView({ conv, me, onNewMessage }) {
           }}>
             <div style={{
               width: 80, height: 80, borderRadius: "50%", marginBottom: 20,
-              background: "linear-gradient(135deg,#fef3c7,#fde68a)",
+              background: "linear-gradient(135deg,#FEF6E4,#FEF6E4)",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 38, boxShadow: "0 4px 20px rgba(180,83,9,0.15)",
             }}>📭</div>
@@ -591,7 +591,7 @@ function AnnouncementView({ conv, me, onNewMessage }) {
             {!canWrite && (
               <div style={{
                 marginTop: 24, padding: "12px 20px", borderRadius: 12,
-                background: "#fffbeb", border: "1px solid #fde68a",
+                background: "#FEF6E4", border: "1px solid #FEF6E4",
                 fontSize: 12.5, color: "#92400e", fontWeight: 600,
               }}>
                 🔔 Vous serez notifié lorsqu'une annonce sera publiée
@@ -605,9 +605,9 @@ function AnnouncementView({ conv, me, onNewMessage }) {
               fontSize: 12, fontWeight: 600, color: "var(--text-3)",
               marginBottom: 12, display: "flex", alignItems: "center", gap: 8,
             }}>
-              <div style={{ flex: 1, height: 1, background: "#e8ecf4" }} />
+              <div style={{ flex: 1, height: 1, background: "#DDD7C8" }} />
               {messages.length} annonce{messages.length !== 1 ? "s" : ""}
-              <div style={{ flex: 1, height: 1, background: "#e8ecf4" }} />
+              <div style={{ flex: 1, height: 1, background: "#DDD7C8" }} />
             </div>
             {[...messages].reverse().map((msg, i) => (
               <AnnouncementCard key={msg._id} msg={msg} isFirst={i === 0} />
@@ -620,8 +620,8 @@ function AnnouncementView({ conv, me, onNewMessage }) {
       {!canWrite && (
         <div style={{
           padding: "11px 24px",
-          background: "#fffbeb",
-          borderTop: "1px solid #fde68a",
+          background: "#FEF6E4",
+          borderTop: "1px solid #FEF6E4",
           flexShrink: 0,
           display: "flex", alignItems: "center", gap: 8,
           fontSize: 12.5, color: "#92400e", fontWeight: 600,
@@ -729,7 +729,7 @@ function ChatThread({ conv, me, onNewMessage }) {
           }}>
             <div style={{
               width: 64, height: 64, borderRadius: "50%", marginBottom: 14,
-              background: "#f0f4ff",
+              background: "#EEF7FA",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 28,
             }}>
@@ -781,7 +781,7 @@ function ChatThread({ conv, me, onNewMessage }) {
           disabled={sending || !input.trim()}
           style={{
             width: 42, height: 42, borderRadius: "50%", border: "none",
-            background: "linear-gradient(135deg,#3b6fd4,#2d58b0)",
+            background: "linear-gradient(135deg,#1D7A91,#2d58b0)",
             color: "#fff", fontSize: 18, display: "flex",
             alignItems: "center", justifyContent: "center",
             cursor: sending || !input.trim() ? "not-allowed" : "pointer",
@@ -869,7 +869,7 @@ export default function Inbox() {
                   <span style={{
                     marginLeft: 8, fontSize: 11, fontWeight: 800,
                     padding: "2px 7px", borderRadius: 999,
-                    background: "#ef4444", color: "#fff",
+                    background: "#8B1A1A", color: "#fff",
                   }}>{totalUnread}</span>
                 )}
               </h1>
@@ -882,7 +882,7 @@ export default function Inbox() {
               title="Nouvelle conversation"
               style={{
                 width: 36, height: 36, borderRadius: "50%", border: "none",
-                background: "linear-gradient(135deg,#0b2b4b,#1e3a5f)",
+                background: "linear-gradient(135deg,#0B2D38,#1e3a5f)",
                 color: "#fff", fontSize: 20, cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}
@@ -912,8 +912,8 @@ export default function Inbox() {
             ].map(t => (
               <button key={t.val} onClick={() => setFilter(t.val)} style={{
                 flex: 1, padding: "5px 4px", borderRadius: 8, border: "none",
-                background: filter === t.val ? "#0b2b4b" : "#f1f5f9",
-                color: filter === t.val ? "#fff" : "#64748b",
+                background: filter === t.val ? "#0B2D38" : "#f1f5f9",
+                color: filter === t.val ? "#fff" : "#638899",
                 fontSize: 11.5, fontWeight: 600, cursor: "pointer",
               }}>{t.label}</button>
             ))}
@@ -970,7 +970,7 @@ export default function Inbox() {
               onClick={() => setShowNew(true)}
               style={{
                 padding: "11px 24px", borderRadius: 12, border: "none",
-                background: "linear-gradient(135deg,#0b2b4b,#1e3a5f)",
+                background: "linear-gradient(135deg,#0B2D38,#1e3a5f)",
                 color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer",
               }}
             >+ Nouvelle conversation</button>

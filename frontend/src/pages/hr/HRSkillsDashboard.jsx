@@ -4,19 +4,19 @@ import http from "../../api/http";
 
 const EVAL_LEVELS = [
   { val: 0, label: "Pas de compétence", color: "var(--text-3)", bg: "#f1f5f9" },
-  { val: 1, label: "Notions",           color: "#d97706", bg: "#fef3c7" },
-  { val: 2, label: "Pratique",          color: "#2563eb", bg: "#dbeafe" },
-  { val: 3, label: "Maîtrise",          color: "#7c3aed", bg: "#f5f3ff" },
-  { val: 4, label: "Expert",            color: "#059669", bg: "#d1fae5" },
+  { val: 1, label: "Notions",           color: "#C9952A", bg: "#FEF6E4" },
+  { val: 2, label: "Pratique",          color: "#155B6E", bg: "#D6EEF3" },
+  { val: 3, label: "Maîtrise",          color: "#1D7A91", bg: "#EEF7FA" },
+  { val: 4, label: "Expert",            color: "#145C2B", bg: "#E8F5ED" },
 ];
 
 const CATEGORIES = [
-  { key: "savoir",       label: "Savoir",       icon: "📚", color: "#3b6fd4", bg: "#eff6ff" },
-  { key: "savoir_faire", label: "Savoir-faire",  icon: "🛠️", color: "#0891b2", bg: "#ecfeff" },
-  { key: "savoir_etre",  label: "Savoir-être",   icon: "🤝", color: "#7c3aed", bg: "#f5f3ff" },
+  { key: "savoir",       label: "Savoir",       icon: "📚", color: "#1D7A91", bg: "#EEF7FA" },
+  { key: "savoir_faire", label: "Savoir-faire",  icon: "🛠️", color: "#1D7A91", bg: "#EEF7FA" },
+  { key: "savoir_etre",  label: "Savoir-être",   icon: "🤝", color: "#1D7A91", bg: "#EEF7FA" },
 ];
 
-function StatCard({ icon, label, value, sub, color = "#3b6fd4" }) {
+function StatCard({ icon, label, value, sub, color = "#1D7A91" }) {
   return (
     <div style={{
       background: "var(--surface)", borderRadius: "14px", padding: "20px 22px",
@@ -32,7 +32,7 @@ function StatCard({ icon, label, value, sub, color = "#3b6fd4" }) {
 
 function ScoreBar({ score, max = 4 }) {
   const pct = Math.min(100, Math.round((score / max) * 100));
-  const color = pct >= 75 ? "#059669" : pct >= 50 ? "#2563eb" : pct >= 25 ? "#d97706" : "#dc2626";
+  const color = pct >= 75 ? "#145C2B" : pct >= 50 ? "#155B6E" : pct >= 25 ? "#C9952A" : "#8B1A1A";
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
       <div style={{
@@ -60,12 +60,12 @@ function EmployeeCard({ emp }) {
       <div
         onClick={() => setOpen(o => !o)}
         style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px", cursor: "pointer" }}
-        onMouseEnter={e => e.currentTarget.style.background = "#f8faff"}
+        onMouseEnter={e => e.currentTarget.style.background = "#EEF7FA"}
         onMouseLeave={e => e.currentTarget.style.background = "transparent"}
       >
         <div style={{
           width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
-          background: "linear-gradient(135deg,#3b6fd4,#2d58b0)",
+          background: "linear-gradient(135deg,#1D7A91,#2d58b0)",
           color: "#fff", display: "flex", alignItems: "center",
           justifyContent: "center", fontWeight: 700, fontSize: "13px",
         }}>{initials}</div>
@@ -157,8 +157,8 @@ export default function HRSkillsDashboard() {
           <button key={t.val} onClick={() => setTab(t.val)} style={{
             padding: "8px 18px", borderRadius: "10px", cursor: "pointer",
             fontWeight: 700, fontSize: "13.5px", border: "none",
-            background: tab === t.val ? "#3b6fd4" : "#f1f5f9",
-            color: tab === t.val ? "#fff" : "#64748b",
+            background: tab === t.val ? "#1D7A91" : "#f1f5f9",
+            color: tab === t.val ? "#fff" : "#638899",
           }}>{t.label}</button>
         ))}
       </div>
@@ -167,13 +167,13 @@ export default function HRSkillsDashboard() {
       {tab === "overview" && analytics && (
         <>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px", marginBottom: "28px" }}>
-            <StatCard icon="📋" label="Fiches total"       value={analytics.totalFiches} color="#3b6fd4" />
+            <StatCard icon="📋" label="Fiches total"       value={analytics.totalFiches} color="#1D7A91" />
             <StatCard icon="✅" label="Fiches validées"    value={analytics.validated}
               sub={`${analytics.totalFiches > 0 ? Math.round(analytics.validated / analytics.totalFiches * 100) : 0}% de couverture`}
-              color="#059669" />
-            <StatCard icon="⏳" label="En attente"         value={analytics.pending} color="#d97706" />
+              color="#145C2B" />
+            <StatCard icon="⏳" label="En attente"         value={analytics.pending} color="#C9952A" />
             <StatCard icon="⭐" label="Score moyen"        value={analytics.avgScore}
-              sub="sur 4" color="#7c3aed" />
+              sub="sur 4" color="#1D7A91" />
           </div>
 
           {/* Distribution par type */}
@@ -191,13 +191,13 @@ export default function HRSkillsDashboard() {
                 const pct = total > 0 ? Math.round((count / total) * 100) : 0;
                 return (
                   <div key={type} style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
-                    <span style={{ minWidth: 100, fontSize: "13px", fontWeight: 600, color: cat?.color || "#64748b" }}>
+                    <span style={{ minWidth: 100, fontSize: "13px", fontWeight: 600, color: cat?.color || "#638899" }}>
                       {cat?.icon} {cat?.label || type}
                     </span>
                     <div style={{ flex: 1, height: 8, borderRadius: 4, background: "var(--bg)", overflow: "hidden" }}>
                       <div style={{
                         width: `${pct}%`, height: "100%",
-                        background: cat?.color || "#3b6fd4", borderRadius: 4,
+                        background: cat?.color || "#1D7A91", borderRadius: 4,
                       }} />
                     </div>
                     <span style={{ fontSize: "12px", color: "var(--text-2)", minWidth: 50, textAlign: "right" }}>
@@ -222,15 +222,15 @@ export default function HRSkillsDashboard() {
                   <div key={sk.intitule} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "9px" }}>
                     <div style={{
                       width: 22, height: 22, borderRadius: "50%",
-                      background: i < 3 ? "#3b6fd4" : "#f1f5f9",
-                      color: i < 3 ? "#fff" : "#64748b",
+                      background: i < 3 ? "#1D7A91" : "#f1f5f9",
+                      color: i < 3 ? "#fff" : "#638899",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       fontSize: "11px", fontWeight: 700, flexShrink: 0,
                     }}>{i + 1}</div>
                     <span style={{ flex: 1, fontSize: "13.5px", fontWeight: 600, color: "var(--text-1)" }}>{sk.intitule}</span>
                     <span style={{
                       padding: "1px 8px", borderRadius: "999px", fontSize: "11px", fontWeight: 700,
-                      background: "#eff6ff", color: "#3b6fd4",
+                      background: "#EEF7FA", color: "#1D7A91",
                     }}>{sk.count}</span>
                   </div>
                 ))
