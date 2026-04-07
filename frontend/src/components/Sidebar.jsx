@@ -113,7 +113,7 @@ export default function Sidebar() {
           <span>💬 Messagerie</span>
           {unread > 0 && (
             <span style={{
-              background: "#e74c3c", color: "#fff", borderRadius: "10px",
+              background: "#8B1A1A", color: "#fff", borderRadius: "10px",
               fontSize: "11px", fontWeight: 700, padding: "1px 7px", minWidth: "18px", textAlign: "center"
             }}>
               {unread > 99 ? "99+" : unread}

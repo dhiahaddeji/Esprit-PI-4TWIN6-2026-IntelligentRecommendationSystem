@@ -59,7 +59,7 @@ export default function ChangePassword() {
 
         <h1 className="authTitle">Changer votre mot de passe</h1>
 
-        <div style={{ background: "#fef3c7", border: "1px solid #fcd34d", borderRadius: 8, padding: "12px 16px", marginBottom: 20 }}>
+        <div style={{ background: "#FEF6E4", border: "1px solid #fcd34d", borderRadius: 8, padding: "12px 16px", marginBottom: 20 }}>
           <p style={{ margin: 0, color: "#92400e", fontSize: 13 }}>
             Bonjour <strong>{user?.name || "vous"}</strong>, votre compte vient d'être créé.<br />
             Pour votre sécurité, vous devez définir un nouveau mot de passe.
@@ -67,7 +67,7 @@ export default function ChangePassword() {
         </div>
 
         {error && (
-          <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 8, padding: "10px 14px", marginBottom: 16, color: "#b91c1c", fontSize: 13 }}>
+          <div style={{ background: "#FBE9E9", border: "1px solid #fca5a5", borderRadius: 8, padding: "10px 14px", marginBottom: 16, color: "#8B1A1A", fontSize: 13 }}>
             {error}
           </div>
         )}
@@ -123,7 +123,7 @@ function PasswordStrength({ password }) {
     { label: "Un caractère spécial", ok: /[^A-Za-z0-9]/.test(password) },
   ];
   const score = checks.filter((c) => c.ok).length;
-  const colors = ["#ef4444", "#f97316", "#eab308", "#22c55e"];
+  const colors = ["#8B1A1A", "#f97316", "#eab308", "#22c55e"];
 
   return (
     <div style={{ marginBottom: 8 }}>
@@ -143,7 +143,7 @@ function PasswordStrength({ password }) {
       </div>
       <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexWrap: "wrap", gap: "4px 12px" }}>
         {checks.map((c) => (
-          <li key={c.label} style={{ fontSize: 11, color: c.ok ? "#16a34a" : "#94a3b8" }}>
+          <li key={c.label} style={{ fontSize: 11, color: c.ok ? "#145C2B" : "#638899" }}>
             {c.ok ? "✓" : "○"} {c.label}
           </li>
         ))}

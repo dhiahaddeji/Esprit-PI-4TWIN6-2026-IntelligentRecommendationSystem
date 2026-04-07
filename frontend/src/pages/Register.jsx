@@ -72,7 +72,7 @@ export default function Register() {
         />
 
         {error && (
-          <div style={{ color: "#b42318", background: "#fffbfa", border: "1px solid #fecdca", padding: 10, borderRadius: 10 }}>
+          <div style={{ color: "#8B1A1A", background: "#FDF8EE", border: "1px solid #F28080", padding: 10, borderRadius: 10 }}>
             {error}
           </div>
         )}
@@ -83,7 +83,7 @@ export default function Register() {
             padding: 12,
             borderRadius: 10,
             border: "none",
-            background: "#0b2b4b",
+            background: "#0B2D38",
             color: "white",
             fontWeight: 800,
             cursor: "pointer",

@@ -12,16 +12,16 @@ const ROLE_LABELS = {
 };
 
 const ROLE_COLORS = {
-  SUPERADMIN: { bg: "#ede9fe", color: "#6d28d9" },
-  HR: { bg: "#dbeafe", color: "#1d4ed8" },
-  MANAGER: { bg: "#fef3c7", color: "#b45309" },
-  EMPLOYEE: { bg: "#d1fae5", color: "#065f46" },
+  SUPERADMIN: { bg: "#FBF0DC", color: "#155B6E" },
+  HR: { bg: "#D6EEF3", color: "#155B6E" },
+  MANAGER: { bg: "#FEF6E4", color: "#b45309" },
+  EMPLOYEE: { bg: "#E8F5ED", color: "#065f46" },
 };
 
 const STATUS_COLORS = {
-  ACTIVE:    { bg: "#d1fae5", color: "#065f46" },
+  ACTIVE:    { bg: "#E8F5ED", color: "#065f46" },
   INACTIVE:  { bg: "#f1f5f9", color: "var(--text-2)" },
-  SUSPENDED: { bg: "#fee2e2", color: "#991b1b" },
+  SUSPENDED: { bg: "#FBE9E9", color: "#8B1A1A" },
 };
 
 export default function UsersList() {
@@ -82,7 +82,7 @@ export default function UsersList() {
           <Link
             to="/admin/create-user"
             style={{
-              background: "linear-gradient(135deg,#3b6fd4,#2d58b0)",
+              background: "linear-gradient(135deg,#1D7A91,#2d58b0)",
               color: "#fff",
               padding: "10px 20px",
               borderRadius: "10px",
@@ -147,8 +147,8 @@ export default function UsersList() {
       {error && (
         <div style={{
           padding: "16px 20px",
-          background: "#fee2e2",
-          color: "#991b1b",
+          background: "#FBE9E9",
+          color: "#8B1A1A",
           borderRadius: "12px",
           marginBottom: "16px",
           fontWeight: 600,
@@ -185,13 +185,13 @@ export default function UsersList() {
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
-                <tr style={{ background: "var(--surface-2)", borderBottom: "2px solid #dde3f0" }}>
+                <tr style={{ background: "var(--surface-2)", borderBottom: "2px solid #DDD7C8" }}>
                   {["Utilisateur", "Email", "Matricule", "Rôle", "Statut", ...(isSuperAdmin ? ["Actions"] : [])].map(h => (
                     <th key={h} style={{
                       padding: "12px 16px",
                       fontWeight: 700,
                       fontSize: "12px",
-                      color: "#3d4f7c",
+                      color: "#155B6E",
                       textAlign: "left",
                       textTransform: "uppercase",
                       letterSpacing: "0.7px",
@@ -214,14 +214,14 @@ export default function UsersList() {
                       borderBottom: i < filtered.length - 1 ? "1px solid #f1f5f9" : "none",
                       transition: "background 0.15s",
                     }}
-                      onMouseEnter={e => e.currentTarget.style.background = "#f8faff"}
+                      onMouseEnter={e => e.currentTarget.style.background = "#EEF7FA"}
                       onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                     >
                       <td style={{ padding: "14px 16px" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                           <div style={{
                             width: 36, height: 36, borderRadius: "50%",
-                            background: "linear-gradient(135deg,#3b6fd4,#2d58b0)",
+                            background: "linear-gradient(135deg,#1D7A91,#2d58b0)",
                             color: "#fff", display: "flex", alignItems: "center",
                             justifyContent: "center", fontWeight: 700, fontSize: "13px",
                             flexShrink: 0,
@@ -260,9 +260,9 @@ export default function UsersList() {
                               to={`/admin/edit-user/${user._id}`}
                               style={{
                                 padding: "5px 12px", borderRadius: "7px",
-                                background: "#eff6ff", color: "#3b6fd4",
+                                background: "#EEF7FA", color: "#1D7A91",
                                 textDecoration: "none", fontSize: "13px", fontWeight: 600,
-                                border: "1px solid #bfdbfe",
+                                border: "1px solid #D6EEF3",
                               }}
                             >
                               Modifier
@@ -271,7 +271,7 @@ export default function UsersList() {
                               onClick={() => handleDelete(user._id)}
                               style={{
                                 padding: "5px 12px", borderRadius: "7px",
-                                background: "#fee2e2", color: "#dc2626",
+                                background: "#FBE9E9", color: "#8B1A1A",
                                 border: "1px solid #fecaca", fontSize: "13px",
                                 fontWeight: 600, cursor: "pointer",
                               }}

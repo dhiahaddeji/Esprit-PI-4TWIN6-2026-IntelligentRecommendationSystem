@@ -87,7 +87,7 @@ export default function CompleteProfile() {
         </p>
 
         {error && (
-          <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 8, padding: "10px 14px", marginBottom: 16, color: "#b91c1c", fontSize: 13 }}>
+          <div style={{ background: "#FBE9E9", border: "1px solid #fca5a5", borderRadius: 8, padding: "10px 14px", marginBottom: 16, color: "#8B1A1A", fontSize: 13 }}>
             {error}
           </div>
         )}
@@ -101,7 +101,7 @@ export default function CompleteProfile() {
               style={{
                 width: 90, height: 90, borderRadius: "50%",
                 background: "var(--bg)",
-                border: "2px dashed #cbd5e1",
+                border: "2px dashed #9BBCC7",
                 cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 overflow: "hidden", flexShrink: 0,
@@ -112,7 +112,7 @@ export default function CompleteProfile() {
                 : <span style={{ fontSize: 32 }}>📷</span>
               }
             </div>
-            <button type="button" onClick={() => photoRef.current.click()} style={{ fontSize: 12, color: "#0b2b4b", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
+            <button type="button" onClick={() => photoRef.current.click()} style={{ fontSize: 12, color: "#0B2D38", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
               {photo ? photo.name : "Choisir une photo de profil"}
             </button>
             <input ref={photoRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handlePhoto} />
@@ -120,7 +120,7 @@ export default function CompleteProfile() {
 
           {/* Prénom */}
           <label className="authLabel">
-            Prénom <span style={{ color: "#dc2626" }}>*</span>
+            Prénom <span style={{ color: "#8B1A1A" }}>*</span>
             <input
               className="authInput"
               name="firstName"
@@ -133,7 +133,7 @@ export default function CompleteProfile() {
 
           {/* Nom */}
           <label className="authLabel">
-            Nom <span style={{ color: "#dc2626" }}>*</span>
+            Nom <span style={{ color: "#8B1A1A" }}>*</span>
             <input
               className="authInput"
               name="lastName"
@@ -165,13 +165,13 @@ export default function CompleteProfile() {
             <div
               onClick={() => cvRef.current.click()}
               style={{
-                border: "2px dashed #cbd5e1",
+                border: "2px dashed #9BBCC7",
                 borderRadius: 10,
                 padding: "16px",
                 cursor: "pointer",
                 textAlign: "center",
-                background: cv ? "#f0fdf4" : "#f8fafc",
-                color: cv ? "#16a34a" : "#94a3b8",
+                background: cv ? "#E8F5ED" : "#EEF7FA",
+                color: cv ? "#145C2B" : "#638899",
                 fontSize: 13,
               }}
             >

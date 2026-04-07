@@ -10,10 +10,10 @@ const ROLE_LABELS = {
 };
 
 const ROLE_COLORS = {
-  SUPERADMIN: "#0b2b4b",
-  HR: "#0ea5a0",
-  MANAGER: "#6366f1",
-  EMPLOYEE: "#10b981",
+  SUPERADMIN: "#0B2D38",
+  HR: "#1D7A91",
+  MANAGER: "#155B6E",
+  EMPLOYEE: "#145C2B",
 };
 
 function getInitials(user) {
@@ -173,7 +173,7 @@ export default function MyProfile() {
 
   const role = (profile.role || "").toUpperCase();
   const roleLabel = ROLE_LABELS[role] || role;
-  const roleColor = ROLE_COLORS[role] || "#0b2b4b";
+  const roleColor = ROLE_COLORS[role] || "#0B2D38";
   const initials = getInitials(profile);
   const displayName =
     profile.firstName && profile.lastName
@@ -189,7 +189,7 @@ export default function MyProfile() {
         <div
           style={{
             ...styles.toast,
-            background: toast.type === "error" ? "#dc2626" : "#10b981",
+            background: toast.type === "error" ? "#8B1A1A" : "#145C2B",
           }}
         >
           {toast.msg}
@@ -354,7 +354,7 @@ export default function MyProfile() {
                     disabled={cvAnalyzing}
                     style={{
                       padding: "0.5rem 1.1rem", borderRadius: 8, border: "none",
-                      background: cvAnalyzing ? "var(--border)" : "linear-gradient(135deg,#7c3aed,#6d28d9)",
+                      background: cvAnalyzing ? "var(--border)" : "linear-gradient(135deg,#1D7A91,#155B6E)",
                       color: "#fff", fontWeight: 700, fontSize: "0.85rem",
                       cursor: cvAnalyzing ? "not-allowed" : "pointer",
                       whiteSpace: "nowrap",
@@ -372,7 +372,7 @@ export default function MyProfile() {
                     </p>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
                       {cvExtracted.skills.map((s, i) => {
-                        const typeColors = { savoir: "#3b6fd4", savoir_faire: "#0891b2", savoir_etre: "#7c3aed" };
+                        const typeColors = { savoir: "#1D7A91", savoir_faire: "#1D7A91", savoir_etre: "#1D7A91" };
                         return (
                           <span key={i} style={{
                             padding: "2px 10px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600,
@@ -384,7 +384,7 @@ export default function MyProfile() {
                         );
                       })}
                     </div>
-                    <p style={{ margin: "0.6rem 0 0 0", fontSize: "0.78rem", color: "#059669", fontWeight: 600 }}>
+                    <p style={{ margin: "0.6rem 0 0 0", fontSize: "0.78rem", color: "#145C2B", fontWeight: 600 }}>
                       ✅ {cvExtracted.total} compétence(s) prêtes {cvExtracted.mode === "openai" ? "(OpenAI GPT-4o)" : "(analyse locale)"} — rendez-vous dans "Mes Compétences" pour les importer.
                     </p>
                   </div>
