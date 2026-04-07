@@ -4,22 +4,59 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <title>AssurReco</title>
+    <style>
+      /* Hide Google Translate toolbar & banner completely */
+      .goog-te-banner-frame, .goog-te-balloon-frame { display: none !important; }
+      body { top: 0 !important; }
+      #google_translate_element { position: absolute; left: -9999px; top: -9999px; }
+      .skiptranslate { display: none !important; }
+    </style>
   </head>
   <body>
-    <!-- Container caché pour le widget Google Translate -->
-    <div id="google_translate_element" style="display:none;"></div>
+    <!-- Google Translate widget (hidden off-screen, needed for programmatic API) -->
+    <div id="google_translate_element"></div>
     <script type="text/javascript">
       function googleTranslateElementInit() {
         new google.translate.TranslateElement({
           pageLanguage: 'fr',
           includedLanguages: 'fr,en,ar',
-          autoDisplay: false
+          autoDisplay: false,
+          layout: google.translate.TranslateElement.InlineLayout.SIMPLE
         }, 'google_translate_element');
       }
+
+      // Programmatic translation helper — called by TranslationContext
+      window.__translateTo = function(targetLang) {
+        var tryCount = 0;
+        var maxTry   = 30;
+        function attempt() {
+          var sel = document.querySelector('.goog-te-combo');
+          if (sel) {
+            if (targetLang === 'fr') {
+              // Restore original: trigger "Show original" link if present
+              var restore = document.querySelector('.goog-te-gadget a[href]');
+              if (restore) { restore.click(); return; }
+              // Otherwise set back to fr and reload clean
+              sel.value = '';
+              sel.dispatchEvent(new Event('change'));
+              setTimeout(function() { window.location.reload(); }, 200);
+            } else {
+              sel.value = targetLang;
+              sel.dispatchEvent(new Event('change'));
+            }
+          } else if (tryCount++ < maxTry) {
+            setTimeout(attempt, 300);
+          }
+        }
+        attempt();
+      };
     </script>
-    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-    
+    <script type="text/javascript"
+      src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+      async>
+    </script>
+
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

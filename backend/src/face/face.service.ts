@@ -38,7 +38,7 @@ export class FaceService implements OnModuleInit {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       require('@tensorflow/tfjs-backend-wasm');
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const tf = require('@tensorflow/tfjs');
+      const tf = require('@tensorflow/tfjs-core');
       await tf.setBackend('wasm');
       await tf.ready();
 
@@ -88,7 +88,7 @@ export class FaceService implements OnModuleInit {
     if (!this.modelsLoaded) {
       throw new BadRequestException(
         'Face recognition service is unavailable. ' +
-          'Run: npm install @vladmandic/face-api @napi-rs/canvas @tensorflow/tfjs-backend-wasm',
+          'Run: npm install @vladmandic/face-api @napi-rs/canvas @tensorflow/tfjs-core @tensorflow/tfjs-backend-wasm',
       );
     }
   }

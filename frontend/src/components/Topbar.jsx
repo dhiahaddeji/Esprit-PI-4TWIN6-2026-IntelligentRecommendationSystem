@@ -78,8 +78,6 @@ useEffect(() => {
     if (h < 24) return `Il y a ${h}h`;
     return `Il y a ${Math.floor(h / 24)}j`;
   };
-  const roleLabel = getRoleLabel(user.role);
-
   const displayName =
     user.firstName && user.lastName
       ? `${user.firstName} ${user.lastName}`
@@ -195,45 +193,35 @@ useEffect(() => {
           {/* TRADUCTION */}
           <div className="menuWrap" ref={langRef}>
             <button
-              className="iconBtn"
+              className="langBtn"
               type="button"
               onClick={() => setLangOpen((v) => !v)}
               title="Changer de langue"
               aria-label="Changer de langue"
-              style={{ fontSize: "1.2rem" }}
             >
-              {lang === "fr" ? "🇫🇷" : lang === "en" ? "🇬🇧" : "🇸🇦"}
+              <span style={{ fontSize: "0.95rem" }}>🌐</span>
+              <span className="langLabel">
+                {lang === "fr" ? "Français" : lang === "en" ? "English" : "عربي"}
+              </span>
+              <span className="langChevron">▾</span>
             </button>
 
             {langOpen && (
-              <div className="profileMenu" style={{ minWidth: "120px" }}>
-                <button
-                  onClick={() => {
-                    changeLanguage("fr");
-                    setLangOpen(false);
-                  }}
-                  disabled={lang === "fr"}
-                >
-                  🇫🇷 Français
-                </button>
-                <button
-                  onClick={() => {
-                    changeLanguage("en");
-                    setLangOpen(false);
-                  }}
-                  disabled={lang === "en"}
-                >
-                  🇬🇧 English
-                </button>
-                <button
-                  onClick={() => {
-                    changeLanguage("ar");
-                    setLangOpen(false);
-                  }}
-                  disabled={lang === "ar"}
-                >
-                  🇸🇦 العربية
-                </button>
+              <div className="profileMenu langMenu">
+                {[
+                  { code: "fr", label: "🇫🇷 Français" },
+                  { code: "en", label: "🇬🇧 English" },
+                  { code: "ar", label: "🇸🇦 عربي" },
+                ].map(({ code, label }) => (
+                  <button
+                    key={code}
+                    className={lang === code ? "langActive" : ""}
+                    onClick={() => { changeLanguage(code); setLangOpen(false); }}
+                  >
+                    {label}
+                    {lang === code && <span className="langCheck">✓</span>}
+                  </button>
+                ))}
               </div>
             )}
           </div>

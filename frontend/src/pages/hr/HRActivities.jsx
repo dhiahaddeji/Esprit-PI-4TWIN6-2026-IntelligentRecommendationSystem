@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { fetchActivitiesPage } from "../../services/activityService";
-import { fetchActivities } from "../../services/activityService";
 import { getManagers } from "../../services/workflowService";
 
 const TYPE_ICON = {
@@ -30,8 +29,7 @@ export default function HRActivities() {
   const [limit] = useState(12);
   const [total, setTotal] = useState(0);
   const [error, setError] = useState("");
-  const [managers,   setManagers]   = useState([]);
-  const [error,      setError]      = useState("");
+  const [managers, setManagers] = useState([]);
   const [search,     setSearch]     = useState("");
   const [filterStatus, setFilterStatus] = useState("ALL");
 
@@ -40,13 +38,9 @@ export default function HRActivities() {
       try {
         setError("");
 
-        const res = await fetchActivitiesPage({ page, limit });
+        const [res, mgrs] = await Promise.all([fetchActivitiesPage({ page, limit }), getManagers()]);
         setActivities(res.data || []);
         setTotal(res.total || 0);
-
-        const mgrs = await getManagers(); // GET /users/managers
-        const [acts, mgrs] = await Promise.all([fetchActivities(), getManagers()]);
-        setActivities(Array.isArray(acts) ? acts : []);
         setManagers(Array.isArray(mgrs) ? mgrs : []);
       } catch (e) {
         setError(e?.message || "Erreur de chargement");

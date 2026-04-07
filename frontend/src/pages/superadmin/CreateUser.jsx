@@ -323,15 +323,7 @@ export default function CreateUser() {
         </div>
 
         {/* Format hint */}
-        <div style={{
-          fontSize: 12.5, color: "var(--text-3)",
-          padding: "8px 12px", borderRadius: 8,
-          background: "var(--bg)", border: "1px solid var(--border-2)",
-          fontFamily: "monospace", marginBottom: 10,
-        }}>
-          Format attendu : <strong>name, email, role, date_embauche</strong>
-          &nbsp;— rôles valides : EMPLOYEE · HR · MANAGER · date_embauche optionnelle
-        </div>
+        
 
         {/* Upload error */}
         {csvError && (

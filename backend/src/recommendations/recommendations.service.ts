@@ -27,8 +27,6 @@ export class RecommendationsService {
     if (refusedEmployees !== undefined) update.refusedEmployees = refusedEmployees;
     return this.model.findOneAndUpdate(
       { activityId },
-      { activityId, list, hrValidated },
-      { returnDocument: 'after', upsert: true },
       update,
       { new: true, upsert: true },
     );

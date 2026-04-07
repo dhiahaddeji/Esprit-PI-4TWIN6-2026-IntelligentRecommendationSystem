@@ -274,61 +274,66 @@ export default function MyProfile() {
           </div>
         </div>
 
-        {/* SECTION: Photo de profil */}
+        {/* SECTION: Photo & Authentification faciale */}
         <div style={styles.card}>
-          <h2 style={styles.cardTitle}>Photo de profil</h2>
-          <div style={styles.uploadArea}>
-            <div style={styles.photoPreviewWrap}>
-              {photoPreview ? (
-                <img
-                  src={photoPreview}
-                  alt="preview"
-                  style={styles.photoPreview}
-                />
-              ) : (
-                <div style={styles.photoInitials}>{initials}</div>
-              )}
-            </div>
-            <div>
-              <button
-                type="button"
-                style={styles.uploadBtn}
-                onClick={() => photoInputRef.current?.click()}
-              >
-                Choisir une photo
-              </button>
-              <p style={styles.uploadHint}>
-                JPG, PNG ou GIF — max 5 Mo
-              </p>
-              {photoFile && (
-                <p style={styles.uploadHint}>{photoFile.name}</p>
-              )}
-            </div>
-            <input
-              ref={photoInputRef}
-              type="file"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={handlePhotoChange}
-            />
-          </div>
-        </div>
+          <h2 style={styles.cardTitle}>Photo &amp; Authentification faciale</h2>
+          <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap", alignItems: "flex-start" }}>
 
-        {/* SECTION: Authentification faciale */}
-        <div style={styles.card}>
-          <h2 style={styles.cardTitle}>Authentification faciale</h2>
-          <p style={{ margin: "0 0 1rem 0", fontSize: "0.88rem", color: "var(--muted)" }}>
-            Enregistrez votre visage pour vous connecter sans mot de passe.
-            {profile.faceDescriptor?.length > 0 && (
-              <span style={{ marginLeft: "0.5rem", color: "#10b981", fontWeight: 600 }}>
-                ✅ Visage déjà enregistré
-              </span>
-            )}
-          </p>
-          <FaceRegister
-            onSuccess={(msg) => showToast(msg)}
-            onError={(msg) => showToast(msg, "error")}
-          />
+            {/* Photo upload */}
+            <div style={{ flex: "1 1 200px" }}>
+              <p style={{ margin: "0 0 0.75rem 0", fontSize: "0.82rem", fontWeight: 600, color: "var(--text-2)", textTransform: "uppercase", letterSpacing: 0.5 }}>Photo de profil</p>
+              <div style={styles.uploadArea}>
+                <div style={styles.photoPreviewWrap}>
+                  {photoPreview ? (
+                    <img src={photoPreview} alt="preview" style={styles.photoPreview} />
+                  ) : (
+                    <div style={styles.photoInitials}>{initials}</div>
+                  )}
+                </div>
+                <div>
+                  <button
+                    type="button"
+                    style={styles.uploadBtn}
+                    onClick={() => photoInputRef.current?.click()}
+                  >
+                    Choisir une photo
+                  </button>
+                  <p style={styles.uploadHint}>JPG, PNG ou GIF — max 5 Mo</p>
+                  {photoFile && <p style={styles.uploadHint}>{photoFile.name}</p>}
+                </div>
+                <input
+                  ref={photoInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={handlePhotoChange}
+                />
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div style={{ width: 1, background: "var(--border)", alignSelf: "stretch", minHeight: 80 }} />
+
+            {/* Face auth */}
+            <div style={{ flex: "1 1 200px" }}>
+              <p style={{ margin: "0 0 0.75rem 0", fontSize: "0.82rem", fontWeight: 600, color: "var(--text-2)", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                Connexion par visage
+                {profile.faceDescriptor?.length > 0 && (
+                  <span style={{ marginLeft: "0.5rem", color: "#10b981", fontWeight: 700, textTransform: "none" }}>✅ Enregistré</span>
+                )}
+              </p>
+              <p style={{ margin: "0 0 0.85rem 0", fontSize: "0.85rem", color: "var(--text-2)", lineHeight: 1.5 }}>
+                {profile.faceDescriptor?.length > 0
+                  ? "Votre visage est enregistré. Vous pouvez le mettre à jour."
+                  : "Enregistrez votre visage pour vous connecter sans mot de passe."}
+              </p>
+              <FaceRegister
+                onSuccess={(msg) => showToast(msg)}
+                onError={(msg) => showToast(msg, "error")}
+              />
+            </div>
+
+          </div>
         </div>
 
         {/* SECTION: CV — EMPLOYEE and HR only */}

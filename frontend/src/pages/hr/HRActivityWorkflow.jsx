@@ -487,9 +487,6 @@ export default function HRActivityWorkflow() {
 
   const st  = STATUS_META[activity.status] || STATUS_META.DRAFT;
   const icon = TYPE_ICONS[activity.type] || "📋";
-  const selectedCount = displayList.filter(r => r.status === "Selected" || r.rank <= seats).length;
-  const backupCount   = displayList.filter(r => r.status === "Backup"   || r.rank > seats).length;
-  const isLocked      = ["HR_VALIDATED", "SENT_TO_MANAGER", "MANAGER_CONFIRMED", "NOTIFIED"].includes(activity.status);
   const dateLabel = (() => {
     const start = activity.startDate || activity.date;
     const end = activity.endDate || activity.startDate || activity.date;
