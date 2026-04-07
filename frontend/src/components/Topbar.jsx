@@ -128,7 +128,7 @@ useEffect(() => {
 
           {/* ACCESSIBILITÉ */}
           <button className="iconBtn" type="button" onClick={() => setA11yOpen(true)} aria-label="Accessibilité" title="Accessibilité">
-            ♿
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M423.5-743.5Q400-767 400-800t23.5-56.5Q447-880 480-880t56.5 23.5Q560-833 560-800t-23.5 56.5Q513-720 480-720t-56.5-23.5ZM360-80v-520H120v-80h720v80H600v520h-80v-240h-80v240h-80Z"/></svg>
           </button>
 
           {/* NOTIFICATION BELL */}
@@ -172,8 +172,8 @@ useEffect(() => {
                         <span
                           className="notifIcon"
                           style={{
-                            background: (NOTIF_META[n.type]?.color ?? "#3b6fd4") + "1a",
-                            color: NOTIF_META[n.type]?.color ?? "#3b6fd4",
+                            background: (NOTIF_META[n.type]?.color ?? "#1D7A91") + "1a",
+                            color:      NOTIF_META[n.type]?.color ?? "#1D7A91",
                           }}
                         >
                           {NOTIF_META[n.type]?.icon ?? "🔔"}

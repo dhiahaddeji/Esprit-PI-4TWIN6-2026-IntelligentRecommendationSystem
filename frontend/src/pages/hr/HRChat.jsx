@@ -25,7 +25,7 @@ function MessageBubble({ msg }) {
         width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
         display: "flex", alignItems: "center", justifyContent: "center",
         fontWeight: 700, fontSize: "14px",
-        background: isUser ? "linear-gradient(135deg,#3b6fd4,#2d58b0)" : "linear-gradient(135deg,#f47c20,#d96a10)",
+        background: isUser ? "linear-gradient(135deg,#1D7A91,#2d58b0)" : "linear-gradient(135deg,#C9952A,#d96a10)",
         color: "#fff",
       }}>
         {isUser ? "RH" : "IA"}
@@ -35,12 +35,12 @@ function MessageBubble({ msg }) {
         <div style={{
           padding: "12px 16px",
           borderRadius: isUser ? "16px 4px 16px 16px" : "4px 16px 16px 16px",
-          background: isUser ? "linear-gradient(135deg,#3b6fd4,#2d58b0)" : "#fff",
-          color: isUser ? "#fff" : "#1a2340",
+          background: isUser ? "linear-gradient(135deg,#1D7A91,#2d58b0)" : "#fff",
+          color: isUser ? "#fff" : "#0B2D38",
           fontSize: "14px",
           lineHeight: "1.6",
           boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-          border: isUser ? "none" : "1px solid #dde3f0",
+          border: isUser ? "none" : "1px solid #DDD7C8",
           whiteSpace: "pre-wrap",
         }}>
           {formatMessage(msg.content)}
@@ -62,7 +62,7 @@ function MessageBubble({ msg }) {
                   {emp.score !== undefined && (
                     <span style={{
                       padding: "2px 10px", borderRadius: "999px",
-                      background: "#eff6ff", color: "#3b6fd4",
+                      background: "#EEF7FA", color: "#1D7A91",
                       fontWeight: 700, fontSize: "12px",
                     }}>
                       Score: {emp.score}
@@ -75,7 +75,7 @@ function MessageBubble({ msg }) {
                     .map(skill => (
                       <span key={skill} style={{
                         padding: "2px 8px", borderRadius: "999px",
-                        background: "var(--surface-2)", color: "#3d4f7c",
+                        background: "var(--surface-2)", color: "#155B6E",
                         fontSize: "11.5px", fontWeight: 600,
                         border: "1px solid var(--border)",
                       }}>{skill}</span>
@@ -191,7 +191,7 @@ export default function HRChat() {
           <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "16px" }}>
             <div style={{
               width: 36, height: 36, borderRadius: "50%",
-              background: "linear-gradient(135deg,#f47c20,#d96a10)",
+              background: "linear-gradient(135deg,#C9952A,#d96a10)",
               display: "flex", alignItems: "center", justifyContent: "center",
               color: "#fff", fontWeight: 700, fontSize: "14px",
             }}>IA</div>
@@ -219,11 +219,11 @@ export default function HRChat() {
             {SUGGESTIONS.map(s => (
               <button key={s} onClick={() => send(s)} style={{
                 padding: "6px 12px", borderRadius: "999px", cursor: "pointer",
-                background: "#eff6ff", color: "#3b6fd4", border: "1px solid #bfdbfe",
+                background: "#EEF7FA", color: "#1D7A91", border: "1px solid #D6EEF3",
                 fontSize: "12.5px", fontWeight: 600, transition: "background 0.15s",
               }}
-                onMouseEnter={e => e.target.style.background = "#dbeafe"}
-                onMouseLeave={e => e.target.style.background = "#eff6ff"}
+                onMouseEnter={e => e.target.style.background = "#D6EEF3"}
+                onMouseLeave={e => e.target.style.background = "#EEF7FA"}
               >{s}</button>
             ))}
           </div>
@@ -258,7 +258,7 @@ export default function HRChat() {
           disabled={loading || !input.trim()}
           style={{
             padding: "9px 20px", borderRadius: "10px",
-            background: "linear-gradient(135deg,#3b6fd4,#2d58b0)",
+            background: "linear-gradient(135deg,#1D7A91,#2d58b0)",
             color: "#fff", border: "none", fontWeight: 700,
             cursor: loading || !input.trim() ? "not-allowed" : "pointer",
             opacity: loading || !input.trim() ? 0.5 : 1,

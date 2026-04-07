@@ -137,7 +137,7 @@ export default function HRCreateActivity() {
           </p>
         </div>
         <Link to="/hr/activities" style={{
-          textDecoration: "none", fontWeight: 800, color: "#0b2b4b",
+          textDecoration: "none", fontWeight: 800, color: "#0B2D38",
           padding: "8px 10px", borderRadius: 10,
           border: "1px solid #eef0f4", background: "var(--surface)",
         }}>← Retour</Link>
@@ -145,8 +145,8 @@ export default function HRCreateActivity() {
 
       {error && (
         <div style={{
-          marginTop: 14, background: "#fffbfa",
-          border: "1px solid #fecdca", padding: 12, borderRadius: 12, color: "#b42318",
+          marginTop: 14, background: "#FDF8EE",
+          border: "1px solid #F28080", padding: 12, borderRadius: 12, color: "#8B1A1A",
         }}>
           {error}
         </div>
@@ -227,7 +227,7 @@ export default function HRCreateActivity() {
 
         {/* Competences requises */}
         <div style={{
-          background: "#f8faff", border: "1.5px solid var(--border)", borderRadius: 14, padding: "18px 20px",
+          background: "#EEF7FA", border: "1.5px solid var(--border)", borderRadius: 14, padding: "18px 20px",
         }}>
           <div style={{ fontWeight: 800, color: "#344054", fontSize: 14, marginBottom: 12 }}>
             🎯 Compétences requises ({compReqs.length})
@@ -244,12 +244,12 @@ export default function HRCreateActivity() {
                   <span style={{ flex: 1, fontWeight: 600, fontSize: 13, color: "var(--text-1)" }}>{c.intitule}</span>
                   <span style={{
                     fontSize: 11, fontWeight: 700, padding: "1px 7px", borderRadius: 6,
-                    background: "#eff6ff", color: "#3b6fd4",
+                    background: "#EEF7FA", color: "#1D7A91",
                   }}>{COMP_TYPES.find(t => t.key === c.type)?.label || c.type}</span>
                   <span style={{ fontSize: 11, color: "var(--text-2)" }}>min: {evalLabel(c.niveau_min)}</span>
                   <button onClick={() => removeReq(i)} type="button" style={{
-                    background: "#fee2e2", border: "none", borderRadius: 6,
-                    color: "#dc2626", cursor: "pointer", padding: "2px 7px", fontSize: 12,
+                    background: "#FBE9E9", border: "none", borderRadius: 6,
+                    color: "#8B1A1A", cursor: "pointer", padding: "2px 7px", fontSize: 12,
                   }}>×</button>
                 </div>
               ))}
@@ -260,15 +260,15 @@ export default function HRCreateActivity() {
           <div style={{ display: "flex", gap: 7, marginBottom: 8 }}>
             <button type="button" onClick={() => setCatalogMode(true)} style={{
               padding: "4px 12px", borderRadius: 7, fontSize: 12, fontWeight: 600,
-              background: catalogMode ? "#eff6ff" : "#f1f5f9",
-              color: catalogMode ? "#3b6fd4" : "#64748b",
-              border: catalogMode ? "1px solid #bfdbfe" : "1px solid #dde3f0", cursor: "pointer",
+              background: catalogMode ? "#EEF7FA" : "#f1f5f9",
+              color: catalogMode ? "#1D7A91" : "#638899",
+              border: catalogMode ? "1px solid #D6EEF3" : "1px solid #DDD7C8", cursor: "pointer",
             }}>Depuis catalogue</button>
             <button type="button" onClick={() => setCatalogMode(false)} style={{
               padding: "4px 12px", borderRadius: 7, fontSize: 12, fontWeight: 600,
-              background: !catalogMode ? "#eff6ff" : "#f1f5f9",
-              color: !catalogMode ? "#3b6fd4" : "#64748b",
-              border: !catalogMode ? "1px solid #bfdbfe" : "1px solid #dde3f0", cursor: "pointer",
+              background: !catalogMode ? "#EEF7FA" : "#f1f5f9",
+              color: !catalogMode ? "#1D7A91" : "#638899",
+              border: !catalogMode ? "1px solid #D6EEF3" : "1px solid #DDD7C8", cursor: "pointer",
             }}>Saisie libre</button>
           </div>
 
@@ -294,7 +294,7 @@ export default function HRCreateActivity() {
                 : filteredCatalog.map(item => (
                   <button key={item._id} type="button" onClick={() => addFromCatalog(item)} style={{
                     padding: "4px 10px", borderRadius: "999px", fontSize: 12, fontWeight: 600,
-                    background: "var(--bg)", color: "#3b6fd4", border: "1px solid #bfdbfe", cursor: "pointer",
+                    background: "var(--bg)", color: "#1D7A91", border: "1px solid #D6EEF3", cursor: "pointer",
                   }}>+ {item.intitule}</button>
                 ))
               }
@@ -312,7 +312,7 @@ export default function HRCreateActivity() {
                 <MicButton onResult={(t) => setAddComp(c => ({ ...c, intitule: t }))} />
               </div>
               <button type="button" onClick={addReq} style={{
-                padding: "8px 16px", background: "#3b6fd4", color: "#fff",
+                padding: "8px 16px", background: "#1D7A91", color: "#fff",
                 border: "none", borderRadius: 9, cursor: "pointer", fontWeight: 700,
               }}>+</button>
             </div>
@@ -324,7 +324,7 @@ export default function HRCreateActivity() {
           disabled={!canSubmit || loading}
           style={{
             marginTop: 4,
-            background: !canSubmit || loading ? "#98a2b3" : "#0b2b4b",
+            background: !canSubmit || loading ? "#98a2b3" : "#0B2D38",
             color: "white", padding: "10px 14px", borderRadius: 12,
             border: "none", fontWeight: 900,
             cursor: !canSubmit || loading ? "not-allowed" : "pointer",

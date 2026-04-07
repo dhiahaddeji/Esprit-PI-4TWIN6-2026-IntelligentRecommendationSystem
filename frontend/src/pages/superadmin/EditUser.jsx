@@ -127,7 +127,7 @@ export default function EditUser() {
           style={{
             background: "none",
             border: "none",
-            color: "#0b2b4b",
+            color: "#0B2D38",
             fontSize: "16px",
             cursor: "pointer",
             marginRight: "20px",
@@ -138,15 +138,15 @@ export default function EditUser() {
         >
           ← Retour à la liste
         </button>
-        <h1 style={{ color: "#111827", fontSize: "36px", margin: 0 }}>
+        <h1 style={{ color: "#0B2D38", fontSize: "36px", margin: 0 }}>
           Modifier l'utilisateur
         </h1>
       </div>
 
       {error && (
         <div style={{
-          background: "#fee2e2",
-          color: "#991b1b",
+          background: "#FBE9E9",
+          color: "#8B1A1A",
           padding: "16px",
           borderRadius: "8px",
           marginBottom: "24px",
@@ -158,7 +158,7 @@ export default function EditUser() {
 
       {success && (
         <div style={{
-          background: "#ecfdf5",
+          background: "#E8F5ED",
           color: "#065f46",
           padding: "16px",
           borderRadius: "8px",
@@ -174,61 +174,58 @@ export default function EditUser() {
           <label style={{ fontWeight: 600, display: "block", marginBottom: "8px" }}>
             Nom complet
           </label>
-          <div style={{ position: "relative" }}>
-            <input
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              required
-              style={{
-                width: "100%", padding: "12px", paddingRight: 42,
-                border: "1px solid #d1d5db", borderRadius: "6px",
-                fontSize: "16px", boxSizing: "border-box",
-              }}
-            />
-            <MicButton onResult={(t) => setForm((f) => ({ ...f, name: t }))} />
-          </div>
+          <input
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            required
+            style={{
+              width: "100%",
+              padding: "12px",
+              border: "1px solid #DDD7C8",
+              borderRadius: "6px",
+              fontSize: "16px"
+            }}
+          />
         </div>
 
         <div>
           <label style={{ fontWeight: 600, display: "block", marginBottom: "8px" }}>
             Email
           </label>
-          <div style={{ position: "relative" }}>
-            <input
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              required
-              style={{
-                width: "100%", padding: "12px", paddingRight: 42,
-                border: "1px solid #d1d5db", borderRadius: "6px",
-                fontSize: "16px", boxSizing: "border-box",
-              }}
-            />
-            <MicButton onResult={(t) => setForm((f) => ({ ...f, email: t }))} />
-          </div>
+          <input
+            type="email"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            required
+            style={{
+              width: "100%",
+              padding: "12px",
+              border: "1px solid #DDD7C8",
+              borderRadius: "6px",
+              fontSize: "16px"
+            }}
+          />
         </div>
 
         <div>
           <label style={{ fontWeight: 600, display: "block", marginBottom: "8px" }}>
             Matricule
           </label>
-          <div style={{ position: "relative" }}>
-            <input
-              name="matricule"
-              value={form.matricule}
-              onChange={handleChange}
-              required
-              style={{
-                width: "100%", padding: "12px", paddingRight: 42,
-                border: "1px solid #d1d5db", borderRadius: "6px",
-                fontSize: "16px", boxSizing: "border-box",
-              }}
-            />
-            <MicButton onResult={(t) => setForm((f) => ({ ...f, matricule: t }))} />
-          </div>
+          <input
+            name="matricule"
+            value={form.matricule}
+            onChange={handleChange}
+            required
+            style={{
+              width: "100%",
+              padding: "12px",
+              border: "1px solid #DDD7C8",
+              borderRadius: "6px",
+              fontSize: "16px"
+            }}
+          />
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
@@ -243,7 +240,7 @@ export default function EditUser() {
               style={{
                 width: "100%",
                 padding: "12px",
-                border: "1px solid #d1d5db",
+                border: "1px solid #DDD7C8",
                 borderRadius: "6px",
                 fontSize: "16px",
                 background: "white"
@@ -267,7 +264,7 @@ export default function EditUser() {
               style={{
                 width: "100%",
                 padding: "12px",
-                border: "1px solid #d1d5db",
+                border: "1px solid #DDD7C8",
                 borderRadius: "6px",
                 fontSize: "16px",
                 background: "white"
@@ -292,7 +289,7 @@ export default function EditUser() {
             style={{
               width: "100%",
               padding: "12px",
-              border: "1px solid #d1d5db",
+              border: "1px solid #DDD7C8",
               borderRadius: "6px",
               fontSize: "16px"
             }}
@@ -306,7 +303,7 @@ export default function EditUser() {
             style={{
               flex: 1,
               padding: "14px",
-              background: submitting ? "#9ca3af" : "#0b2b4b",
+              background: submitting ? "#638899" : "#0B2D38",
               color: "white",
               border: "none",
               borderRadius: "8px",
@@ -324,8 +321,8 @@ export default function EditUser() {
             style={{
               padding: "14px 30px",
               background: "white",
-              color: "#4b5563",
-              border: "1px solid #d1d5db",
+              color: "#456070",
+              border: "1px solid #DDD7C8",
               borderRadius: "8px",
               fontSize: "18px",
               fontWeight: "bold",

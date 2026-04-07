@@ -216,17 +216,22 @@ export class NlpService {
     return this.trigramSimilarity(normA, normB);
   }
 
-  // ── OpenAI embeddings (cached) ────────────────────────────────────────────
+  // ── OpenAI embeddings (cached, 2s timeout) ───────────────────────────────
   async getEmbedding(text: string): Promise<number[]> {
     const key = text.toLowerCase().trim();
     if (this.embeddingCache.has(key)) return this.embeddingCache.get(key)!;
 
     try {
-      const res = await this.client.embeddings.create({
+      const apiCall = this.client.embeddings.create({
         model: 'text-embedding-3-small',
         input: key,
       });
-      const vector = res.data[0].embedding;
+      // Abort after 2 s — fall back to trigram similarity if OpenAI is slow/unavailable
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('embedding timeout')), 2000),
+      );
+      const res    = await Promise.race([apiCall, timeout]) as any;
+      const vector = res.data[0].embedding as number[];
       this.embeddingCache.set(key, vector);
       return vector;
     } catch {

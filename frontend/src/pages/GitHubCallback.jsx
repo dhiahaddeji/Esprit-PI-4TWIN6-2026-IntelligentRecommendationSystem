@@ -31,8 +31,8 @@ export default function GitHubCallback() {
 
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", flexDirection: "column", gap: 16 }}>
-      <div style={{ width: 40, height: 40, border: "4px solid #0b2b4b", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-      <p style={{ color: "#0b2b4b", fontWeight: 600 }}>Connexion GitHub en cours…</p>
+      <div style={{ width: 40, height: 40, border: "4px solid #0B2D38", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+      <p style={{ color: "#0B2D38", fontWeight: 600 }}>Connexion GitHub en cours…</p>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );

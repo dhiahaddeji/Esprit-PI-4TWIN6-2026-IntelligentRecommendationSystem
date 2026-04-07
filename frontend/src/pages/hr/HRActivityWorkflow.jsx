@@ -7,12 +7,14 @@ import http from "../../api/http";
 const EVAL_LABELS = ["Pas de compétence", "Notions", "Pratique", "Maîtrise", "Expert"];
 
 const STATUS_META = {
-  DRAFT:             { label: "Brouillon",           bg: "#f1f5f9", color: "var(--text-2)" },
-  AI_SUGGESTED:      { label: "IA lancée",            bg: "#fef3c7", color: "#92400e" },
-  HR_VALIDATED:      { label: "Validée HR",           bg: "#d1fae5", color: "#065f46" },
-  SENT_TO_MANAGER:   { label: "Envoyée au manager",   bg: "#dbeafe", color: "#1e40af" },
-  MANAGER_CONFIRMED: { label: "Confirmée manager",    bg: "#d1fae5", color: "#065f46" },
-  NOTIFIED:          { label: "Employés notifiés",    bg: "#ede9fe", color: "#5b21b6" },
+  DRAFT:             { label: "Brouillon",            bg: "#f1f5f9", color: "var(--text-2)" },
+  AI_SUGGESTED:      { label: "IA lancée",             bg: "#FEF6E4", color: "#92400e" },
+  HR_VALIDATED:      { label: "Validée HR",            bg: "#E8F5ED", color: "#065f46" },
+  SENT_TO_MANAGER:   { label: "Envoyée au manager",    bg: "#D6EEF3", color: "#155B6E" },
+  HR_REGEN_NEEDED:   { label: "Regénération requise",  bg: "#FFF3CD", color: "#856404" },
+  MANAGER_CONFIRMED: { label: "Confirmée manager",     bg: "#E8F5ED", color: "#065f46" },
+  MANAGER_REFUSED:   { label: "Refusée par manager",   bg: "#FBE9E9", color: "#8B1A1A" },
+  NOTIFIED:          { label: "Employés notifiés",     bg: "#FBF0DC", color: "#1D7A91" },
 };
 
 const AVAILABILITY_META = {
@@ -27,23 +29,28 @@ const TYPE_ICONS = {
 const COMP_TYPE_LABELS = { savoir: "Savoir", savoir_faire: "Savoir-faire", savoir_etre: "Savoir-être" };
 
 // ── Score bar component ────────────────────────────────────────────────────────
-function ScoreBar({ score }) {
+function ScoreBar({ score, isCert = false }) {
+  // For certification: high score = high NEED (red→orange→teal→green)
+  // For others: high score = high FIT (red→orange→teal→green)
   const color =
-    score >= 80 ? "#059669" :
-    score >= 60 ? "#2563eb" :
-    score >= 40 ? "#d97706" : "#dc2626";
+    score >= 80 ? (isCert ? "#8B1A1A" : "#145C2B") :
+    score >= 60 ? (isCert ? "#C9952A" : "#155B6E") :
+    score >= 40 ? (isCert ? "#155B6E" : "#C9952A") : (isCert ? "#145C2B" : "#8B1A1A");
+  const label = isCert
+    ? (score >= 80 ? "Besoin élevé" : score >= 60 ? "Besoin moyen" : score >= 40 ? "Besoin faible" : "Déjà maîtrisé")
+    : `${score}%`;
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
       <div style={{ flex: 1, height: 6, borderRadius: 3, background: "var(--bg)", overflow: "hidden" }}>
         <div style={{ width: `${score}%`, height: "100%", background: color, borderRadius: 3, transition: "width 0.6s ease" }} />
       </div>
-      <span style={{ fontSize: 13, fontWeight: 800, color, minWidth: 38, textAlign: "right" }}>{score}%</span>
+      <span style={{ fontSize: 12, fontWeight: 800, color, minWidth: 70, textAlign: "right" }}>{label}</span>
     </div>
   );
 }
 
 // ── Employee recommendation card ───────────────────────────────────────────────
-function RecCard({ item, seats, onRemove, onPromoteToSelected }) {
+function RecCard({ item, seats, onRemove, onPromoteToSelected, isCert = false }) {
   const [expanded, setExpanded] = useState(false);
   const isSelected = item.status === "Selected" || item.rank <= seats;
   const isBackup   = item.status === "Backup"   || item.rank > seats;
@@ -56,8 +63,8 @@ function RecCard({ item, seats, onRemove, onPromoteToSelected }) {
   return (
     <div style={{
       borderRadius: 14,
-      border: `1.5px solid ${isSelected ? "#86efac" : "#c7d2fe"}`,
-      background: isSelected ? "#f0fdf4" : "#f5f3ff",
+      border: `1.5px solid ${isSelected ? "#A8D8E3" : "#A8D8E3"}`,
+      background: isSelected ? "#E8F5ED" : "#EEF7FA",
       padding: "14px 16px",
       marginBottom: 10,
     }}>
@@ -66,7 +73,7 @@ function RecCard({ item, seats, onRemove, onPromoteToSelected }) {
         {/* Rank badge */}
         <div style={{
           minWidth: 28, height: 28, borderRadius: "50%",
-          background: isSelected ? "#10b981" : "#8b5cf6",
+          background: isSelected ? "#145C2B" : "#1D7A91",
           color: "#fff", display: "flex", alignItems: "center",
           justifyContent: "center", fontWeight: 800, fontSize: 12, flexShrink: 0,
         }}>#{item.rank}</div>
@@ -79,8 +86,8 @@ function RecCard({ item, seats, onRemove, onPromoteToSelected }) {
             </span>
             <span style={{
               fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999,
-              background: isSelected ? "#d1fae5" : "#ede9fe",
-              color: isSelected ? "#065f46" : "#5b21b6",
+              background: isSelected ? "#E8F5ED" : "#FBF0DC",
+              color: isSelected ? "#065f46" : "#1D7A91",
             }}>
               {isSelected ? "✅ Sélectionné" : "🔄 Backup"}
             </span>
@@ -96,7 +103,7 @@ function RecCard({ item, seats, onRemove, onPromoteToSelected }) {
 
           {/* Score bar */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
-            <ScoreBar score={item.score ?? 0} />
+            <ScoreBar score={item.score ?? 0} isCert={isCert} />
           </div>
 
           {/* Explanation */}
@@ -114,8 +121,8 @@ function RecCard({ item, seats, onRemove, onPromoteToSelected }) {
               onClick={() => onPromoteToSelected(item.employeeId)}
               title="Promouvoir en sélectionné"
               style={{
-                background: "#d1fae5", border: "none", borderRadius: 7,
-                color: "#059669", cursor: "pointer", padding: "4px 8px", fontSize: 12, fontWeight: 700,
+                background: "#E8F5ED", border: "none", borderRadius: 7,
+                color: "#145C2B", cursor: "pointer", padding: "4px 8px", fontSize: 12, fontWeight: 700,
               }}
             >↑ Sélect.</button>
           )}
@@ -130,8 +137,8 @@ function RecCard({ item, seats, onRemove, onPromoteToSelected }) {
             onClick={() => onRemove(item.employeeId)}
             title="Retirer de la liste"
             style={{
-              background: "#fee2e2", border: "none", borderRadius: 7,
-              color: "#dc2626", cursor: "pointer", padding: "4px 8px", fontSize: 13,
+              background: "#FBE9E9", border: "none", borderRadius: 7,
+              color: "#8B1A1A", cursor: "pointer", padding: "4px 8px", fontSize: 13,
             }}
           >✕</button>
         </div>
@@ -143,13 +150,13 @@ function RecCard({ item, seats, onRemove, onPromoteToSelected }) {
           {(item.matchedSkills || []).map((s, i) => (
             <span key={i} style={{
               fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 999,
-              background: "#d1fae5", color: "#065f46", border: "1px solid #6ee7b7",
+              background: "#E8F5ED", color: "#065f46", border: "1px solid #A8D8E3",
             }}>✓ {s}</span>
           ))}
           {(item.missingSkills || []).map((s, i) => (
             <span key={i} style={{
               fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 999,
-              background: "#fee2e2", color: "#b42318", border: "1px solid #fca5a5",
+              background: "#FBE9E9", color: "#8B1A1A", border: "1px solid #fca5a5",
             }}>✗ {s}</span>
           ))}
         </div>
@@ -165,8 +172,8 @@ function RecCard({ item, seats, onRemove, onPromoteToSelected }) {
             <div key={i} style={{
               display: "flex", alignItems: "center", gap: 8,
               padding: "6px 10px", borderRadius: 8,
-              background: d.meets_minimum ? "#f0fdf4" : "#fffbeb",
-              border: `1px solid ${d.meets_minimum ? "#bbf7d0" : "#fde68a"}`,
+              background: d.meets_minimum ? "#E8F5ED" : "#FEF6E4",
+              border: `1px solid ${d.meets_minimum ? "#E8F5ED" : "#FEF6E4"}`,
             }}>
               <span style={{ fontSize: 14 }}>{d.meets_minimum ? "✅" : "⚠️"}</span>
               <span style={{ flex: 1, fontWeight: 600, fontSize: 12.5, color: "var(--text-1)" }}>{d.intitule}</span>
@@ -178,7 +185,7 @@ function RecCard({ item, seats, onRemove, onPromoteToSelected }) {
               </span>
             </div>
           ))}
-          <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 4 }}>
+          <div style={{ fontSize: 11, color: "#638899", marginTop: 4 }}>
             {item.totalCompetences} compétence{item.totalCompetences !== 1 ? "s" : ""} validée{item.totalCompetences !== 1 ? "s" : ""} au total
           </div>
         </div>
@@ -240,11 +247,11 @@ function AiChatPanel({ activity, recList }) {
     }}>
       <div style={{
         padding: "12px 16px", borderBottom: "1px solid var(--border)",
-        background: "linear-gradient(135deg,#3b6fd4,#2d58b0)",
+        background: "linear-gradient(135deg,#1D7A91,#2d58b0)",
         display: "flex", alignItems: "center", gap: 8,
       }}>
         <span style={{ color: "#fff", fontWeight: 800, fontSize: 14 }}>🤖 Assistant IA</span>
-        <span style={{ color: "#bfdbfe", fontSize: 12 }}>— questions sur cette recommandation</span>
+        <span style={{ color: "#D6EEF3", fontSize: 12 }}>— questions sur cette recommandation</span>
       </div>
 
       {/* Suggestions */}
@@ -253,7 +260,7 @@ function AiChatPanel({ activity, recList }) {
           {suggestions.map(s => (
             <button key={s} onClick={() => send(s)} style={{
               padding: "5px 11px", borderRadius: 999, cursor: "pointer",
-              background: "#eff6ff", color: "#3b6fd4", border: "1px solid #bfdbfe",
+              background: "#EEF7FA", color: "#1D7A91", border: "1px solid #D6EEF3",
               fontSize: 12, fontWeight: 600,
             }}>{s}</button>
           ))}
@@ -266,9 +273,9 @@ function AiChatPanel({ activity, recList }) {
           {messages.map((m, i) => (
             <div key={i} style={{
               padding: "8px 12px", borderRadius: 10, fontSize: 13, lineHeight: 1.55,
-              background: m.role === "user" ? "#3b6fd4" : "#fff",
-              color: m.role === "user" ? "#fff" : "#1a2340",
-              border: m.role === "user" ? "none" : "1px solid #dde3f0",
+              background: m.role === "user" ? "#1D7A91" : "#fff",
+              color: m.role === "user" ? "#fff" : "#0B2D38",
+              border: m.role === "user" ? "none" : "1px solid #DDD7C8",
               alignSelf: m.role === "user" ? "flex-end" : "flex-start",
               maxWidth: "90%",
               whiteSpace: "pre-wrap",
@@ -315,7 +322,7 @@ function AiChatPanel({ activity, recList }) {
           disabled={loading || !input.trim()}
           style={{
             padding: "8px 16px", borderRadius: 9,
-            background: "linear-gradient(135deg,#3b6fd4,#2d58b0)",
+            background: "linear-gradient(135deg,#1D7A91,#2d58b0)",
             color: "#fff", border: "none", fontWeight: 700, fontSize: 13,
             cursor: loading || !input.trim() ? "not-allowed" : "pointer",
             opacity: loading || !input.trim() ? 0.5 : 1,
@@ -369,6 +376,7 @@ export default function HRActivityWorkflow() {
     : recList;
   const recIds         = new Set(recList.map(r => r.employeeId));
   const seats          = activity?.seats || 5;
+  const isCert         = activity?.type === 'certification';
 
   const filteredEmployees = employees.filter(e => {
     const name = (e.name || e.firstName || "").toLowerCase();
@@ -498,6 +506,12 @@ export default function HRActivityWorkflow() {
     if (!startLabel) return null;
     return endLabel && endLabel !== startLabel ? `${startLabel} - ${endLabel}` : startLabel;
   })();
+  const selectedCount = recList.filter(r => r.status === "Selected" || r.rank <= seats).length;
+  const backupCount   = recList.filter(r => r.status === "Backup"   || r.rank > seats).length;
+  const isLocked      = ["HR_VALIDATED", "SENT_TO_MANAGER", "MANAGER_CONFIRMED", "NOTIFIED", "MANAGER_REFUSED"].includes(activity.status);
+  const isRegenNeeded = activity.status === "HR_REGEN_NEEDED";
+  const isRefused     = activity.status === "MANAGER_REFUSED";
+  const refusedEmployees = rec?.refusedEmployees || [];
 
   return (
     <div style={{ padding: "20px 24px", maxWidth: 1200, margin: "0 auto" }}>
@@ -526,7 +540,7 @@ export default function HRActivityWorkflow() {
                 <span style={{
                   marginLeft: 12, fontSize: 11, fontWeight: 700,
                   padding: "2px 8px", borderRadius: 6,
-                  background: "#eff6ff", color: "#3b6fd4",
+                  background: "#EEF7FA", color: "#1D7A91",
                 }}>
                   {activity.prioritization}
                 </span>
@@ -539,7 +553,7 @@ export default function HRActivityWorkflow() {
                 {activity.competences_requises.map((c, i) => (
                   <span key={i} style={{
                     fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 6,
-                    background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0",
+                    background: "#E8F5ED", color: "#145C2B", border: "1px solid #E8F5ED",
                   }}>
                     {COMP_TYPE_LABELS[c.type] || c.type}: {c.intitule}
                     {c.niveau_min !== undefined && ` (min: ${EVAL_LABELS[c.niveau_min] || c.niveau_min})`}
@@ -561,7 +575,7 @@ export default function HRActivityWorkflow() {
       {error && (
         <div style={{
           marginBottom: 14, padding: "12px 16px", borderRadius: 12,
-          background: "#fffbfa", border: "1px solid #fecdca", color: "#b42318",
+          background: "#FDF8EE", border: "1px solid #F28080", color: "#8B1A1A",
         }}>{error}</div>
       )}
       {success && (
@@ -569,6 +583,51 @@ export default function HRActivityWorkflow() {
           marginBottom: 14, padding: "12px 16px", borderRadius: 12,
           background: "#ecfdf3", border: "1px solid #abefc6", color: "#065f46",
         }}>{success}</div>
+      )}
+
+      {/* ── Refused by manager banner ───────────────────────────────── */}
+      {isRefused && (
+        <div style={{
+          marginBottom: 16, padding: "16px 20px", borderRadius: 14,
+          background: "#FBE9E9", border: "1.5px solid #F28080", color: "#8B1A1A",
+        }}>
+          <div style={{ fontWeight: 900, fontSize: 15, marginBottom: 4 }}>🚫 Activité refusée par le manager</div>
+          {activity.refusalReason && (
+            <div style={{ fontSize: 13 }}>Motif : <em>"{activity.refusalReason}"</em></div>
+          )}
+          <div style={{ fontSize: 12, marginTop: 8, color: "#7A1A1A" }}>
+            Vous pouvez modifier l'activité et la renvoyer au manager.
+          </div>
+        </div>
+      )}
+
+      {/* ── Regen needed banner ─────────────────────────────────────── */}
+      {isRegenNeeded && (
+        <div style={{
+          marginBottom: 16, padding: "16px 20px", borderRadius: 14,
+          background: "#FFF3CD", border: "1.5px solid #FBBF24", color: "#856404",
+        }}>
+          <div style={{ fontWeight: 900, fontSize: 15, marginBottom: 4 }}>
+            ⚠️ Le manager a refusé {refusedEmployees.length} candidat{refusedEmployees.length !== 1 ? "s" : ""}
+          </div>
+          {refusedEmployees.length > 0 && (
+            <div style={{ fontSize: 12, marginBottom: 10 }}>
+              Ces employés sont exclus des prochaines recommandations IA :&nbsp;
+              <strong>{refusedEmployees.join(", ")}</strong>
+            </div>
+          )}
+          <button
+            onClick={onRunAI}
+            disabled={loadingAI}
+            style={{
+              padding: "9px 18px", borderRadius: 10, border: "none",
+              background: loadingAI ? "#e2e8f0" : "#C9952A",
+              color: "#fff", fontWeight: 800, fontSize: 13, cursor: loadingAI ? "not-allowed" : "pointer",
+            }}
+          >
+            {loadingAI ? "Analyse…" : "🚀 Regénérer la liste IA (sans les exclus)"}
+          </button>
+        </div>
       )}
 
       <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 18, alignItems: "start" }}>
@@ -587,48 +646,45 @@ export default function HRActivityWorkflow() {
                     {selectedCount} sélectionné{selectedCount !== 1 ? "s" : ""} · {backupCount} backup
                   </div>
                 )}
+                {isCert && (
+                  <div style={{ marginTop: 6, fontSize: 11, padding: "4px 10px", borderRadius: 6, background: "#FEF6E4", color: "#7A4A00", border: "1px solid #FBBF24", display: "inline-block" }}>
+                    🎓 Mode certification — classé par <strong>besoin</strong> (moins compétents en priorité)
+                  </div>
+                )}
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--text-2)" }}>
-                  <input
-                    type="checkbox"
-                    checked={onlyAvailable}
-                    onChange={(e) => setOnlyAvailable(e.target.checked)}
-                  />
-                  Uniquement disponibles
-                </label>
-                <button
-                  onClick={onRunAI}
-                  disabled={loadingAI || isLocked}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 8,
-                    padding: "9px 18px", borderRadius: 10, border: "none",
-                    background: loadingAI || isLocked
-                      ? "#e2e8f0"
-                      : "linear-gradient(135deg,#3b6fd4,#2d58b0)",
-                    color: loadingAI || isLocked ? "#94a3b8" : "#fff",
-                    fontWeight: 700, fontSize: 13.5, cursor: loadingAI || isLocked ? "not-allowed" : "pointer",
-                    transition: "all 0.2s",
-                  }}
-                >
-                  {loadingAI ? (
-                    <>
-                      <span style={{ fontSize: 15, animation: "spin 1s linear infinite" }}>⏳</span>
-                      Analyse des profils…
-                    </>
-                  ) : (
-                    <>🚀 Run AI Recommendation</>
-                  )}
-                </button>
-              </div>
+              <button
+                onClick={onRunAI}
+                disabled={loadingAI || (isLocked && !isRegenNeeded)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  padding: "9px 18px", borderRadius: 10, border: "none",
+                  background: loadingAI || (isLocked && !isRegenNeeded)
+                    ? "#e2e8f0"
+                    : isRegenNeeded
+                    ? "#C9952A"
+                    : "linear-gradient(135deg,#1D7A91,#2d58b0)",
+                  color: loadingAI || (isLocked && !isRegenNeeded) ? "#638899" : "#fff",
+                  fontWeight: 700, fontSize: 13.5, cursor: loadingAI || (isLocked && !isRegenNeeded) ? "not-allowed" : "pointer",
+                  transition: "all 0.2s",
+                }}
+              >
+                {loadingAI ? (
+                  <>
+                    <span style={{ fontSize: 15, animation: "spin 1s linear infinite" }}>⏳</span>
+                    Analyse des profils…
+                  </>
+                ) : (
+                  <>🚀 Run AI Recommendation</>
+                )}
+              </button>
             </div>
 
             {/* Empty state */}
             {recList.length === 0 && !loadingAI && (
               <div style={{
                 textAlign: "center", padding: "40px 20px",
-                background: "var(--surface-2)", borderRadius: 12, border: "1px dashed #dde3f0",
+                background: "var(--surface-2)", borderRadius: 12, border: "1px dashed #DDD7C8",
                 color: "var(--text-2)", fontSize: 13,
               }}>
                 <div style={{ fontSize: 32, marginBottom: 10 }}>🤖</div>
@@ -644,7 +700,7 @@ export default function HRActivityWorkflow() {
                 background: "var(--surface-2)", borderRadius: 12, border: "1px solid var(--border)",
               }}>
                 <div style={{ fontSize: 28, marginBottom: 8 }}>🔍</div>
-                <div style={{ fontWeight: 700, color: "#3b6fd4", marginBottom: 4 }}>
+                <div style={{ fontWeight: 700, color: "#1D7A91", marginBottom: 4 }}>
                   Analyse des profils en cours…
                 </div>
                 <div style={{ color: "var(--text-2)", fontSize: 13 }}>
@@ -668,7 +724,7 @@ export default function HRActivityWorkflow() {
                 {/* Section: Selected */}
                 {selectedCount > 0 && (
                   <div style={{ marginBottom: 8 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#059669", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#145C2B", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
                       ✅ Sélectionnés ({selectedCount}/{seats} places)
                     </div>
                     {displayList
@@ -680,6 +736,7 @@ export default function HRActivityWorkflow() {
                           seats={seats}
                           onRemove={removeFromList}
                           onPromoteToSelected={null}
+                          isCert={isCert}
                         />
                       ))
                     }
@@ -689,7 +746,7 @@ export default function HRActivityWorkflow() {
                 {/* Section: Backup */}
                 {backupCount > 0 && (
                   <div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#7c3aed", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#1D7A91", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
                       🔄 Backup ({backupCount})
                     </div>
                     {displayList
@@ -701,6 +758,7 @@ export default function HRActivityWorkflow() {
                           seats={seats}
                           onRemove={removeFromList}
                           onPromoteToSelected={promoteToSelected}
+                          isCert={isCert}
                         />
                       ))
                     }
@@ -713,20 +771,20 @@ export default function HRActivityWorkflow() {
             <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--border)" }}>
               <button
                 onClick={onValidateForward}
-                disabled={!recList.length || loadingSave || isLocked}
+                disabled={!recList.length || loadingSave || (isLocked && !isRegenNeeded)}
                 style={{
                   width: "100%", padding: "11px", borderRadius: 11, border: "none",
-                  background: !recList.length || isLocked
+                  background: !recList.length || (isLocked && !isRegenNeeded)
                     ? "#e2e8f0"
-                    : "linear-gradient(135deg,#10b981,#059669)",
-                  color: !recList.length || isLocked ? "#94a3b8" : "#fff",
+                    : "linear-gradient(135deg,#145C2B,#145C2B)",
+                  color: !recList.length || (isLocked && !isRegenNeeded) ? "#638899" : "#fff",
                   fontWeight: 800, fontSize: 14,
-                  cursor: !recList.length || isLocked ? "not-allowed" : "pointer",
+                  cursor: !recList.length || (isLocked && !isRegenNeeded) ? "not-allowed" : "pointer",
                 }}
               >
-                {loadingSave ? "Envoi en cours…" : isLocked ? `Déjà validée (${st.label})` : "✅ Valider & envoyer les invitations"}
+                {loadingSave ? "Envoi en cours…" : (isLocked && !isRegenNeeded) ? `Déjà envoyée (${st.label})` : isRegenNeeded ? "✅ Renvoyer la nouvelle liste au manager" : "✅ Valider & envoyer au manager"}
               </button>
-              {!isLocked && recList.length > 0 && (
+              {(!isLocked || isRegenNeeded) && recList.length > 0 && (
                 <div style={{ textAlign: "center", marginTop: 6, fontSize: 11, color: "var(--text-2)" }}>
                   Enverra des invitations à {recList.length} employé{recList.length !== 1 ? "s" : ""}
                 </div>
@@ -772,8 +830,8 @@ export default function HRActivityWorkflow() {
                   <div key={empId} style={{
                     display: "flex", alignItems: "center", justifyContent: "space-between",
                     padding: "9px 12px", borderRadius: 10,
-                    border: `1px solid ${inList ? "#bbf7d0" : "#dde3f0"}`,
-                    background: inList ? "#f0fdf4" : "#fff",
+                    border: `1px solid ${inList ? "#E8F5ED" : "#DDD7C8"}`,
+                    background: inList ? "#E8F5ED" : "#fff",
                   }}>
                     <div>
                       <div style={{ fontWeight: 600, fontSize: 13.5, color: "var(--text-1)" }}>{name}</div>
@@ -784,8 +842,8 @@ export default function HRActivityWorkflow() {
                       disabled={inList || loadingSave || isLocked}
                       style={{
                         padding: "5px 12px", borderRadius: 8, border: "none", fontSize: 12, fontWeight: 700,
-                        background: inList ? "#d1fae5" : "#eff6ff",
-                        color: inList ? "#059669" : "#3b6fd4",
+                        background: inList ? "#E8F5ED" : "#EEF7FA",
+                        color: inList ? "#145C2B" : "#1D7A91",
                         cursor: inList || loadingSave || isLocked ? "not-allowed" : "pointer",
                       }}
                     >

@@ -12,39 +12,39 @@ const ROLES = [
     label:   "Employé",
     prefix:  "EMP",
     icon:    "👤",
-    color:   "#374151",
-    bg:      "#f3f4f6",
-    border:  "#d1d5db",
-    activeBg:"#f0fdf4",
-    activeBorder: "#16a34a",
-    activeColor:  "#15803d",
-    dot:     "#16a34a",
+    color:   "#456070",
+    bg:      "#EEF7FA",
+    border:  "#DDD7C8",
+    activeBg:"#E8F5ED",
+    activeBorder: "#145C2B",
+    activeColor:  "#145C2B",
+    dot:     "#145C2B",
   },
   {
     value:   "HR",
     label:   "Responsable RH",
     prefix:  "RH",
     icon:    "🧑‍💼",
-    color:   "#1e40af",
-    bg:      "#eff6ff",
-    border:  "#bfdbfe",
-    activeBg:"#eff6ff",
-    activeBorder: "#3b82f6",
-    activeColor:  "#1d4ed8",
-    dot:     "#3b82f6",
+    color:   "#155B6E",
+    bg:      "#EEF7FA",
+    border:  "#D6EEF3",
+    activeBg:"#EEF7FA",
+    activeBorder: "#1D7A91",
+    activeColor:  "#155B6E",
+    dot:     "#1D7A91",
   },
   {
     value:   "MANAGER",
     label:   "Manager",
     prefix:  "MGR",
     icon:    "🏆",
-    color:   "#5b21b6",
-    bg:      "#f5f3ff",
-    border:  "#ddd6fe",
-    activeBg:"#f5f3ff",
-    activeBorder: "#7c3aed",
-    activeColor:  "#6d28d9",
-    dot:     "#7c3aed",
+    color:   "#1D7A91",
+    bg:      "#EEF7FA",
+    border:  "#D6EEF3",
+    activeBg:"#EEF7FA",
+    activeBorder: "#1D7A91",
+    activeColor:  "#155B6E",
+    dot:     "#1D7A91",
   },
 ];
 
@@ -205,7 +205,7 @@ export default function CreateUser() {
         }}>
           <div style={{
             width: 72, height: 72, borderRadius: "50%", margin: "0 auto 20px",
-            background: "linear-gradient(135deg,#d1fae5,#a7f3d0)",
+            background: "linear-gradient(135deg,#E8F5ED,#a7f3d0)",
             display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36,
           }}>✅</div>
           <h2 style={{ margin: "0 0 10px", fontSize: 22, fontWeight: 800, color: "var(--text-1)" }}>
@@ -216,7 +216,7 @@ export default function CreateUser() {
           </p>
           <div style={{
             display: "inline-block", padding: "6px 16px", borderRadius: 999,
-            background: "#eff6ff", color: "#1d4ed8", fontWeight: 700, fontSize: 14,
+            background: "#EEF7FA", color: "#155B6E", fontWeight: 700, fontSize: 14,
             marginBottom: 16,
           }}>{form.email}</div>
           <div style={{
@@ -245,7 +245,7 @@ export default function CreateUser() {
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{
             width: 48, height: 48, borderRadius: 14,
-            background: "linear-gradient(135deg,#0b2b4b,#1e3a5f)",
+            background: "linear-gradient(135deg,#0B2D38,#1e3a5f)",
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 22, color: "#fff", flexShrink: 0,
           }}>➕</div>
@@ -415,7 +415,7 @@ export default function CreateUser() {
       {error && (
         <div style={{
           display: "flex", alignItems: "center", gap: 10,
-          color: "#b42318", background: "#fff5f5", border: "1px solid #fecdca",
+          color: "#8B1A1A", background: "#fff5f5", border: "1px solid #F28080",
           padding: "12px 16px", borderRadius: 12, marginBottom: 20,
         }}>
           <span style={{ fontSize: 18 }}>⚠️</span>
@@ -449,7 +449,7 @@ export default function CreateUser() {
                   <div style={{ fontSize: 28, marginBottom: 8 }}>{r.icon}</div>
                   <div style={{
                     fontWeight: 800, fontSize: 13.5,
-                    color: active ? r.activeColor : "#1a2340",
+                    color: active ? r.activeColor : "#0B2D38",
                     marginBottom: 4,
                   }}>{r.label}</div>
                   <div style={{
@@ -478,7 +478,7 @@ export default function CreateUser() {
           <div style={{
             display: "flex", alignItems: "center", gap: 16,
             padding: "16px 20px", borderRadius: 14,
-            background: matLoading ? "#f8fafc" : selectedRole.activeBg,
+            background: matLoading ? "#EEF7FA" : selectedRole.activeBg,
             border: `2px dashed ${matLoading ? "#e2e8f0" : selectedRole.activeBorder}`,
             transition: "all 0.2s",
           }}>
@@ -496,7 +496,7 @@ export default function CreateUser() {
                 Matricule assigné
               </div>
               {matLoading ? (
-                <div style={{ fontWeight: 700, fontSize: 22, color: "#cbd5e1" }}>
+                <div style={{ fontWeight: 700, fontSize: 22, color: "#9BBCC7" }}>
                   Génération…
                 </div>
               ) : (
@@ -577,11 +577,11 @@ export default function CreateUser() {
         <div style={{
           display: "flex", gap: 12, alignItems: "flex-start",
           padding: "14px 16px", borderRadius: 12,
-          background: "#f0f9ff", border: "1px solid #bae6fd",
+          background: "#EEF7FA", border: "1px solid #A8D8E3",
           marginBottom: 24,
         }}>
           <span style={{ fontSize: 20, flexShrink: 0 }}>📧</span>
-          <div style={{ fontSize: 13, color: "#0369a1", lineHeight: 1.6 }}>
+          <div style={{ fontSize: 13, color: "#1D7A91", lineHeight: 1.6 }}>
             <strong>Mot de passe automatique</strong><br />
             Un mot de passe sécurisé de 12 caractères sera généré et envoyé à l'adresse
             renseignée. Il sera valable <strong>24 heures</strong>, après quoi l'utilisateur
@@ -600,7 +600,7 @@ export default function CreateUser() {
               background: !isValid || loading
                 ? "#e2e8f0"
                 : `linear-gradient(135deg,${selectedRole.dot},${selectedRole.activeColor})`,
-              color: !isValid || loading ? "#94a3b8" : "#fff",
+              color: !isValid || loading ? "#638899" : "#fff",
               fontWeight: 800, fontSize: 15,
               cursor: !isValid || loading ? "not-allowed" : "pointer",
               transition: "all 0.2s",
@@ -660,15 +660,15 @@ function FormField({ label, required, error, hint, children }) {
     <div>
       <label style={{
         display: "block", marginBottom: 6,
-        fontWeight: 600, fontSize: 13.5, color: "#374151",
+        fontWeight: 600, fontSize: 13.5, color: "#456070",
       }}>
-        {label}{required && <span style={{ color: "#ef4444", marginLeft: 3 }}>*</span>}
+        {label}{required && <span style={{ color: "#8B1A1A", marginLeft: 3 }}>*</span>}
       </label>
       {children}
       {error && (
         <div style={{
           display: "flex", alignItems: "center", gap: 5,
-          marginTop: 5, fontSize: 12.5, color: "#dc2626",
+          marginTop: 5, fontSize: 12.5, color: "#8B1A1A",
         }}>
           <span>⚠</span> {error}
         </div>
@@ -683,7 +683,7 @@ function FormField({ label, required, error, hint, children }) {
 function inp(hasError) {
   return {
     width: "100%", padding: "10px 14px", borderRadius: 10, boxSizing: "border-box",
-    border: `1.5px solid ${hasError ? "#ef4444" : "var(--input-border)"}`,
+    border: `1.5px solid ${hasError ? "#8B1A1A" : "var(--input-border)"}`,
     background: hasError ? "var(--danger-bg)" : "var(--input-bg)",
     fontSize: 14, color: "var(--input-text)", outline: "none",
     fontFamily: "inherit",
