@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import "../styles/auth.css";
+import MicButton from "../components/MicButton";
 
 export default function CompleteProfile() {
   const { user, completeProfile } = useAuth();
@@ -147,14 +148,18 @@ export default function CompleteProfile() {
           {/* Téléphone */}
           <label className="authLabel">
             Téléphone (optionnel)
-            <input
-              className="authInput"
-              name="telephone"
-              value={form.telephone}
-              onChange={handleChange}
-              placeholder="Ex: 06 12 34 56 78"
-              type="tel"
-            />
+            <div style={{ position: "relative" }}>
+              <input
+                className="authInput"
+                name="telephone"
+                value={form.telephone}
+                onChange={handleChange}
+                placeholder="Ex: 06 12 34 56 78"
+                type="tel"
+                style={{ paddingRight: 42 }}
+              />
+              <MicButton onResult={(t) => setForm((p) => ({ ...p, telephone: t }))} />
+            </div>
           </label>
 
           {/* CV */}

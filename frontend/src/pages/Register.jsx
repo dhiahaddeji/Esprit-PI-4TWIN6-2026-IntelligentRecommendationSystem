@@ -1,4 +1,5 @@
 import { useState } from "react";
+import MicButton from "../components/MicButton";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 
@@ -36,21 +37,27 @@ export default function Register() {
       <p style={{ marginTop: 0, color: "var(--text-2)" }}>Sign up and choose your role</p>
 
       <form onSubmit={onSubmit} style={{ display: "grid", gap: 10 }}>
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Full name"
-          required
-          style={{ padding: 12, borderRadius: 10, border: "1px solid #e4e7ec" }}
-        />
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
-          type="email"
-          required
-          style={{ padding: 12, borderRadius: 10, border: "1px solid #e4e7ec" }}
-        />
+        <div style={{ position: "relative" }}>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Full name"
+            required
+            style={{ padding: 12, paddingRight: 42, borderRadius: 10, border: "1px solid #e4e7ec", width: "100%", boxSizing: "border-box" }}
+          />
+          <MicButton onResult={(t) => setName(t)} />
+        </div>
+        <div style={{ position: "relative" }}>
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            type="email"
+            required
+            style={{ padding: 12, paddingRight: 42, borderRadius: 10, border: "1px solid #e4e7ec", width: "100%", boxSizing: "border-box" }}
+          />
+          <MicButton onResult={(t) => setEmail(t)} />
+        </div>
 
         <select
           value={role}

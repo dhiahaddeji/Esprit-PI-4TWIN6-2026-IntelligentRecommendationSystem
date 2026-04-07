@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import http from "../../api/http";
 import { getStoredUser } from "../../auth/authService";
+import MicButton from "../../components/MicButton";
 
 const ROLE_LABELS = {
   SUPERADMIN: "Super Admin",
@@ -30,21 +31,25 @@ export default function UsersList() {
   const [error, setError]       = useState(null);
   const [search, setSearch]     = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
+  const [page, setPage] = useState(1);
+  const [limit] = useState(20);
+  const [total, setTotal] = useState(0);
 
   const currentUser = getStoredUser();
   const isSuperAdmin = currentUser?.role === "SUPERADMIN";
 
   useEffect(() => {
-    http.get("/admin/users")
+    http.get("/admin/users", { params: { page, limit } })
       .then(res => {
-        const data = Array.isArray(res.data) ? res.data : [];
-        setUsers(data);
+        const data = res.data?.data ?? res.data ?? [];
+        setUsers(Array.isArray(data) ? data : []);
+        setTotal(res.data?.total ?? (Array.isArray(data) ? data.length : 0));
       })
       .catch(err => {
         setError(err.response?.data?.message || "Impossible de charger la liste");
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [page, limit]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Voulez-vous vraiment supprimer cet utilisateur ?")) return;
@@ -75,7 +80,7 @@ export default function UsersList() {
             👥 Liste des comptes
           </h1>
           <p style={{ margin: 0, color: "var(--text-2)", fontSize: "14px" }}>
-            {users.length} utilisateur{users.length !== 1 ? "s" : ""} enregistré{users.length !== 1 ? "s" : ""}
+            {total} utilisateur{total !== 1 ? "s" : ""} enregistré{total !== 1 ? "s" : ""}
           </p>
         </div>
         {isSuperAdmin && (
@@ -99,22 +104,26 @@ export default function UsersList() {
 
       {/* Filters */}
       <div style={{ display: "flex", gap: "12px", marginBottom: "20px", flexWrap: "wrap" }}>
-        <input
-          type="text"
-          placeholder="Rechercher nom, email, matricule…"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          style={{
-            flex: "1 1 240px",
-            padding: "9px 14px",
-            border: "1.5px solid var(--border)",
-            borderRadius: "10px",
-            background: "var(--surface-2)",
-            color: "var(--text-1)",
-            fontSize: "14px",
-            outline: "none",
-          }}
-        />
+        <div style={{ position: "relative", flex: "1 1 240px" }}>
+          <input
+            type="text"
+            placeholder="Rechercher nom, email, matricule…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "9px 42px 9px 14px",
+              border: "1.5px solid var(--border)",
+              borderRadius: "10px",
+              background: "var(--surface-2)",
+              color: "var(--text-1)",
+              fontSize: "14px",
+              outline: "none",
+              boxSizing: "border-box",
+            }}
+          />
+          <MicButton onResult={(t) => setSearch(t)} />
+        </div>
         <select
           value={roleFilter}
           onChange={e => setRoleFilter(e.target.value)}
@@ -289,6 +298,26 @@ export default function UsersList() {
           </div>
         </div>
       )}
+
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, alignItems: "center" }}>
+        <button
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={page <= 1}
+          style={{ padding: "6px 10px", borderRadius: "8px", border: "1px solid #e2e8f0" }}
+        >
+          ← Précédent
+        </button>
+        <span style={{ fontSize: "12px", color: "var(--text-2)" }}>
+          Page {page} / {Math.max(1, Math.ceil(total / limit))}
+        </span>
+        <button
+          onClick={() => setPage((p) => Math.min(Math.max(1, Math.ceil(total / limit)), p + 1))}
+          disabled={page >= Math.max(1, Math.ceil(total / limit))}
+          style={{ padding: "6px 10px", borderRadius: "8px", border: "1px solid #e2e8f0" }}
+        >
+          Suivant →
+        </button>
+      </div>
     </div>
   );
 }

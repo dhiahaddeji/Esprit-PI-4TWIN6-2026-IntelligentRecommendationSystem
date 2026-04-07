@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import http from "../../api/http";
+import MicButton from "../../components/MicButton";
 
 export default function EditUser() {
   const { id } = useParams(); // Récupère l'ID depuis l'URL

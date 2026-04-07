@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -23,10 +25,14 @@ import { DepartmentsModule } from './departments/departments.module';
 import { MessagingModule } from './messaging/messaging.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
+import { FaceModule } from './face/face.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
+    ThrottlerModule.forRoot({
+      throttlers: [{ ttl: 60, limit: 120 }],
+    }),
     MongooseModule.forRoot(process.env.MONGODB_URI!),
     MailModule,
     AuthModule,
@@ -46,8 +52,15 @@ import { AuditLogsModule } from './audit-logs/audit-logs.module';
     MessagingModule,
     NotificationsModule,
     AuditLogsModule,
+    FaceModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

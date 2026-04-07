@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import http from "../api/http";
 import { getStoredUser, LS_USER } from "../auth/authService";
+import FaceRegister from "../components/FaceRegister";
+import MicButton from "../components/MicButton";
 
 const ROLE_LABELS = {
   SUPERADMIN: "Super Admin",
@@ -229,37 +231,46 @@ export default function MyProfile() {
           <div style={styles.fieldRow}>
             <div style={styles.fieldGroup}>
               <label style={styles.label}>Prénom</label>
-              <input
-                style={styles.input}
-                value={form.firstName}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, firstName: e.target.value }))
-                }
-                placeholder="Votre prénom"
-              />
+              <div style={{ position: "relative" }}>
+                <input
+                  style={{ ...styles.input, paddingRight: 42 }}
+                  value={form.firstName}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, firstName: e.target.value }))
+                  }
+                  placeholder="Votre prénom"
+                />
+                <MicButton onResult={(t) => setForm((f) => ({ ...f, firstName: t }))} />
+              </div>
             </div>
             <div style={styles.fieldGroup}>
               <label style={styles.label}>Nom</label>
-              <input
-                style={styles.input}
-                value={form.lastName}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, lastName: e.target.value }))
-                }
-                placeholder="Votre nom"
-              />
+              <div style={{ position: "relative" }}>
+                <input
+                  style={{ ...styles.input, paddingRight: 42 }}
+                  value={form.lastName}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, lastName: e.target.value }))
+                  }
+                  placeholder="Votre nom"
+                />
+                <MicButton onResult={(t) => setForm((f) => ({ ...f, lastName: t }))} />
+              </div>
             </div>
           </div>
           <div style={styles.fieldGroup}>
             <label style={styles.label}>Téléphone</label>
-            <input
-              style={styles.input}
-              value={form.telephone}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, telephone: e.target.value }))
-              }
-              placeholder="+216 XX XXX XXX"
-            />
+            <div style={{ position: "relative" }}>
+              <input
+                style={{ ...styles.input, paddingRight: 42 }}
+                value={form.telephone}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, telephone: e.target.value }))
+                }
+                placeholder="+216 XX XXX XXX"
+              />
+              <MicButton onResult={(t) => setForm((f) => ({ ...f, telephone: t }))} />
+            </div>
           </div>
         </div>
 
@@ -301,6 +312,23 @@ export default function MyProfile() {
               onChange={handlePhotoChange}
             />
           </div>
+        </div>
+
+        {/* SECTION: Authentification faciale */}
+        <div style={styles.card}>
+          <h2 style={styles.cardTitle}>Authentification faciale</h2>
+          <p style={{ margin: "0 0 1rem 0", fontSize: "0.88rem", color: "var(--muted)" }}>
+            Enregistrez votre visage pour vous connecter sans mot de passe.
+            {profile.faceDescriptor?.length > 0 && (
+              <span style={{ marginLeft: "0.5rem", color: "#10b981", fontWeight: 600 }}>
+                ✅ Visage déjà enregistré
+              </span>
+            )}
+          </p>
+          <FaceRegister
+            onSuccess={(msg) => showToast(msg)}
+            onError={(msg) => showToast(msg, "error")}
+          />
         </div>
 
         {/* SECTION: CV — EMPLOYEE and HR only */}

@@ -4,6 +4,7 @@ import { createActivity } from "../../services/activityService";
 import { getManagers } from "../../services/workflowService";
 import { getStoredUser } from "../../auth/authService";
 import http from "../../api/http";
+import MicButton from "../../components/MicButton";
 
 const EVAL_LEVELS = [
   { val: 0, label: "Pas de compétence" },
@@ -32,7 +33,8 @@ export default function HRCreateActivity() {
   const [form, setForm] = useState({
     title: "",
     description: "",
-    date: "",
+    startDate: "",
+    endDate: "",
     location: "",
     duration: "",
     seats: 10,
@@ -61,7 +63,7 @@ export default function HRCreateActivity() {
 
   const canSubmit = useMemo(() => (
     form.title.trim().length >= 3 &&
-    form.date &&
+    form.startDate &&
     form.location.trim().length >= 2 &&
     Number(form.seats) > 0 &&
     form.managerId
@@ -96,7 +98,9 @@ export default function HRCreateActivity() {
       const payload = {
         title: form.title,
         description: form.description,
-        date: form.date,
+        startDate: form.startDate,
+        endDate: form.endDate || form.startDate,
+        date: form.startDate,
         location: form.location,
         duration: form.duration,
         seats: Number(form.seats),
@@ -150,8 +154,11 @@ export default function HRCreateActivity() {
 
       <form onSubmit={onSubmit} style={{ marginTop: 16, display: "grid", gap: 12 }}>
         <Field label="Titre *">
-          <input name="title" value={form.title} onChange={onChange}
-            placeholder="Ex: Atelier Leadership" style={inputStyle()} />
+          <div style={{ position: "relative" }}>
+            <input name="title" value={form.title} onChange={onChange}
+              placeholder="Ex: Atelier Leadership" style={{ ...inputStyle(), paddingRight: 42 }} />
+            <MicButton onResult={(t) => onChange({ target: { name: "title", value: t } })} />
+          </div>
         </Field>
 
         <Field label="Description">
@@ -179,20 +186,29 @@ export default function HRCreateActivity() {
           </Field>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <Field label="Date *">
-            <input type="date" name="date" value={form.date} onChange={onChange} style={inputStyle()} />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+          <Field label="Date debut *">
+            <input type="date" name="startDate" value={form.startDate} onChange={onChange} style={inputStyle()} />
+          </Field>
+          <Field label="Date fin">
+            <input type="date" name="endDate" value={form.endDate} onChange={onChange} style={inputStyle()} />
           </Field>
           <Field label="Lieu *">
-            <input name="location" value={form.location} onChange={onChange}
-              placeholder="Ex: Salle A / En ligne" style={inputStyle()} />
+            <div style={{ position: "relative" }}>
+              <input name="location" value={form.location} onChange={onChange}
+                placeholder="Ex: Salle A / En ligne" style={{ ...inputStyle(), paddingRight: 42 }} />
+              <MicButton onResult={(t) => onChange({ target: { name: "location", value: t } })} />
+            </div>
           </Field>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
           <Field label="Durée">
-            <input name="duration" value={form.duration} onChange={onChange}
-              placeholder="Ex: 2 jours" style={inputStyle()} />
+            <div style={{ position: "relative" }}>
+              <input name="duration" value={form.duration} onChange={onChange}
+                placeholder="Ex: 2 jours" style={{ ...inputStyle(), paddingRight: 42 }} />
+              <MicButton onResult={(t) => onChange({ target: { name: "duration", value: t } })} />
+            </div>
           </Field>
           <Field label="Places *">
             <input type="number" name="seats" min={1} value={form.seats} onChange={onChange} style={inputStyle()} />
@@ -285,13 +301,16 @@ export default function HRCreateActivity() {
             </div>
           ) : (
             <div style={{ display: "flex", gap: 8 }}>
-              <input
-                value={addComp.intitule}
-                onChange={e => setAddComp(c => ({ ...c, intitule: e.target.value }))}
-                onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addReq(); } }}
-                placeholder="Nom de la compétence…"
-                style={{ flex: 1, ...inputStyle() }}
-              />
+              <div style={{ position: "relative", flex: 1 }}>
+                <input
+                  value={addComp.intitule}
+                  onChange={e => setAddComp(c => ({ ...c, intitule: e.target.value }))}
+                  onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addReq(); } }}
+                  placeholder="Nom de la compétence…"
+                  style={{ width: "100%", boxSizing: "border-box", paddingRight: 42, ...inputStyle() }}
+                />
+                <MicButton onResult={(t) => setAddComp(c => ({ ...c, intitule: t }))} />
+              </div>
               <button type="button" onClick={addReq} style={{
                 padding: "8px 16px", background: "#1D7A91", color: "#fff",
                 border: "none", borderRadius: 9, cursor: "pointer", fontWeight: 700,

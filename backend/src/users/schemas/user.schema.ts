@@ -47,6 +47,12 @@ export class User {
   @Prop()
   githubId: string;
 
+  @Prop()
+  refreshTokenHash: string;
+
+  @Prop()
+  refreshTokenExpiresAt: Date;
+
   // ── Rôle & statut ─────────────────────────────────────────────────────
   @Prop({ required: true, enum: UserRole })
   role: UserRole;
@@ -80,6 +86,20 @@ export class User {
 
   @Prop()
   cvUrl: string;
+
+  // ── Disponibilité & capacité ─────────────────────────────────────────
+  @Prop({ type: [Object], default: [] })
+  leavePeriods: { startDate: Date; endDate: Date; reason?: string }[];
+
+  @Prop({ type: [String], default: [] })
+  currentAssignments: string[];
+
+  @Prop({ default: 2 })
+  maxCapacity: number;
+
+  // ── Face Recognition ──────────────────────────────────────────────────
+  @Prop({ type: [Number], default: [] })
+  faceDescriptor: number[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

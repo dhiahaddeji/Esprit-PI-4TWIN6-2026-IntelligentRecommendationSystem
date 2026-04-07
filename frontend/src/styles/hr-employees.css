@@ -22,6 +22,7 @@
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
+.hrEmpToolbarInfo { font-size: 12px; color: var(--text-2); }
 
 .hrEmpSearch::placeholder { color: var(--placeholder); }
 .hrEmpSearch:focus { border-color: var(--c-teal-600); box-shadow: 0 0 0 3px rgba(21,91,110,0.13); }
@@ -32,7 +33,7 @@
   width: 100%;
   text-align: left;
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: #ffffff;
   border-radius: 14px;
   padding: 12px 14px;
   display: flex;

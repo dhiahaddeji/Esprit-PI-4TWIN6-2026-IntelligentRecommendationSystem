@@ -49,4 +49,8 @@ export class InvitationsService {
   listByActivity(activityId: string) {
     return this.model.find({ activityId });
   }
+
+  listAccepted() {
+    return this.model.find({ status: 'ACCEPTED' });
+  }
 }
