@@ -73,12 +73,11 @@ export default function Sidebar() {
         {role === "HR" && (
           <>
             <div className="menuSection">Ressources Humaines</div>
-            <NavLink className={cls} to="/hr/employees">👥 Employés</NavLink>
             <NavLink className={cls} to="/hr/activities">📅 Activités</NavLink>
             <NavLink className={cls} to="/hr/activities/new">➕ Créer une activité</NavLink>
             <NavLink className={cls} to="/hr/departments">🏢 Départements</NavLink>
             <NavLink className={cls} to="/admin/users">📋 Liste des comptes</NavLink>
-            <div className="menuSection">Intelligence IA</div>
+            <div className="menuSection">Intelligence Artificiel</div>
             <NavLink className={cls} to="/hr/skills-dashboard">📊 Dashboard compétences</NavLink>
             <NavLink className={cls} to="/hr/ai-chat">🤖 Assistant IA</NavLink>
           </>
