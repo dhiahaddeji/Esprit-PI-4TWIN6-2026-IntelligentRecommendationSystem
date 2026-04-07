@@ -690,4 +690,3 @@ function inp(hasError) {
     transition: "border-color 0.15s",
   };
 }
-

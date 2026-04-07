@@ -21,6 +21,9 @@ export default function EditUser() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [showWarningModal, setShowWarningModal] = useState(false);
+  const [suspendReason, setSuspendReason] = useState("");
+  const [pendingForm, setPendingForm] = useState(null);
 
   // Charger les données de l'utilisateur
   useEffect(() => {
@@ -33,6 +36,9 @@ export default function EditUser() {
         if (userData.date_embauche) {
           userData.date_embauche = userData.date_embauche.split('T')[0];
         }
+        
+        // Garder une trace du statut original
+        userData._originalStatus = userData.status;
         
         setForm(userData);
       } catch (err) {
@@ -54,6 +60,14 @@ export default function EditUser() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Vérifier si le statut change en SUSPENDED
+    if (form.status === "SUSPENDED" && form.status !== form._originalStatus) {
+      setPendingForm(form);
+      setShowWarningModal(true);
+      return;
+    }
+
     setSubmitting(true);
     setError("");
     setSuccess(false);
@@ -64,6 +78,27 @@ export default function EditUser() {
       setTimeout(() => navigate("/admin/users"), 2000);
     } catch (err) {
       setError(err.response?.data?.message || "Erreur lors de la modification");
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleConfirmSuspend = async () => {
+    setSubmitting(true);
+    setError("");
+    try {
+      // D'abord, suspendre l'utilisateur via l'endpoint spécifique
+      await http.patch(`/admin/suspend-user/${id}`, {
+        reason: suspendReason,
+      });
+      setSuccess(true);
+      setShowWarningModal(false);
+      setSuspendReason("");
+      setPendingForm(null);
+      setTimeout(() => navigate("/admin/users"), 2000);
+    } catch (err) {
+      setError(err.response?.data?.message || "Erreur lors de la suspension");
       console.error(err);
     } finally {
       setSubmitting(false);
@@ -298,6 +333,121 @@ export default function EditUser() {
           </button>
         </div>
       </form>
+
+      {/* Modal d'avertissement pour la suspension */}
+      {showWarningModal && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "rgba(0, 0, 0, 0.5)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+        }}>
+          <div style={{
+            background: "white",
+            borderRadius: "12px",
+            padding: "32px",
+            maxWidth: "500px",
+            width: "90%",
+            boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2)",
+          }}>
+            <h2 style={{
+              color: "#dc2626",
+              marginTop: 0,
+              marginBottom: "16px",
+              fontSize: "22px",
+            }}>
+              ⚠️ Attention - Suspension d'utilisateur
+            </h2>
+            
+            <p style={{
+              color: "#4b5563",
+              fontSize: "16px",
+              marginBottom: "20px",
+              lineHeight: "1.5",
+            }}>
+              Vous êtes sur le point de suspendre <strong>{form.name}</strong>. 
+              Un email de notification sera automatiquement envoyé à cet utilisateur.
+            </p>
+
+            <div style={{ marginBottom: "24px" }}>
+              <label style={{
+                fontWeight: 600,
+                display: "block",
+                marginBottom: "8px",
+                color: "#111827",
+              }}>
+                Raison de la suspension (optionnelle)
+              </label>
+              <textarea
+                value={suspendReason}
+                onChange={(e) => setSuspendReason(e.target.value)}
+                placeholder="Exemple : Violation de la politique d'utilisation"
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "6px",
+                  fontSize: "16px",
+                  fontFamily: "Arial, sans-serif",
+                  resize: "vertical",
+                  minHeight: "100px",
+                  boxSizing: "border-box",
+                }}
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button
+                onClick={handleConfirmSuspend}
+                disabled={submitting}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  background: submitting ? "#f87171" : "#dc2626",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  fontSize: "16px",
+                  fontWeight: "bold",
+                  cursor: submitting ? "not-allowed" : "pointer",
+                }}
+              >
+                {submitting ? "Suspension en cours..." : "Confirmer la suspension"}
+              </button>
+              
+              <button
+                onClick={() => {
+                  setShowWarningModal(false);
+                  setSuspendReason("");
+                  setPendingForm(null);
+                  // Remettre le statut à sa valeur originale
+                  setForm({ ...form, status: form._originalStatus });
+                }}
+                disabled={submitting}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  background: "white",
+                  color: "#4b5563",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "6px",
+                  fontSize: "16px",
+                  fontWeight: "bold",
+                  cursor: submitting ? "not-allowed" : "pointer",
+                }}
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

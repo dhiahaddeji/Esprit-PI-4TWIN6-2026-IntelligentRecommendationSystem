@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import http from "../../api/http";
 import { getStoredUser } from "../../auth/authService";
 import MicButton from "../../components/MicButton";
+import * as XLSX from "xlsx";
 
 const ROLE_LABELS = {
   SUPERADMIN: "Super Admin",
@@ -34,6 +35,8 @@ export default function UsersList() {
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
   const [total, setTotal] = useState(0);
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [nameSort, setNameSort] = useState("NONE");
 
   const currentUser = getStoredUser();
   const isSuperAdmin = currentUser?.role === "SUPERADMIN";
@@ -63,13 +66,106 @@ export default function UsersList() {
 
   const filtered = users.filter(u => {
     const matchRole   = roleFilter === "ALL" || u.role === roleFilter;
+    const matchStatus = statusFilter === "ALL" || u.status === statusFilter;
     const q           = search.toLowerCase();
     const matchSearch = !q ||
       (u.name || "").toLowerCase().includes(q) ||
       (u.email || "").toLowerCase().includes(q) ||
       (u.matricule || "").toLowerCase().includes(q);
-    return matchRole && matchSearch;
+    return matchRole && matchStatus && matchSearch;
   });
+
+  // Appliquer le tri
+  const sorted = [...filtered];
+  
+  // Tri par nom (alphabétique)
+  if (nameSort === "AZ") {
+    sorted.sort((a, b) => {
+      const nameA = (a.name || "").toLowerCase();
+      const nameB = (b.name || "").toLowerCase();
+      return nameA.localeCompare(nameB, "fr");
+    });
+  } else if (nameSort === "ZA") {
+    sorted.sort((a, b) => {
+      const nameA = (a.name || "").toLowerCase();
+      const nameB = (b.name || "").toLowerCase();
+      return nameB.localeCompare(nameA, "fr");
+    });
+  }
+
+  // Fonction pour exporter en Excel
+  // Fonction pour exporter en Excel + ouverture automatique
+  const handleExportExcel = () => {
+    if (sorted.length === 0) return;
+
+    const data = sorted.map(user => {
+      const firstName = user.firstName || "—";
+      const lastName = user.lastName || "—";
+      const roleLabel = ROLE_LABELS[user.role] || user.role;
+      const statusLabel = 
+        user.status === "ACTIVE" ? "Actif" : 
+        user.status === "INACTIVE" ? "Inactif" : "Suspendu";
+
+      const dateInscription = user.createdAt 
+        ? new Date(user.createdAt).toLocaleDateString("fr-FR") 
+        : "—";
+
+      return {
+        "Nom": lastName,
+        "Prénom": firstName,
+        "Email": user.email || "",
+        "Matricule": user.matricule || "",
+        "Département": user.department || "—",
+        "Rôle": roleLabel,
+        "Statut": statusLabel,
+        "Date d'inscription": dateInscription,
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    
+    // Largeurs de colonnes
+    worksheet["!cols"] = [
+      { wch: 18 }, // Nom
+      { wch: 18 }, // Prénom
+      { wch: 30 }, // Email
+      { wch: 14 }, // Matricule
+      { wch: 20 }, // Département
+      { wch: 18 }, // Rôle
+      { wch: 12 }, // Statut
+      { wch: 18 }, // Date d'inscription
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Utilisateurs");
+
+    const fileName = `utilisateurs-${new Date().toISOString().split("T")[0]}.xlsx`;
+
+    // === PARTIE IMPORTANTE : Ouverture automatique ===
+    const wbout = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([wbout], { 
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 
+    });
+
+    const url = URL.createObjectURL(blob);
+
+    // Création du lien pour le téléchargement + ouverture
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    
+    // Cette ligne est importante pour l'ouverture automatique sur la plupart des navigateurs
+    link.target = "_blank";        // ← Ajouté
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Nettoyage
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 150);
+  };
 
   return (
     <div style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
@@ -144,6 +240,45 @@ export default function UsersList() {
           <option value="MANAGER">Manager</option>
           <option value="EMPLOYEE">Employé</option>
         </select>
+
+        <select
+          value={statusFilter}
+          onChange={e => setStatusFilter(e.target.value)}
+          style={{
+            padding: "9px 14px",
+            border: "1.5px solid var(--border)",
+            borderRadius: "10px",
+            background: "var(--surface-2)",
+            color: "var(--text-1)",
+            fontSize: "14px",
+            outline: "none",
+            cursor: "pointer",
+          }}
+        >
+          <option value="ALL">Tous les statuts</option>
+          <option value="ACTIVE">Actif</option>
+          <option value="SUSPENDED">Suspendu</option>
+          <option value="INACTIVE">Inactif</option>
+        </select>
+
+        <select
+          value={nameSort}
+          onChange={e => setNameSort(e.target.value)}
+          style={{
+            padding: "9px 14px",
+            border: "1.5px solid var(--border)",
+            borderRadius: "10px",
+            background: "var(--surface-2)",
+            color: "var(--text-1)",
+            fontSize: "14px",
+            outline: "none",
+            cursor: "pointer",
+          }}
+        >
+          <option value="NONE">Tri nom : aucun</option>
+          <option value="AZ">A → Z (alphabétique)</option>
+          <option value="ZA">Z → A (inverse)</option>
+        </select>
       </div>
 
       {/* States */}
@@ -183,7 +318,7 @@ export default function UsersList() {
       )}
 
       {/* Table */}
-      {!loading && !error && filtered.length > 0 && (
+      {!loading && !error && sorted.length > 0 && (
         <div style={{
           background: "var(--surface)",
           borderRadius: "16px",
@@ -209,7 +344,7 @@ export default function UsersList() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((user, i) => {
+                {sorted.map((user, i) => {
                   const rc = ROLE_COLORS[user.role] || { bg: "#f1f5f9", color: "var(--text-2)" };
                   const sc = STATUS_COLORS[user.status] || STATUS_COLORS.INACTIVE;
                   const displayName = user.firstName && user.lastName
@@ -220,7 +355,7 @@ export default function UsersList() {
                     : "?";
                   return (
                     <tr key={user._id} style={{
-                      borderBottom: i < filtered.length - 1 ? "1px solid #f1f5f9" : "none",
+                      borderBottom: i < sorted.length - 1 ? "1px solid #f1f5f9" : "none",
                       transition: "background 0.15s",
                     }}
                       onMouseEnter={e => e.currentTarget.style.background = "#EEF7FA"}
@@ -318,6 +453,29 @@ export default function UsersList() {
           Suivant →
         </button>
       </div>
+      {/* Bouton Exporter en bas à droite */}
+      {!loading && !error && sorted.length > 0 && isSuperAdmin && (
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}>
+          <button
+            onClick={handleExportExcel}
+            disabled={sorted.length === 0}
+            style={{
+              background: sorted.length === 0 ? "#d1d5db" : "linear-gradient(135deg,#10b981,#059669)",
+              color: "#fff",
+              padding: "10px 20px",
+              borderRadius: "10px",
+              border: "none",
+              textDecoration: "none",
+              fontWeight: 700,
+              fontSize: "14px",
+              boxShadow: sorted.length === 0 ? "none" : "0 4px 14px rgba(16,185,129,0.30)",
+              cursor: sorted.length === 0 ? "not-allowed" : "pointer",
+            }}
+          >
+            📥 Exporter en Excel
+          </button>
+        </div>
+      )}
     </div>
   );
 }

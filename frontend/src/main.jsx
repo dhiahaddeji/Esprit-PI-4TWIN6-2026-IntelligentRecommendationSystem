@@ -9,6 +9,7 @@ import { AccessibilityProvider } from "./contexts/AccessibilityContext";
 import { AuthProvider } from "./auth/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { NotificationsProvider } from "./contexts/NotificationsContext";
+import { TranslationProvider } from "./contexts/TranslationContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -17,7 +18,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <AccessibilityProvider>
           <AuthProvider>
             <NotificationsProvider>
-              <App />
+              <TranslationProvider>
+                <App />
+              </TranslationProvider>
             </NotificationsProvider>
           </AuthProvider>
         </AccessibilityProvider>
