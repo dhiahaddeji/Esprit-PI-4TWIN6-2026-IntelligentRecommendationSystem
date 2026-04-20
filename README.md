@@ -1,24 +1,249 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-# React + Vite
+# Intelligent HR Recommendation System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> Enterprise HR platform for competence management, activity planning, and ML-powered employee recommendations — built as a final integration project at Esprit.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Overview
 
-## React Compiler
+This platform enables organizations to manage the full lifecycle of employee skill development:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Employees** declare and self-evaluate their competences, upload CVs, and receive activity invitations
+- **Managers** validate skill sheets, grade employees, and review recommendation lists
+- **HR teams** create training/certification activities and launch ML-powered recommendations
+- **SuperAdmins** manage users, departments, and monitor the entire platform
 
-## Expanding the ESLint configuration
+The core innovation is a **local Python ML microservice** that ranks employees for each activity based on skill scores and compatibility — with zero dependency on external AI APIs. Scores update automatically after activity completion using an exponential smoothing formula.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-=======
-"# Pi5.2" 
->>>>>>> 4afc56701ac654acb261ecf96bd7d900999921cc
-=======
-"# Pi5.2" 
->>>>>>> front-back
+---
+
+## Features
+
+### Employee
+- Self-evaluation competence sheet (levels 0–4: Notions → Expert)
+- CV upload with automatic local NLP skill extraction (pdf-parse, no external API)
+- Accept or decline activity invitations with justification
+- Track participation status and skill score evolution
+- Internal messaging and real-time notification feed
+- Face recognition login
+
+### Manager
+- Review and grade employee skill sheets
+- Approve or refuse employee recommendation lists per activity
+- Exclude specific employees with a written justification
+- View team-level skill analytics
+
+### HR
+- Create activities: `formation`, `certification`, `audit`, `projet`, `mission`
+- Define required skills with minimum levels per activity
+- Launch ML recommendation → ranked list of best-fit employees
+- Manually adjust the list before sending to manager for validation
+- Validate the final list → trigger employee invitations
+- Analyze CV files to auto-populate skill profiles
+- Dashboard insights and skill gap analytics
+
+### SuperAdmin
+- Full user management: create, edit, delete, assign roles
+- Bulk user import via CSV
+- Manage departments and assign department managers
+- Complete audit log of all platform actions
+- Platform-wide statistics
+
+### Accessibility
+- Floating EqualWeb-style accessibility widget (screen reader, contrast, font size, virtual keyboard, reading guide, and more)
+- Skip-to-content link for keyboard users
+- All features fully operable without a mouse
+
+---
+
+## Tech Stack
+
+### Frontend
+
+| Technology | Role |
+|---|---|
+| React 18 + Vite | SPA framework and dev server |
+| React Router | Client-side routing with role-based guards |
+| Axios | API communication |
+| CSS Modules / custom CSS | Scoped component styles |
+| face-api.js (WASM) | Client-side face recognition |
+
+### Backend
+
+| Technology | Role |
+|---|---|
+| NestJS (Node.js) | REST API framework |
+| TypeScript | Type-safe backend code |
+| MongoDB + Mongoose | Primary database |
+| JWT (access + refresh) | Stateless authentication |
+| GitHub OAuth | Social login |
+| Multer | File uploads (CV, profile photo) |
+| pdf-parse | Local PDF text extraction for CV analysis |
+| Nodemailer | Email notifications (SMTP) |
+| Passport.js | Auth strategy management |
+| class-validator | Request DTO validation |
+
+### ML Service (Python)
+
+| Technology | Role |
+|---|---|
+| FastAPI | REST microservice framework |
+| scikit-learn | TF-IDF vectorizer, GradientBoostingClassifier, cosine similarity |
+| pandas / numpy | Data processing |
+| scipy | Statistical utilities |
+| joblib | Model persistence |
+| Pydantic v2 | Request/response validation |
+
+### DevOps
+
+| Technology | Role |
+|---|---|
+| Docker | Containerization |
+| Jenkins | CI/CD pipelines (frontend + backend) |
+| SonarQube | Code quality gate |
+
+---
+
+## Architecture
+
+```
+┌──────────────────────┐          REST / JSON          ┌──────────────────────────┐
+│    React + Vite      │ ◄──────────────────────────► │      NestJS Backend      │
+│    Frontend :5173    │                               │      API :3000           │
+└──────────────────────┘                               └────────────┬─────────────┘
+                                                                    │
+                                                        HTTP POST (internal)
+                                                                    │
+                                                       ┌────────────▼─────────────┐
+                                                       │   Python ML Service      │
+                                                       │   FastAPI :8000          │
+                                                       │                          │
+                                                       │  recommender.py          │
+                                                       │  similarity.py (TF-IDF)  │
+                                                       │  updater.py              │
+                                                       │  trainer.py (GB model)   │
+                                                       └──────────────────────────┘
+```
+
+**Graceful degradation:** if the Python ML service is unreachable, the NestJS backend automatically falls back to its built-in heuristic scorer — the frontend never sees a failure.
+
+### ML Recommendation Flow
+
+```
+HR clicks "Run ML Recommendation"
+        │
+        ▼
+NestJS fetches all validated employee competences
+        │
+        ▼
+Calls Python /recommend endpoint
+        │
+        ▼
+Python ranks employees:
+  ├── TF-IDF skill name matching (char 2-4 grams)
+  ├── Coverage ratio, level ratio, profile breadth
+  ├── Context weights (upskilling / consolidation / expertise)
+  └── GB model blend (if ≥ 20 feedback samples trained)
+        │
+        ▼
+Returns ranked list → HR reviews → sends to Manager
+        │
+        ▼
+Manager approves → invitations sent to employees
+        │
+        ▼
+After activity completes → skill scores updated via
+  exponential smoothing: Δ = α × max(0, target − current)
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 20+
+- Python 3.11+
+- MongoDB (local or Atlas URI)
+
+### 1. Backend
+
+```bash
+cd backend
+cp .env.example .env      # configure MONGODB_URI, JWT_SECRET, MAIL_*, etc.
+npm install
+npm run start:dev
+# → http://localhost:3000
+```
+
+### 2. ML Service
+
+```bash
+cd ml-service
+pip install -r requirements.txt
+python -m uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+# → http://localhost:8000
+```
+
+### 3. Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+# → http://localhost:5173
+```
+
+### 4. Docker (all at once)
+
+```bash
+docker compose up --build
+```
+
+### Backend `.env` reference
+
+```env
+MONGODB_URI=mongodb://localhost:27017/esprit-pi
+JWT_SECRET=your_jwt_secret
+JWT_REFRESH_SECRET=your_refresh_secret
+FRONTEND_URL=http://localhost:5173
+ML_SERVICE_URL=http://localhost:8000
+
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USER=your@email.com
+MAIL_PASS=your_app_password
+
+GITHUB_CLIENT_ID=...
+GITHUB_CLIENT_SECRET=...
+GITHUB_CALLBACK_URL=http://localhost:3000/auth/github/callback
+```
+
+---
+
+## Contributors
+
+| Name | Role |
+|---|---|
+| Dhia Haddeji | Full-stack integration lead, ML service, CI/CD |
+| Team 4TWIN6 | Feature development across all modules |
+
+---
+
+## Academic Context
+
+**Institution:** Esprit School of Engineering, Tunis  
+**Program:** Engineering — 4th year, major TWIN (Technologies Web et Internet)  
+**Project type:** Projet d'Intégration (PI) — final-year capstone  
+**Academic year:** 2025–2026  
+**Branch:** `integration-final`
+
+This project was developed as the final integration deliverable for the TWIN6 class, combining all modules studied throughout the year: web development, software architecture, DevOps, machine learning, and human-computer interaction.
+
+---
+
+## Acknowledgment
+
+We thank the faculty and supervisors at **Esprit School of Engineering** for their guidance throughout this project.
+
+Special thanks to the open-source communities behind NestJS, React, FastAPI, and scikit-learn — this project would not be possible without their work.

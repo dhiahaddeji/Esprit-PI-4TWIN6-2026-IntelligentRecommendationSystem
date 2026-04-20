@@ -33,6 +33,6 @@ export class ActivitiesService {
   }
 
   update(id: string, dto: Partial<Activity>) {
-    return this.model.findByIdAndUpdate(id, dto, { new: true });
+    return this.model.findByIdAndUpdate(id, dto, { returnDocument: 'after' });
   }
 }

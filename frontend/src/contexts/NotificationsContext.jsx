@@ -33,8 +33,17 @@ export function NotificationsProvider({ children }) {
 
   // ── Load notifications from REST ──────────────────────────────────────
   const loadNotifications = () => {
+    const token = getToken();
+    if (!token) return;               // no token → skip silently
     fetch(`${API}/notifications`, { headers: getHeaders() })
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => {
+        if (r.status === 401) {
+          // Token expired / invalid — purge it so tick() cleans up
+          localStorage.removeItem("access_token");
+          return null;
+        }
+        return r.ok ? r.json() : null;
+      })
       .then((data) => {
         if (!data) return;
         setNotifications(data.items || []);

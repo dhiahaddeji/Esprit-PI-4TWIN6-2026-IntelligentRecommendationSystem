@@ -183,7 +183,7 @@ export class SuperAdminController {
     }),
   )
   async uploadCsv(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: any,
     @Request() req: any,
   ) {
     if (!file) throw new BadRequestException('No file uploaded');

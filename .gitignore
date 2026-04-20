@@ -1,0 +1,8 @@
+.claude/
+.env
+uploads/
+node_modules/
+dist/
+reports/
+coverage/
+CLAUDE.md

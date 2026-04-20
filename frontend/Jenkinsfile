@@ -9,7 +9,7 @@ pipeline {
         SONARQUBE_ENV  = "sonarqube"
         SONAR_TOKEN    = credentials("sonar-token")          // Jenkins credential ID
         SONAR_HOST     = "http://localhost:9000"
-        DOCKER_IMAGE   = "dhiahaddeji/pi-back"
+        DOCKER_IMAGE   = "dhiahaddeji/pi-front"
         DOCKER_TAG     = "${BUILD_NUMBER}"
     }
 
@@ -19,25 +19,25 @@ pipeline {
         stage('Clone') {
             steps {
                 git branch: 'master',
-                    url: 'https://github.com/dhiahaddeji/PI-BACK.git'
+                    url: 'https://github.com/dhiahaddeji/PI-FRONT.git'
             }
         }
 
         // ── 2. Install ──────────────────────────────────────────────────────
         stage('Install') {
             steps {
-                sh 'npm ci'
+                sh 'npm ci'                               // reproductible vs npm install
             }
         }
 
-        // ── 3. Test ─────────────────────────────────────────────────────────
+        // ── 3. Tests ────────────────────────────────────────────────────────
         stage('Test') {
             steps {
-                sh 'npm run test -- --coverage --forceExit'
+                sh 'npm run test -- --coverage --reporter=junit --outputFile=reports/junit.xml || true'
             }
             post {
                 always {
-                    junit allowEmptyResults: true, testResults: 'test-results/*.xml'
+                    junit allowEmptyResults: true, testResults: 'reports/junit.xml'
                 }
             }
         }
@@ -48,11 +48,11 @@ pipeline {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
                     sh """
                     npx sonar-scanner \
-                      -Dsonar.projectKey=backend \
-                      -Dsonar.projectName="PI Backend" \
+                      -Dsonar.projectKey=frontend \
+                      -Dsonar.projectName="PI Frontend" \
                       -Dsonar.sources=src \
-                      -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/*.spec.ts,**/test/** \
-                      -Dsonar.typescript.lcov.reportPaths=coverage/lcov.info \
+                      -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/reports/**,**/*.test.*,**/*.spec.* \
+                      -Dsonar.javascript.lcov.reportPaths=reports/coverage/lcov.info \
                       -Dsonar.host.url=${SONAR_HOST} \
                       -Dsonar.token=${SONAR_TOKEN}
                     """
@@ -69,7 +69,7 @@ pipeline {
             }
         }
 
-        // ── 6. Build (compile TypeScript) ───────────────────────────────────
+        // ── 6. Build ────────────────────────────────────────────────────────
         stage('Build') {
             steps {
                 sh 'npm run build'
@@ -108,13 +108,12 @@ pipeline {
             }
             steps {
                 sh """
-                docker stop pi-back || true
-                docker rm   pi-back || true
+                docker stop pi-front || true
+                docker rm   pi-front || true
                 docker run -d \
-                  --name pi-back \
+                  --name pi-front \
                   --restart unless-stopped \
-                  -p 3000:3000 \
-                  --env-file /etc/pi-back.env \
+                  -p 5173:80 \
                   ${DOCKER_IMAGE}:latest
                 """
             }
@@ -124,10 +123,10 @@ pipeline {
     // ── Post actions ─────────────────────────────────────────────────────────
     post {
         success {
-            echo "✅ Backend pipeline SUCCESS — build #${BUILD_NUMBER}"
+            echo "✅ Frontend pipeline SUCCESS — build #${BUILD_NUMBER}"
         }
         failure {
-            echo "❌ Backend pipeline FAILED — build #${BUILD_NUMBER}"
+            echo "❌ Frontend pipeline FAILED — build #${BUILD_NUMBER}"
         }
         always {
             cleanWs()

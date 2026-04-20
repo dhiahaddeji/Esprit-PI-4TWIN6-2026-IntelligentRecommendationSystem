@@ -215,7 +215,7 @@ export class ActivitiesController {
       await this.recModel.findOneAndUpdate(
         { activityId: id },
         { refusedEmployees: merged, list: filtered },
-        { new: true },
+        { returnDocument: 'after' },
       );
     }
 

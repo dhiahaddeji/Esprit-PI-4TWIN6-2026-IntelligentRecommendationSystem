@@ -10,6 +10,8 @@ function useUnreadCount() {
   useEffect(() => {
     let cancelled = false;
 
+    let id;
+
     async function fetchUnread() {
       try {
         const token = getStoredToken();
@@ -17,6 +19,11 @@ function useUnreadCount() {
         const res = await fetch("http://localhost:3000/messaging/unread", {
           headers: { Authorization: `Bearer ${token}` },
         });
+        if (res.status === 401) {
+          // Stale token — stop polling to prevent console spam
+          clearInterval(id);
+          return;
+        }
         if (!res.ok) return;
         const data = await res.json();
         if (!cancelled) setCount(data.total ?? 0);
@@ -24,7 +31,7 @@ function useUnreadCount() {
     }
 
     fetchUnread();
-    const id = setInterval(fetchUnread, 10000);
+    id = setInterval(fetchUnread, 10000);
     return () => { cancelled = true; clearInterval(id); };
   }, []);
 

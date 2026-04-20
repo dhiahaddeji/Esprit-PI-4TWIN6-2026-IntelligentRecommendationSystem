@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import OpenAI from 'openai';
 
 // ── Semantic aliases: any variant → canonical French label ────────────────────
 const ALIASES: Record<string, string> = {
@@ -128,12 +127,6 @@ const EXP_PATTERNS: RegExp[] = [
 
 @Injectable()
 export class NlpService {
-  private readonly embeddingCache = new Map<string, number[]>();
-  private readonly client: OpenAI;
-
-  constructor() {
-    this.client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  }
 
   // ── Normalize a skill name: resolve aliases, capitalize properly ──────────
   normalize(skill: string): string {
@@ -194,52 +187,23 @@ export class NlpService {
     return result;
   }
 
-  // ── Semantic similarity between two skill labels ──────────────────────────
-  async semanticSimilarity(a: string, b: string): Promise<number> {
+  // ── Local semantic similarity (trigram + cosine, no external API) ─────────
+  semanticSimilarity(a: string, b: string): number {
     const normA = this.normalize(a).toLowerCase();
     const normB = this.normalize(b).toLowerCase();
 
-    if (normA === normB)                          return 1.0;
-    if (normA.includes(normB) || normB.includes(normA)) return 0.88;
+    if (normA === normB)                                    return 1.0;
+    if (normA.includes(normB) || normB.includes(normA))    return 0.88;
 
-    // Try embeddings first
-    const [vecA, vecB] = await Promise.all([
-      this.getEmbedding(normA),
-      this.getEmbedding(normB),
-    ]);
+    // Character trigram Dice coefficient
+    const dice = this.trigramSimilarity(normA, normB);
+    if (dice > 0)  return dice;
 
-    if (vecA.length > 0 && vecB.length > 0) {
-      return this.cosineSimilarity(vecA, vecB);
-    }
-
-    // Trigram fallback when embeddings unavailable
-    return this.trigramSimilarity(normA, normB);
+    // Bag-of-words cosine fallback
+    return this.bowCosine(normA, normB);
   }
 
-  // ── OpenAI embeddings (cached, 2s timeout) ───────────────────────────────
-  async getEmbedding(text: string): Promise<number[]> {
-    const key = text.toLowerCase().trim();
-    if (this.embeddingCache.has(key)) return this.embeddingCache.get(key)!;
-
-    try {
-      const apiCall = this.client.embeddings.create({
-        model: 'text-embedding-3-small',
-        input: key,
-      });
-      // Abort after 2 s — fall back to trigram similarity if OpenAI is slow/unavailable
-      const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('embedding timeout')), 2000),
-      );
-      const res    = await Promise.race([apiCall, timeout]) as any;
-      const vector = res.data[0].embedding as number[];
-      this.embeddingCache.set(key, vector);
-      return vector;
-    } catch {
-      return [];
-    }
-  }
-
-  // ── Cosine similarity ─────────────────────────────────────────────────────
+  // ── Cosine similarity (kept for external callers that pass number[]) ──────
   cosineSimilarity(a: number[], b: number[]): number {
     let dot = 0, normA = 0, normB = 0;
     for (let i = 0; i < a.length; i++) {
@@ -250,7 +214,7 @@ export class NlpService {
     return dot / (Math.sqrt(normA) * Math.sqrt(normB) + 1e-10);
   }
 
-  // ── Trigram similarity fallback ───────────────────────────────────────────
+  // ── Character trigram Dice coefficient ───────────────────────────────────
   private trigramSimilarity(a: string, b: string): number {
     const ngrams = (s: string): Set<string> => {
       const set    = new Set<string>();
@@ -263,5 +227,16 @@ export class NlpService {
     let inter  = 0;
     for (const g of setA) if (setB.has(g)) inter++;
     return (2 * inter) / (setA.size + setB.size + 1e-10);
+  }
+
+  // ── Bag-of-words cosine (token-level) ────────────────────────────────────
+  private bowCosine(a: string, b: string): number {
+    const tokenize = (s: string) => s.split(/\s+/).filter(t => t.length > 1);
+    const tokA = tokenize(a);
+    const tokB = tokenize(b);
+    const vocab = new Set([...tokA, ...tokB]);
+    const vecA  = Array.from(vocab).map(t => tokA.filter(x => x === t).length);
+    const vecB  = Array.from(vocab).map(t => tokB.filter(x => x === t).length);
+    return this.cosineSimilarity(vecA, vecB);
   }
 }

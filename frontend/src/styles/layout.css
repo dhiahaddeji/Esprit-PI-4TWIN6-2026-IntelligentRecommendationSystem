@@ -2,6 +2,28 @@
    Layout — Zellige Moderne
    ═══════════════════════════════════════════════════════════════ */
 
+/* Skip link — visually hidden until focused (keyboard nav) */
+.skipLink {
+  position: fixed;
+  top: -999px;
+  left: 8px;
+  z-index: 99999;
+  background: var(--c-teal-800, #0B2D38);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: 0 0 10px 10px;
+  text-decoration: none;
+  transition: top 0.15s;
+}
+
+.skipLink:focus {
+  top: 0;
+  outline: 3px solid #FFD700;
+  outline-offset: 2px;
+}
+
 .layout {
   display: flex;
   min-height: 100vh;

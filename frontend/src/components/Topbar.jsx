@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AccessibilityMenu from "./AccessibilityMenu";
 import FingerScrollController from "./FingerScrollController";
 import { getStoredUser, logout } from "../auth/authService";
 import { useTheme } from "../contexts/ThemeContext";
@@ -11,7 +10,6 @@ import "../styles/topbar.css";
 export default function Topbar() {
   const { isDark, toggle }                          = useTheme();
   const { notifications, unread, markRead, markAllRead } = useNotifications();
-  const [a11yOpen,      setA11yOpen]      = useState(false);
   const [profileOpen,   setProfileOpen]   = useState(false);
   const [notifOpen,     setNotifOpen]     = useState(false);
   const [langOpen,      setLangOpen]      = useState(false);
@@ -38,13 +36,6 @@ useEffect(() => {
   document.addEventListener("mousedown", onDocClick);
   return () => document.removeEventListener("mousedown", onDocClick);
 }, []);
-
-  // ── Block scroll when accessibility popup open ─────────────────────────
-  useEffect(() => {
-    if (!a11yOpen) return;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
-  }, [a11yOpen]);
 
   // ── Click on a notification: mark read + navigate ─────────────────────
   const handleNotifClick = (notif) => {
@@ -125,9 +116,17 @@ useEffect(() => {
           </button>
 
           {/* ACCESSIBILITÉ */}
-          <button className="iconBtn" type="button" onClick={() => setA11yOpen(true)} aria-label="Accessibilité" title="Accessibilité">
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M423.5-743.5Q400-767 400-800t23.5-56.5Q447-880 480-880t56.5 23.5Q560-833 560-800t-23.5 56.5Q513-720 480-720t-56.5-23.5ZM360-80v-520H120v-80h720v80H600v520h-80v-240h-80v240h-80Z"/></svg>
-          </button>
+          { <button
+            className="iconBtn"
+            type="button"
+            onClick={() => window.dispatchEvent(new Event("toggle-a11y-widget"))}
+            aria-label="Accessibilité"
+            title="Accessibilité"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 -960 960 960" width="22px" fill="currentColor" aria-hidden="true">
+              <path d="M423.5-743.5Q400-767 400-800t23.5-56.5Q447-880 480-880t56.5 23.5Q560-833 560-800t-23.5 56.5Q513-720 480-720t-56.5-23.5ZM360-80v-520H120v-80h720v80H600v520h-80v-240h-80v240h-80Z"/>
+            </svg>
+          </button> }
 
           {/* NOTIFICATION BELL */}
           <div className="notifWrap" ref={notifRef}>
@@ -256,15 +255,6 @@ useEffect(() => {
         onDeactivate={() => setFingerActive(false)}
       />
 
-      {/* POPUP ACCESSIBILITÉ */}
-      {a11yOpen && (
-        <>
-          <div className="a11yOverlay" onClick={() => setA11yOpen(false)} />
-          <div className="a11yPopover" onClick={(e) => e.stopPropagation()}>
-            <AccessibilityMenu open={a11yOpen} onClose={() => setA11yOpen(false)} />
-          </div>
-        </>
-      )}
     </>
   );
 }

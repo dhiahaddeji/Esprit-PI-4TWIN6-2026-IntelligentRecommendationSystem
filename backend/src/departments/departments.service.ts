@@ -24,7 +24,7 @@ export class DepartmentsService {
   }
 
   async update(id: string, dto: Partial<Department>) {
-    const doc = await this.model.findByIdAndUpdate(id, dto, { new: true });
+    const doc = await this.model.findByIdAndUpdate(id, dto, { returnDocument: 'after' });
     if (!doc) throw new NotFoundException('Département introuvable');
     return doc;
   }

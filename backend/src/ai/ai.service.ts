@@ -1,23 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import OpenAI from 'openai';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const pdfParse = require('pdf-parse');
 import { CompetencesService } from '../competences/competences.service';
 import { NlpService } from './nlp.service';
 import { MatchingService, CTX_LABEL } from './matching.service';
 
 @Injectable()
 export class AiService {
-  private readonly client: OpenAI;
 
   constructor(
     private readonly compSvc:    CompetencesService,
     private readonly nlp:        NlpService,
     private readonly matching:   MatchingService,
-  ) {
-    this.client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  }
+  ) {}
 
   // ─────────────────────────────────────────────────────────────────────────
-  // CV Analysis
+  // CV Analysis — 100% local NLP, no external API
   // ─────────────────────────────────────────────────────────────────────────
 
   async analyzeCv(pdfBuffer: Buffer): Promise<{
@@ -26,77 +24,20 @@ export class AiService {
     total:      number;
     mode:       string;
   }> {
-    const base64Pdf = pdfBuffer.toString('base64');
-
-    const prompt = `Tu es un expert RH spécialisé en analyse de CV. Lis attentivement ce CV et extrait toutes les compétences professionnelles mentionnées.
-
-Réponds UNIQUEMENT avec un objet JSON valide (sans markdown, sans explication) dans ce format exact :
-{
-  "summary": "Résumé du profil en 1 phrase",
-  "skills": [
-    {
-      "intitule": "Python",
-      "type": "savoir",
-      "auto_eval": 3,
-      "confidence": 90,
-      "years_exp": 4
-    }
-  ]
-}
-
-Règles strictes :
-- "type" : "savoir" (connaissances techniques/théoriques) | "savoir_faire" (compétences pratiques/méthodologiques) | "savoir_etre" (soft skills)
-- "auto_eval" : 1=Notions, 2=Pratique, 3=Maîtrise, 4=Expert (déduit du contexte : titres, années d'expérience, projets)
-- "confidence" : 0-100 (ta certitude que cette compétence est bien présente dans le CV)
-- "years_exp" : années d'expérience pour cette compétence si mentionné explicitement, sinon null
-- Maximum 25 compétences, les plus pertinentes uniquement
-- Pas de doublons — normalise les noms (ex: "JS" → "JavaScript", "ML" → "Machine Learning")
-- Inclus les compétences techniques, méthodologiques ET les soft skills
-- Intitulés en français ou en anglais selon l'usage courant (ex: Docker, Gestion de projet, Leadership)`;
-
-    // ── Try OpenAI ────────────────────────────────────────────────────────
+    // ── 1. Extract raw text from PDF ──────────────────────────────────────
+    let text = '';
     try {
-      const response = await this.client.chat.completions.create({
-        model:      'gpt-4o-mini',
-        max_tokens: 2000,
-        messages: [{
-          role:    'user',
-          content: [
-            {
-              type:      'image_url',
-              image_url: { url: `data:application/pdf;base64,${base64Pdf}` },
-            } as any,
-            { type: 'text', text: prompt },
-          ],
-        }],
-      });
+      const parsed = await pdfParse(pdfBuffer);
+      text = (parsed.text || '').toLowerCase();
+    } catch {
+      // Last-resort: strip non-ASCII binary bytes
+      text = pdfBuffer.toString('latin1').replace(/[^\x20-\x7e\xc0-\xff\n]/g, ' ').toLowerCase();
+    }
 
-      const raw     = (response.choices[0].message.content || '').trim();
-      const jsonStr = raw.replace(/^```json?\s*/i, '').replace(/```\s*$/i, '').trim();
-      const parsed  = JSON.parse(jsonStr);
+    // ── 2. Extract experience years per skill ─────────────────────────────
+    const expBySkill = this.nlp.extractExperience(text);
 
-      // Normalize + deduplicate via NlpService
-      type SkillRow = { intitule: string; type: string; auto_eval: number; confidence: number; years_exp?: number };
-      const rawSkills: SkillRow[] = (parsed.skills || []).map((s: any): SkillRow => ({
-        intitule:   this.nlp.normalize(s.intitule || ''),
-        type:       s.type       || 'savoir',
-        auto_eval:  s.auto_eval  ?? 2,
-        confidence: s.confidence ?? 70,
-        years_exp:  s.years_exp  ?? undefined,
-      }));
-      const skills = this.nlp.deduplicate(rawSkills);
-
-      return {
-        skills,
-        summary: parsed.summary || '',
-        total:   skills.length,
-        mode:    'openai',
-      };
-    } catch { /* fall through to rule-based */ }
-
-    // ── Rule-based fallback ───────────────────────────────────────────────
-    const text         = pdfBuffer.toString('utf-8').toLowerCase().replace(/[^\x20-\x7e\n]/g, ' ');
-    const expBySkill   = this.nlp.extractExperience(text);
+    // ── 3. Run rule-based skill extraction ───────────────────────────────
     return this.ruleBasedCvAnalysis(text, expBySkill);
   }
 
@@ -233,71 +174,7 @@ Règles strictes :
   // ─────────────────────────────────────────────────────────────────────────
 
   async getDashboardInsights(role: string, data: any): Promise<{ insight: string; tips: string[] }> {
-    const prompt = this.buildInsightPrompt(role, data);
-    if (!prompt) return this.ruleBasedInsights(role, data);
-
-    try {
-      const response = await this.client.chat.completions.create({
-        model:      'gpt-4o-mini',
-        max_tokens: 600,
-        messages:   [{ role: 'user', content: prompt }],
-      });
-      const raw     = (response.choices[0].message.content || '').trim();
-      const jsonStr = raw.replace(/^```json?\s*/i, '').replace(/```\s*$/i, '').trim();
-      const parsed  = JSON.parse(jsonStr);
-      return { insight: parsed.insight || '', tips: parsed.tips || [] };
-    } catch {
-      return this.ruleBasedInsights(role, data);
-    }
-  }
-
-  private buildInsightPrompt(role: string, data: any): string {
-    if (role === 'EMPLOYEE') {
-      const { competences = [], ficheEtat = 'draft', invitations = [] } = data;
-      const compList = competences.map((c: any) => `${c.intitule} (niveau ${c.auto_eval}/4)`).join(', ');
-      return `Tu es un coach de carrière expert. Analyse le profil de cet employé et donne des conseils personnalisés.
-
-Statut fiche compétences: ${ficheEtat}
-Compétences déclarées: ${compList || 'Aucune'}
-Nombre d'activités/formations: ${invitations.length}
-
-Réponds en JSON:
-{"insight": "Message encourageant en 2 phrases max (tutoie)", "tips": ["Conseil 1", "Conseil 2", "Conseil 3"]}`;
-    }
-
-    if (role === 'MANAGER') {
-      const { pendingFiches = 0, teamSize = 0, activities = [] } = data;
-      return `Tu es un expert en management. Donne des insights au manager.
-
-Fiches en attente: ${pendingFiches} | Équipe: ${teamSize} | Activités: ${activities.length}
-
-Réponds en JSON:
-{"insight": "Analyse managériale en 2 phrases", "tips": ["Action 1", "Action 2", "Action 3"]}`;
-    }
-
-    if (role === 'HR') {
-      const { totalEmployees = 0, validatedFiches = 0, pendingFiches = 0, activities = [] } = data;
-      const rate = totalEmployees > 0 ? Math.round((validatedFiches / totalEmployees) * 100) : 0;
-      return `Tu es un expert RH stratégique. Analyse les données RH.
-
-Employés: ${totalEmployees} | Validées: ${validatedFiches} (${rate}%) | En attente: ${pendingFiches} | Activités: ${activities.length}
-
-Réponds en JSON:
-{"insight": "Analyse stratégique RH en 2 phrases", "tips": ["Recommandation 1", "Recommandation 2", "Recommandation 3"]}`;
-    }
-
-    if (role === 'SUPERADMIN') {
-      const { totalUsers = 0, usersByRole = {}, totalActivities = 0 } = data;
-      const breakdown = Object.entries(usersByRole).map(([r, n]) => `${r}: ${n}`).join(', ');
-      return `Tu es un consultant en transformation digitale. Analyse la plateforme.
-
-Utilisateurs: ${totalUsers} (${breakdown}) | Activités: ${totalActivities}
-
-Réponds en JSON:
-{"insight": "Vision globale en 2 phrases", "tips": ["Initiative 1", "Initiative 2", "Initiative 3"]}`;
-    }
-
-    return '';
+    return this.ruleBasedInsights(role, data);
   }
 
   private ruleBasedInsights(role: string, data: any): { insight: string; tips: string[] } {

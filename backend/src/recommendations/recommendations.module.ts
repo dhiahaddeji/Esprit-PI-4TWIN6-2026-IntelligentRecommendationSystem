@@ -12,6 +12,7 @@ import { Activity, ActivitySchema } from '../activity/activity.schema';
 
 import { RecommendationsService } from './recommendations.service';
 import { RecommendationsController } from './recommendations.controller';
+import { MlService } from './ml.service';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { RecommendationsController } from './recommendations.controller';
     NotificationsModule,
   ],
   controllers: [RecommendationsController],
-  providers: [RecommendationsService],
+  providers: [RecommendationsService, MlService],
+  exports: [MlService],
 })
 export class RecommendationsModule {}
