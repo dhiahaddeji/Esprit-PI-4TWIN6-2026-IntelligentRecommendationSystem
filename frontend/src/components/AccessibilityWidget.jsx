@@ -527,6 +527,9 @@ export default function AccessibilityWidget() {
                 />
               ))}
             </div>
+
+            {/* ── Keyboard shortcuts panel (shown when Keyboard Nav is ON) ── */}
+            {settings.nav.keyboardNav && <KeyboardShortcutsPanel />}
           </Section>
 
           {/* ══ SECTION 3: Colors ════════════════════════════════════════════ */}
@@ -823,6 +826,127 @@ function PageSummaryModal({ text, onClose }) {
         </div>
         <p className="a11y-modal-text">{text}</p>
       </div>
+    </div>
+  );
+}
+
+// ─── Keyboard Shortcuts Panel ────────────────────────────────────────────────
+const SHORTCUT_GROUPS = [
+  {
+    title: "Navigation globale",
+    icon: "🌐",
+    shortcuts: [
+      { keys: ["Tab"],           desc: "Élément suivant" },
+      { keys: ["Shift", "Tab"],  desc: "Élément précédent" },
+      { keys: ["Alt", "M"],      desc: "Aller au contenu principal" },
+      { keys: ["Alt", "S"],      desc: "Aller au menu latéral" },
+      { keys: ["Alt", "T"],      desc: "Remonter en haut de la page" },
+    ],
+  },
+  {
+    title: "Barre d'outils (Topbar)",
+    icon: "🔧",
+    shortcuts: [
+      { keys: ["←"],  desc: "Bouton précédent" },
+      { keys: ["→"],  desc: "Bouton suivant" },
+      { keys: ["Home"], desc: "Premier bouton" },
+      { keys: ["End"],  desc: "Dernier bouton" },
+    ],
+  },
+  {
+    title: "Menu latéral (Sidebar)",
+    icon: "📋",
+    shortcuts: [
+      { keys: ["↑"],    desc: "Lien précédent" },
+      { keys: ["↓"],    desc: "Lien suivant" },
+      { keys: ["Home"], desc: "Premier lien" },
+      { keys: ["End"],  desc: "Dernier lien" },
+    ],
+  },
+  {
+    title: "Tableaux",
+    icon: "📊",
+    shortcuts: [
+      { keys: ["↑"],  desc: "Ligne précédente" },
+      { keys: ["↓"],  desc: "Ligne suivante" },
+      { keys: ["←"],  desc: "Cellule à gauche" },
+      { keys: ["→"],  desc: "Cellule à droite" },
+    ],
+  },
+  {
+    title: "Listes & cartes",
+    icon: "🗂️",
+    shortcuts: [
+      { keys: ["↑"],    desc: "Élément précédent" },
+      { keys: ["↓"],    desc: "Élément suivant" },
+      { keys: ["Enter"], desc: "Activer / ouvrir" },
+    ],
+  },
+  {
+    title: "Menus déroulants",
+    icon: "🔽",
+    shortcuts: [
+      { keys: ["↓"],     desc: "Ouvrir / item suivant" },
+      { keys: ["↑"],     desc: "Item précédent" },
+      { keys: ["Enter"], desc: "Sélectionner" },
+      { keys: ["Esc"],   desc: "Fermer & retour" },
+    ],
+  },
+  {
+    title: "Actions générales",
+    icon: "⚡",
+    shortcuts: [
+      { keys: ["Enter"],        desc: "Confirmer / activer" },
+      { keys: ["Space"],        desc: "Cocher / basculer" },
+      { keys: ["Esc"],          desc: "Annuler / fermer" },
+      { keys: ["Shift", "Tab"], desc: "Retour arrière" },
+    ],
+  },
+];
+
+function KeyboardShortcutsPanel() {
+  const [openGroup, setOpenGroup] = useState(null);
+
+  return (
+    <div className="a11y-kb-shortcuts">
+      <div className="a11y-kb-title">
+        <span>⌨️</span>
+        <span>Raccourcis clavier disponibles</span>
+      </div>
+
+      {SHORTCUT_GROUPS.map((group, gi) => (
+        <div key={gi} className="a11y-kb-group">
+          <button
+            className={`a11y-kb-group-header${openGroup === gi ? " open" : ""}`}
+            onClick={() => setOpenGroup(openGroup === gi ? null : gi)}
+          >
+            <span>{group.icon} {group.title}</span>
+            <span className="a11y-kb-chevron">{openGroup === gi ? "▾" : "▸"}</span>
+          </button>
+
+          {openGroup === gi && (
+            <div className="a11y-kb-group-body">
+              {group.shortcuts.map((s, si) => (
+                <div key={si} className="a11y-kb-row">
+                  <div className="a11y-kb-keys">
+                    {s.keys.map((k, ki) => (
+                      <span key={ki}>
+                        <kbd className="a11y-kbd">{k}</kbd>
+                        {ki < s.keys.length - 1 && <span className="a11y-kb-plus">+</span>}
+                      </span>
+                    ))}
+                  </div>
+                  <span className="a11y-kb-desc">{s.desc}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+
+      <p className="a11y-kb-hint">
+        💡 Appuyez sur <kbd className="a11y-kbd">Tab</kbd> pour activer la navigation clavier.
+      </p>
     </div>
   );
 }

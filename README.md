@@ -246,4 +246,4 @@ This project was developed as the final integration deliverable for the TWIN6 cl
 
 We thank the faculty and supervisors at **Esprit School of Engineering** for their guidance throughout this project.
 
-Special thanks to the open-source communities behind NestJS, React, FastAPI, and scikit-learn — this project would not be possible without their work.
+Special thanks to FATMA LOUHICHI and the open-source communities behind NestJS, React, FastAPI, and scikit-learn — this project would not be possible without their work.

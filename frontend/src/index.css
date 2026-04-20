@@ -142,10 +142,124 @@ button, input, select, textarea {
 
 img, svg { display: block; max-width: 100%; }
 
+/* ── Focus management ────────────────────────────────────────────── */
+
+/* Hide focus ring for mouse users — show only for keyboard */
+:focus:not(:focus-visible) { outline: none; }
+
+/* Keyboard focus ring — teal glow from design system */
 :focus-visible {
-  outline: 2px solid var(--c-teal-600);
+  outline: 2px solid var(--c-teal-500);
   outline-offset: 3px;
   border-radius: 6px;
+  box-shadow: 0 0 0 4px rgba(29, 122, 145, 0.20);
+}
+
+/* High-contrast ring when keyboard-nav class is on body */
+body.keyboard-nav *:focus {
+  outline: 2px solid var(--c-teal-500) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 4px rgba(29, 122, 145, 0.20) !important;
+  border-radius: 6px !important;
+}
+
+/* Sidebar nav links focused via keyboard */
+body.keyboard-nav .menuItem:focus {
+  background: var(--c-teal-700) !important;
+  color: #fff !important;
+  outline: 2px solid var(--c-gold-400) !important;
+  outline-offset: -2px !important;
+  box-shadow: none !important;
+  border-radius: 10px !important;
+}
+
+/* Topbar buttons focused via keyboard */
+body.keyboard-nav .iconBtn:focus,
+body.keyboard-nav .notifBtn:focus,
+body.keyboard-nav .langBtn:focus,
+body.keyboard-nav .profileBtn:focus,
+body.keyboard-nav .themeToggle:focus {
+  outline: 2px solid var(--c-teal-500) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 4px rgba(29, 122, 145, 0.20) !important;
+  border-radius: 8px !important;
+}
+
+/* Dropdown menu items focused via keyboard */
+body.keyboard-nav .profileMenu button:focus,
+body.keyboard-nav .notifItem:focus,
+body.keyboard-nav .langMenu button:focus {
+  background: var(--c-teal-100) !important;
+  color: var(--c-teal-900) !important;
+  outline: 2px solid var(--c-teal-500) !important;
+  outline-offset: -2px !important;
+  box-shadow: none !important;
+  border-radius: 6px !important;
+}
+
+[data-theme="dark"] body.keyboard-nav .profileMenu button:focus,
+[data-theme="dark"] body.keyboard-nav .notifItem:focus,
+[data-theme="dark"] body.keyboard-nav .langMenu button:focus {
+  background: var(--c-teal-700) !important;
+  color: #fff !important;
+}
+
+/* Table row keyboard focus */
+body.keyboard-nav tbody tr:focus {
+  outline: 2px solid var(--c-teal-500) !important;
+  outline-offset: -2px !important;
+  background: var(--c-teal-50) !important;
+  box-shadow: none !important;
+}
+[data-theme="dark"] body.keyboard-nav tbody tr:focus {
+  background: rgba(29, 122, 145, 0.12) !important;
+}
+
+/* Table cell keyboard focus */
+body.keyboard-nav td:focus,
+body.keyboard-nav th:focus {
+  outline: 2px solid var(--c-teal-500) !important;
+  outline-offset: -2px !important;
+  background: var(--c-teal-50) !important;
+}
+[data-theme="dark"] body.keyboard-nav td:focus,
+[data-theme="dark"] body.keyboard-nav th:focus {
+  background: rgba(29, 122, 145, 0.12) !important;
+}
+
+/* Smart-list / card grid item keyboard focus — wraps the focused child */
+body.keyboard-nav [data-kb-list] > *:focus-within {
+  outline: 2px solid var(--c-teal-500);
+  outline-offset: 2px;
+  border-radius: 10px;
+  box-shadow: 0 0 0 4px rgba(29, 122, 145, 0.15);
+}
+
+/* Toolbar items: no extra margin, just the ring */
+body.keyboard-nav [role="toolbar"] button:focus,
+body.keyboard-nav [role="toolbar"] a:focus {
+  outline: 2px solid var(--c-teal-500) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 4px rgba(29, 122, 145, 0.20) !important;
+  border-radius: 8px !important;
+}
+
+/* Keyboard shortcut hint — shown at bottom of page only for keyboard users */
+body.keyboard-nav::after {
+  content: "Alt+M : contenu  ·  Alt+S : menu  ·  Alt+T : haut  ·  ↑↓ : naviguer  ·  ← → : barres";
+  position: fixed;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(11, 45, 56, 0.92);
+  color: #fff;
+  font-size: 11px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  pointer-events: none;
+  z-index: 88888;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
 }
 /* Police OpenDyslexic (Accessibilité) */
 @font-face {
