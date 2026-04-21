@@ -88,7 +88,10 @@ export function NotificationsProvider({ children }) {
 
   // ── Watch for auth changes every 2s and reconnect as needed ──────────
   useEffect(() => {
+    let mounted = true;
+
     const tick = () => {
+      if (!mounted) return;
       const token = getToken();
 
       // Token appeared (login)
@@ -116,9 +119,14 @@ export function NotificationsProvider({ children }) {
       }
     };
 
-    tick(); // Run immediately on mount
-    const id = setInterval(tick, 2000);
+    // Small delay so React StrictMode's cleanup/remount cycle doesn't
+    // abort a socket mid-handshake and log a WebSocket closed error.
+    const init = setTimeout(tick, 100);
+    const id   = setInterval(tick, 2000);
+
     return () => {
+      mounted = false;
+      clearTimeout(init);
       clearInterval(id);
       socketRef.current?.removeAllListeners();
       socketRef.current?.disconnect();

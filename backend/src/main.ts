@@ -1,3 +1,7 @@
+import { config } from 'dotenv';
+import { resolve } from 'path';
+config({ path: resolve(process.cwd(), '../.env') });
+
 import { setServers } from 'dns';
 import { join } from 'path';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
@@ -5,6 +9,7 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationError } from 'class-validator';
 import cookieParser from 'cookie-parser';
+import compress from 'compression';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -16,6 +21,7 @@ async function bootstrap() {
   // Servir les fichiers uploadés (photos de profil, CVs)
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' });
 
+  app.use(compress());
   app.use(cookieParser());
 
   const formatValidationErrors = (errors: ValidationError[], parentPath = '') =>

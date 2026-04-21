@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { lazy, Suspense, useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import FingerScrollController from "./FingerScrollController";
+
+const FingerScrollController = lazy(() => import("./FingerScrollController"));
 import { getStoredUser, logout } from "../auth/authService";
 import { useTheme } from "../contexts/ThemeContext";
 import { useNotifications, NOTIF_META } from "../contexts/NotificationsContext";
@@ -390,10 +391,12 @@ export default function Topbar() {
         </div>
       </header>
 
-      <FingerScrollController
-        active={fingerActive}
-        onDeactivate={() => setFingerActive(false)}
-      />
+      <Suspense fallback={null}>
+        <FingerScrollController
+          active={fingerActive}
+          onDeactivate={() => setFingerActive(false)}
+        />
+      </Suspense>
     </>
   );
 }

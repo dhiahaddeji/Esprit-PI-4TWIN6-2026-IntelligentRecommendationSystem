@@ -771,11 +771,23 @@ function AiInsightsWidget({ role, payload, ready }) {
   useEffect(() => {
     if (!ready || fetched.current) return;
     fetched.current = true;
-    setLoading(true);
-    http.post("/ai/dashboard-insights", { data: payload })
-      .then(r => { setInsight(r.data.insight); setTips(r.data.tips || []); })
-      .catch(() => setInsight(null))
-      .finally(() => setLoading(false));
+
+    // Defer the AI call so the browser can paint LCP content first,
+    // then fire during idle time.
+    const fire = () => {
+      setLoading(true);
+      http.post("/ai/dashboard-insights", { data: payload })
+        .then(r => { setInsight(r.data.insight); setTips(r.data.tips || []); })
+        .catch(() => setInsight(null))
+        .finally(() => setLoading(false));
+    };
+
+    if ("requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(fire, { timeout: 2000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const t = setTimeout(fire, 500);
+    return () => clearTimeout(t);
   }, [ready, payload]);
 
   const ROLE_GRADIENT = {

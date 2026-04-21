@@ -1,9 +1,11 @@
+import { lazy, Suspense } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
-import AccessibilityWidget from "../components/AccessibilityWidget";
 
 import "../styles/layout.css";
+
+const AccessibilityWidget = lazy(() => import("../components/AccessibilityWidget"));
 
 export default function MainLayout() {
   return (
@@ -14,10 +16,8 @@ export default function MainLayout() {
         Aller au contenu principal
       </a>
 
-      {/* Sidebar */}
       <Sidebar />
 
-      {/* Main area */}
       <div className="layoutMain">
         <Topbar />
 
@@ -30,8 +30,10 @@ export default function MainLayout() {
         </main>
       </div>
 
-      {/* Accessibility widget — floating, persisted */}
-      <AccessibilityWidget />
+      {/* Deferred — not needed for initial render */}
+      <Suspense fallback={null}>
+        <AccessibilityWidget />
+      </Suspense>
     </div>
   );
 }
