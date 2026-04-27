@@ -1,23 +1,29 @@
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 
 const TranslationContext = createContext(null);
 const LANG_KEY = "assurreco_lang";
 
-/** Set or clear the googtrans cookie that Google Translate reads on page load */
-function setGoogTransCookie(targetLang) {
-  const exp = "expires=Thu, 01 Jan 2099 00:00:01 GMT";
-  if (targetLang === "fr") {
-    // Clear the cookie so Google Translate shows the original French
-    document.cookie = `googtrans=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT`;
-    document.cookie = `googtrans=; domain=${window.location.hostname}; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT`;
-  } else {
-    document.cookie = `googtrans=/fr/${targetLang}; path=/; ${exp}`;
-    document.cookie = `googtrans=/fr/${targetLang}; domain=${window.location.hostname}; path=/; ${exp}`;
-  }
+// Module-level promise so we only ever inject the script once
+let gtPromise = null;
+
+function loadGoogleTranslate() {
+  if (gtPromise) return gtPromise;
+  gtPromise = new Promise((resolve) => {
+    if (window.google?.translate) { resolve(); return; }
+    const originalInit = window.googleTranslateElementInit;
+    window.googleTranslateElementInit = () => {
+      if (originalInit) originalInit();
+      resolve();
+    };
+    const s = document.createElement("script");
+    s.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+    s.async = true;
+    document.head.appendChild(s);
+  });
+  return gtPromise;
 }
 
-/** Try to trigger Google Translate via its hidden combo box (instant, no reload) */
-function tryComboTranslate(targetLang) {
+function applyLanguage(targetLang) {
   const combo = document.querySelector(".goog-te-combo");
   if (!combo) return false;
   combo.value = targetLang === "fr" ? "" : targetLang;
@@ -25,38 +31,75 @@ function tryComboTranslate(targetLang) {
   return true;
 }
 
+function setGoogTransCookie(targetLang) {
+  const exp = "expires=Thu, 01 Jan 2099 00:00:01 GMT";
+  const host = window.location.hostname;
+  if (targetLang === "fr") {
+    document.cookie = `googtrans=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT`;
+    document.cookie = `googtrans=; domain=${host}; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT`;
+  } else {
+    document.cookie = `googtrans=/fr/${targetLang}; path=/; ${exp}`;
+    document.cookie = `googtrans=/fr/${targetLang}; domain=${host}; path=/; ${exp}`;
+  }
+}
+
 export function TranslationProvider({ children }) {
   const [lang, setLang] = useState(() => localStorage.getItem(LANG_KEY) || "fr");
+  const appliedRef = useRef(false);
 
-  // On mount: re-apply saved language when Google Translate widget is ready
+  // Only load & apply Google Translate when the saved language is non-French
   useEffect(() => {
     const saved = localStorage.getItem(LANG_KEY) || "fr";
-    if (saved === "fr") return;
+    if (saved === "fr" || appliedRef.current) return;
 
-    let tries = 0;
-    const id = setInterval(() => {
-      if (tryComboTranslate(saved)) {
-        clearInterval(id);
-      }
-      if (++tries > 30) clearInterval(id);
-    }, 400);
+    const apply = () => {
+      loadGoogleTranslate().then(() => {
+        let tries = 0;
+        const id = setInterval(() => {
+          if (applyLanguage(saved) || ++tries > 20) {
+            clearInterval(id);
+            appliedRef.current = true;
+          }
+        }, 300);
+      });
+    };
 
-    return () => clearInterval(id);
+    // Defer until the browser is idle so it doesn't compete with first paint
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(apply, { timeout: 2000 });
+    } else {
+      setTimeout(apply, 800);
+    }
   }, []);
 
-  const changeLanguage = useCallback((newLang) => {
-    if (newLang === lang) return;
+  const changeLanguage = useCallback(
+    (newLang) => {
+      if (newLang === lang) return;
+      setLang(newLang);
+      localStorage.setItem(LANG_KEY, newLang);
 
-    setLang(newLang);
-    localStorage.setItem(LANG_KEY, newLang);
+      if (newLang === "fr") {
+        // Restore original without reload if possible
+        const combo = document.querySelector(".goog-te-combo");
+        if (combo) {
+          applyLanguage("fr");
+        } else {
+          setGoogTransCookie("fr");
+          window.location.reload();
+        }
+        return;
+      }
 
-    // Try instant combo translation first
-    if (tryComboTranslate(newLang)) return;
-
-    // Combo not ready → set cookie then reload (Google Translate reads it on load)
-    setGoogTransCookie(newLang);
-    window.location.reload();
-  }, [lang]);
+      // Non-French: ensure GT is loaded then apply
+      loadGoogleTranslate().then(() => {
+        let tries = 0;
+        const id = setInterval(() => {
+          if (applyLanguage(newLang) || ++tries > 20) clearInterval(id);
+        }, 300);
+      });
+    },
+    [lang]
+  );
 
   return (
     <TranslationContext.Provider value={{ lang, changeLanguage }}>
