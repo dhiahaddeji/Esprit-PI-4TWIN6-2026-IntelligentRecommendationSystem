@@ -620,7 +620,9 @@ function EmployeeDash() {
     ...(approved.savoir       || []).map(s => ({ ...s, cat: "Savoir" })),
     ...(approved.savoir_faire || []).map(s => ({ ...s, cat: "Savoir-faire" })),
     ...(approved.savoir_etre  || []).map(s => ({ ...s, cat: "Savoir-être" })),
-  ].sort((a, b) => (LEVEL_ORDER[b.level] || 0) - (LEVEL_ORDER[a.level] || 0));
+  ]
+    .sort((a, b) => (LEVEL_ORDER[b.level] || 0) - (LEVEL_ORDER[a.level] || 0))
+;
 
   const score = approved.globalScore || 0;
 

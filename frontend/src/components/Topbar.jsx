@@ -170,14 +170,6 @@ export default function Topbar() {
   return (
     <>
       <header className="topbar">
-        <div className="searchWrap">
-          <input
-            className="searchInput"
-            placeholder="Rechercher employés, activités..."
-            aria-label="Rechercher"
-          />
-        </div>
-
         <div className="topRight" role="toolbar" aria-label="Barre d'outils">
 
           {/* DARK / LIGHT MODE */}

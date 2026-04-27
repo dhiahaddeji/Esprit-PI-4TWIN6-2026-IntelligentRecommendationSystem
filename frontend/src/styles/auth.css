@@ -2,6 +2,18 @@
    Auth — Zellige Moderne (Split Layout)
    ═══════════════════════════════════════════════════════════════ */
 
+/* ── Standalone centered page (no split panel) ── */
+.authPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--c-sand-50);
+  padding: 40px 24px;
+}
+
+[data-theme="dark"] .authPage { background: var(--bg); }
+
 /* ── Page wrapper: full-height split ── */
 .authSplit {
   min-height: 100vh;
