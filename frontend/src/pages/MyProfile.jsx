@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import http from "../api/http";
 import { getStoredUser, LS_USER } from "../auth/authService";
+import FaceRegister from "../components/FaceRegister";
+import MicButton from "../components/MicButton";
 
 const ROLE_LABELS = {
   SUPERADMIN: "Super Admin",
@@ -10,10 +12,10 @@ const ROLE_LABELS = {
 };
 
 const ROLE_COLORS = {
-  SUPERADMIN: "#0b2b4b",
-  HR: "#0ea5a0",
-  MANAGER: "#6366f1",
-  EMPLOYEE: "#10b981",
+  SUPERADMIN: "#0B2D38",
+  HR: "#1D7A91",
+  MANAGER: "#155B6E",
+  EMPLOYEE: "#145C2B",
 };
 
 function getInitials(user) {
@@ -132,29 +134,11 @@ export default function MyProfile() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
-    const firstName = form.firstName.trim();
-    const lastName = form.lastName.trim();
-    const telephone = form.telephone.trim();
-    if (firstName && firstName.length > 80) {
-      showToast("Le prenom est trop long (max 80 caracteres).", "error");
-      setSaving(false);
-      return;
-    }
-    if (lastName && lastName.length > 80) {
-      showToast("Le nom est trop long (max 80 caracteres).", "error");
-      setSaving(false);
-      return;
-    }
-    if (telephone && telephone.length > 30) {
-      showToast("Le telephone est trop long (max 30 caracteres).", "error");
-      setSaving(false);
-      return;
-    }
     try {
       const fd = new FormData();
-      if (firstName) fd.append("firstName", firstName);
-      if (lastName) fd.append("lastName", lastName);
-      if (telephone) fd.append("telephone", telephone);
+      if (form.firstName) fd.append("firstName", form.firstName);
+      if (form.lastName) fd.append("lastName", form.lastName);
+      if (form.telephone) fd.append("telephone", form.telephone);
       if (photoFile) fd.append("photo", photoFile);
       if (cvFile) fd.append("cv", cvFile);
 
@@ -191,7 +175,7 @@ export default function MyProfile() {
 
   const role = (profile.role || "").toUpperCase();
   const roleLabel = ROLE_LABELS[role] || role;
-  const roleColor = ROLE_COLORS[role] || "#0b2b4b";
+  const roleColor = ROLE_COLORS[role] || "#0B2D38";
   const initials = getInitials(profile);
   const displayName =
     profile.firstName && profile.lastName
@@ -207,7 +191,7 @@ export default function MyProfile() {
         <div
           style={{
             ...styles.toast,
-            background: toast.type === "error" ? "#dc2626" : "#10b981",
+            background: toast.type === "error" ? "#8B1A1A" : "#145C2B",
           }}
         >
           {toast.msg}
@@ -247,80 +231,108 @@ export default function MyProfile() {
           <div style={styles.fieldRow}>
             <div style={styles.fieldGroup}>
               <label style={styles.label}>Prénom</label>
-              <input
-                style={styles.input}
-                value={form.firstName}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, firstName: e.target.value }))
-                }
-                placeholder="Votre prénom"
-                maxLength={80}
-              />
+              <div style={{ position: "relative" }}>
+                <input
+                  style={{ ...styles.input, paddingRight: 42 }}
+                  value={form.firstName}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, firstName: e.target.value }))
+                  }
+                  placeholder="Votre prénom"
+                />
+                <MicButton onResult={(t) => setForm((f) => ({ ...f, firstName: t }))} />
+              </div>
             </div>
             <div style={styles.fieldGroup}>
               <label style={styles.label}>Nom</label>
-              <input
-                style={styles.input}
-                value={form.lastName}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, lastName: e.target.value }))
-                }
-                placeholder="Votre nom"
-                maxLength={80}
-              />
+              <div style={{ position: "relative" }}>
+                <input
+                  style={{ ...styles.input, paddingRight: 42 }}
+                  value={form.lastName}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, lastName: e.target.value }))
+                  }
+                  placeholder="Votre nom"
+                />
+                <MicButton onResult={(t) => setForm((f) => ({ ...f, lastName: t }))} />
+              </div>
             </div>
           </div>
           <div style={styles.fieldGroup}>
             <label style={styles.label}>Téléphone</label>
-            <input
-              style={styles.input}
-              value={form.telephone}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, telephone: e.target.value }))
-              }
-              placeholder="+216 XX XXX XXX"
-              maxLength={30}
-            />
+            <div style={{ position: "relative" }}>
+              <input
+                style={{ ...styles.input, paddingRight: 42 }}
+                value={form.telephone}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, telephone: e.target.value }))
+                }
+                placeholder="+216 XX XXX XXX"
+              />
+              <MicButton onResult={(t) => setForm((f) => ({ ...f, telephone: t }))} />
+            </div>
           </div>
         </div>
 
-        {/* SECTION: Photo de profil */}
+        {/* SECTION: Photo & Authentification faciale */}
         <div style={styles.card}>
-          <h2 style={styles.cardTitle}>Photo de profil</h2>
-          <div style={styles.uploadArea}>
-            <div style={styles.photoPreviewWrap}>
-              {photoPreview ? (
-                <img
-                  src={photoPreview}
-                  alt="preview"
-                  style={styles.photoPreview}
+          <h2 style={styles.cardTitle}>Photo &amp; Authentification faciale</h2>
+          <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap", alignItems: "flex-start" }}>
+
+            {/* Photo upload */}
+            <div style={{ flex: "1 1 200px" }}>
+              <p style={{ margin: "0 0 0.75rem 0", fontSize: "0.82rem", fontWeight: 600, color: "var(--text-2)", textTransform: "uppercase", letterSpacing: 0.5 }}>Photo de profil</p>
+              <div style={styles.uploadArea}>
+                <div style={styles.photoPreviewWrap}>
+                  {photoPreview ? (
+                    <img src={photoPreview} alt="preview" style={styles.photoPreview} />
+                  ) : (
+                    <div style={styles.photoInitials}>{initials}</div>
+                  )}
+                </div>
+                <div>
+                  <button
+                    type="button"
+                    style={styles.uploadBtn}
+                    onClick={() => photoInputRef.current?.click()}
+                  >
+                    Choisir une photo
+                  </button>
+                  <p style={styles.uploadHint}>JPG, PNG ou GIF — max 5 Mo</p>
+                  {photoFile && <p style={styles.uploadHint}>{photoFile.name}</p>}
+                </div>
+                <input
+                  ref={photoInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={handlePhotoChange}
                 />
-              ) : (
-                <div style={styles.photoInitials}>{initials}</div>
-              )}
+              </div>
             </div>
-            <div>
-              <button
-                type="button"
-                style={styles.uploadBtn}
-                onClick={() => photoInputRef.current?.click()}
-              >
-                Choisir une photo
-              </button>
-              <p style={styles.uploadHint}>
-                JPG, PNG ou GIF — max 5 Mo
+
+            {/* Divider */}
+            <div style={{ width: 1, background: "var(--border)", alignSelf: "stretch", minHeight: 80 }} />
+
+            {/* Face auth */}
+            <div style={{ flex: "1 1 200px" }}>
+              <p style={{ margin: "0 0 0.75rem 0", fontSize: "0.82rem", fontWeight: 600, color: "var(--text-2)", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                Connexion par visage
+                {profile.faceDescriptor?.length > 0 && (
+                  <span style={{ marginLeft: "0.5rem", color: "#10b981", fontWeight: 700, textTransform: "none" }}>✅ Enregistré</span>
+                )}
               </p>
-              {photoFile && (
-                <p style={styles.uploadHint}>{photoFile.name}</p>
-              )}
+              <p style={{ margin: "0 0 0.85rem 0", fontSize: "0.85rem", color: "var(--text-2)", lineHeight: 1.5 }}>
+                {profile.faceDescriptor?.length > 0
+                  ? "Votre visage est enregistré. Vous pouvez le mettre à jour."
+                  : "Enregistrez votre visage pour vous connecter sans mot de passe."}
+              </p>
+              <FaceRegister
+                onSuccess={(msg) => showToast(msg)}
+                onError={(msg) => showToast(msg, "error")}
+              />
             </div>
-            <input
-              ref={photoInputRef}
-              type="file"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={handlePhotoChange}
-            />
+
           </div>
         </div>
 
@@ -375,7 +387,7 @@ export default function MyProfile() {
                     disabled={cvAnalyzing}
                     style={{
                       padding: "0.5rem 1.1rem", borderRadius: 8, border: "none",
-                      background: cvAnalyzing ? "var(--border)" : "linear-gradient(135deg,#7c3aed,#6d28d9)",
+                      background: cvAnalyzing ? "var(--border)" : "linear-gradient(135deg,#1D7A91,#155B6E)",
                       color: "#fff", fontWeight: 700, fontSize: "0.85rem",
                       cursor: cvAnalyzing ? "not-allowed" : "pointer",
                       whiteSpace: "nowrap",
@@ -393,7 +405,7 @@ export default function MyProfile() {
                     </p>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
                       {cvExtracted.skills.map((s, i) => {
-                        const typeColors = { savoir: "#3b6fd4", savoir_faire: "#0891b2", savoir_etre: "#7c3aed" };
+                        const typeColors = { savoir: "#1D7A91", savoir_faire: "#1D7A91", savoir_etre: "#1D7A91" };
                         return (
                           <span key={i} style={{
                             padding: "2px 10px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600,
@@ -405,7 +417,7 @@ export default function MyProfile() {
                         );
                       })}
                     </div>
-                    <p style={{ margin: "0.6rem 0 0 0", fontSize: "0.78rem", color: "#059669", fontWeight: 600 }}>
+                    <p style={{ margin: "0.6rem 0 0 0", fontSize: "0.78rem", color: "#145C2B", fontWeight: 600 }}>
                       ✅ {cvExtracted.total} compétence(s) prêtes {cvExtracted.mode === "openai" ? "(OpenAI GPT-4o)" : "(analyse locale)"} — rendez-vous dans "Mes Compétences" pour les importer.
                     </p>
                   </div>

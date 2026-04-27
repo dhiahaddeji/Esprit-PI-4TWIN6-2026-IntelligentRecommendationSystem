@@ -15,6 +15,10 @@ export class Recommendation {
   list: any[];
 
   @Prop({ default: false }) hrValidated: boolean;
+
+  /** Employee IDs the manager explicitly refused — excluded from future AI runs */
+  @Prop({ type: [String], default: [] })
+  refusedEmployees: string[];
 }
 
 export const RecommendationSchema = SchemaFactory.createForClass(Recommendation);

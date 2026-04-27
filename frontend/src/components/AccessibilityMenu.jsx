@@ -14,6 +14,8 @@ export default function AccessibilityMenu({ onClose }) {
     setHighContrast,
     reduceMotion,
     setReduceMotion,
+    dyslexicFont,
+    setDyslexicFont,
   } = useAccessibility();
 
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -130,6 +132,14 @@ export default function AccessibilityMenu({ onClose }) {
           onClick={() => setReduceMotion(!reduceMotion)}
         >
           {reduceMotion ? "✅" : "⬜"} Réduire les animations
+        </button>
+
+        <button
+          type="button"
+          className={`a11yToggle a11yToggleFull ${dyslexicFont ? "active" : ""}`}
+          onClick={() => setDyslexicFont(!dyslexicFont)}
+        >
+          {dyslexicFont ? "✅" : "⬜"} Police OpenDyslexic
         </button>
       </div>
 

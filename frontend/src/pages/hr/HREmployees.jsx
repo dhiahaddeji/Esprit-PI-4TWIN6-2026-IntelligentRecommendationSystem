@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchEmployees } from "../../api/employees";
 import "../../styles/hr-employees.css";
+import MicButton from "../../components/MicButton";
 
 export default function HREmployees() {
   const navigate = useNavigate();
@@ -58,12 +59,16 @@ export default function HREmployees() {
       </div>
 
       <div className="hrEmpToolbar">
-        <input
-          className="hrEmpSearch"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Rechercher nom, email, matricule..."
-        />
+        <div style={{ position: "relative", flex: "1 1 auto" }}>
+          <input
+            className="hrEmpSearch"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Rechercher nom, email, matricule..."
+            style={{ paddingRight: 42, width: "100%", boxSizing: "border-box" }}
+          />
+          <MicButton onResult={(t) => setQ(t)} />
+        </div>
         <div className="hrEmpToolbarInfo">
           Affichage {filtered.length} / {total}
         </div>

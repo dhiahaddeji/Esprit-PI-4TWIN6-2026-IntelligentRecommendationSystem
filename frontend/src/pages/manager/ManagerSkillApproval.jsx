@@ -3,24 +3,24 @@ import { useState, useEffect } from "react";
 import http from "../../api/http";
 
 const EVAL_LEVELS = [
-  { val: 0, label: "Pas de compétence", color: "var(--text-3)", bg: "var(--surface-2)" },
-  { val: 1, label: "Notions",           color: "var(--warn-text)", bg: "var(--warn-bg)" },
-  { val: 2, label: "Pratique",          color: "var(--info-text)", bg: "var(--info-bg)" },
-  { val: 3, label: "Maîtrise",          color: "var(--accent-text)", bg: "var(--accent-bg)" },
-  { val: 4, label: "Expert",            color: "var(--success-text)", bg: "var(--success-bg)" },
+  { val: 0, label: "Pas de compétence", color: "var(--text-3)", bg: "#f1f5f9" },
+  { val: 1, label: "Notions",           color: "#C9952A", bg: "#FEF6E4" },
+  { val: 2, label: "Pratique",          color: "#155B6E", bg: "#D6EEF3" },
+  { val: 3, label: "Maîtrise",          color: "#1D7A91", bg: "#EEF7FA" },
+  { val: 4, label: "Expert",            color: "#145C2B", bg: "#E8F5ED" },
 ];
 
 const CATEGORIES = [
-  { key: "savoir",       label: "Savoir",       icon: "📚", color: "var(--info-text)", bg: "var(--info-bg)" },
-  { key: "savoir_faire", label: "Savoir-faire",  icon: "🛠️", color: "var(--accent)", bg: "var(--accent-bg)" },
-  { key: "savoir_etre",  label: "Savoir-être",   icon: "🤝", color: "var(--accent-text)", bg: "var(--surface-2)" },
+  { key: "savoir",       label: "Savoir",       icon: "📚", color: "#1D7A91", bg: "#EEF7FA" },
+  { key: "savoir_faire", label: "Savoir-faire",  icon: "🛠️", color: "#1D7A91", bg: "#EEF7FA" },
+  { key: "savoir_etre",  label: "Savoir-être",   icon: "🤝", color: "#1D7A91", bg: "#EEF7FA" },
 ];
 
 const ETAT_COLORS = {
-  draft:     { bg: "var(--surface-2)", color: "var(--text-2)", label: "Brouillon" },
-  submitted: { bg: "var(--warn-bg)", color: "var(--warn-text)", label: "En attente" },
-  validated: { bg: "var(--success-bg)", color: "var(--success-text)", label: "Validé" },
-  rejected:  { bg: "var(--danger-bg)", color: "var(--danger-text)", label: "Rejeté" },
+  draft:     { bg: "#f1f5f9", color: "var(--text-2)", label: "Brouillon" },
+  submitted: { bg: "#FEF6E4", color: "#92400e", label: "En attente" },
+  validated: { bg: "#E8F5ED", color: "#065f46", label: "Validé" },
+  rejected:  { bg: "#FBE9E9", color: "#8B1A1A", label: "Rejeté" },
 };
 
 function EvalBadge({ val }) {
@@ -75,8 +75,8 @@ function CompRow({ comp, catalog, onSave, onDelete }) {
   if (editing) {
     return (
       <div style={{
-        padding: "10px 12px", background: "var(--warn-bg)", borderRadius: "10px",
-        border: "1.5px solid var(--warn-text)", marginBottom: "6px",
+        padding: "10px 12px", background: "#FEF6E4", borderRadius: "10px",
+        border: "1.5px solid #fcd34d", marginBottom: "6px",
       }}>
         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "8px" }}>
           <select value={type} onChange={e => setType(e.target.value)} style={selStyle}>
@@ -104,10 +104,10 @@ function CompRow({ comp, catalog, onSave, onDelete }) {
           </div>
         </div>
         <div style={{ display: "flex", gap: "7px" }}>
-          <button onClick={save} disabled={saving} style={btnStyle("#059669")}>
+          <button onClick={save} disabled={saving} style={btnStyle("#145C2B")}>
             {saving ? "…" : "✓ Sauv."}
           </button>
-          <button onClick={() => setEditing(false)} style={btnStyle("#64748b", "#f1f5f9")}>
+          <button onClick={() => setEditing(false)} style={btnStyle("#638899", "#f1f5f9")}>
             Annuler
           </button>
         </div>
@@ -119,7 +119,7 @@ function CompRow({ comp, catalog, onSave, onDelete }) {
     <div style={{
       display: "flex", alignItems: "center", gap: "8px",
       padding: "7px 10px", background: "var(--surface)", borderRadius: "9px",
-      border: "1px solid var(--border)", marginBottom: "5px",
+      border: "1px solid #EEF7FA", marginBottom: "5px",
     }}>
       <span style={{
         fontSize: "11px", fontWeight: 700, padding: "1px 7px", borderRadius: "5px",
@@ -138,7 +138,7 @@ function CompRow({ comp, catalog, onSave, onDelete }) {
             await http.patch(`/competences/item/${comp._id}/auto-eval`, { auto_eval: v });
             onSave();
           }}
-          style={{ background: "var(--danger-bg)", border: "none", borderRadius: "4px", color: "var(--danger-text)", cursor: "pointer", padding: "1px 5px", fontSize: "12px", fontWeight: 700 }}
+          style={{ background: "#FBE9E9", border: "none", borderRadius: "4px", color: "#8B1A1A", cursor: "pointer", padding: "1px 5px", fontSize: "12px", fontWeight: 700 }}
         >−</button>
         <button
           title="Augmenter auto-éval"
@@ -147,7 +147,7 @@ function CompRow({ comp, catalog, onSave, onDelete }) {
             await http.patch(`/competences/item/${comp._id}/auto-eval`, { auto_eval: v });
             onSave();
           }}
-          style={{ background: "var(--success-bg)", border: "none", borderRadius: "4px", color: "var(--success-text)", cursor: "pointer", padding: "1px 5px", fontSize: "12px", fontWeight: 700 }}
+          style={{ background: "#E8F5ED", border: "none", borderRadius: "4px", color: "#145C2B", cursor: "pointer", padding: "1px 5px", fontSize: "12px", fontWeight: 700 }}
         >+</button>
       </div>
 
@@ -170,12 +170,12 @@ function CompRow({ comp, catalog, onSave, onDelete }) {
 
       {/* Actions */}
       <button onClick={() => setEditing(true)} title="Modifier" style={{
-        background: "var(--accent-bg)", border: "none", borderRadius: "6px",
-        color: "var(--accent)", cursor: "pointer", padding: "3px 8px", fontSize: "13px",
+        background: "#EEF7FA", border: "none", borderRadius: "6px",
+        color: "#1D7A91", cursor: "pointer", padding: "3px 8px", fontSize: "13px",
       }}>✏️</button>
       <button onClick={del} disabled={deleting} title="Supprimer" style={{
-        background: "var(--danger-bg)", border: "none", borderRadius: "6px",
-        color: "var(--danger-text)", cursor: "pointer", padding: "3px 8px", fontSize: "13px",
+        background: "#FBE9E9", border: "none", borderRadius: "6px",
+        color: "#8B1A1A", cursor: "pointer", padding: "3px 8px", fontSize: "13px",
         opacity: deleting ? 0.5 : 1,
       }}>🗑</button>
     </div>
@@ -214,23 +214,23 @@ function AddCompForm({ ficheId, catalog, onAdded }) {
 
   return (
     <div style={{
-      padding: "14px 16px", background: "var(--success-bg)", borderRadius: "12px",
-      border: "1.5px dashed var(--success-text)", marginTop: "12px",
+      padding: "14px 16px", background: "#E8F5ED", borderRadius: "12px",
+      border: "1.5px dashed #A8D8E3", marginTop: "12px",
     }}>
-      <div style={{ fontWeight: 700, fontSize: "13px", color: "var(--success-text)", marginBottom: "10px" }}>
+      <div style={{ fontWeight: 700, fontSize: "13px", color: "#065f46", marginBottom: "10px" }}>
         ➕ Ajouter une compétence
       </div>
 
       <div style={{ display: "flex", gap: "6px", marginBottom: "8px" }}>
         <button onClick={() => setCatalogMode(true)} style={{
           padding: "3px 10px", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer",
-          background: catalogMode ? "var(--success-bg)" : "var(--surface-2)", color: catalogMode ? "var(--success-text)" : "var(--text-2)",
-          border: catalogMode ? "1px solid var(--success-text)" : "1px solid var(--border)",
+          background: catalogMode ? "#E8F5ED" : "#f1f5f9", color: catalogMode ? "#145C2B" : "#638899",
+          border: catalogMode ? "1px solid #A8D8E3" : "1px solid #DDD7C8",
         }}>Catalogue</button>
         <button onClick={() => setCatalogMode(false)} style={{
           padding: "3px 10px", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer",
-          background: !catalogMode ? "var(--success-bg)" : "var(--surface-2)", color: !catalogMode ? "var(--success-text)" : "var(--text-2)",
-          border: !catalogMode ? "1px solid var(--success-text)" : "1px solid var(--border)",
+          background: !catalogMode ? "#E8F5ED" : "#f1f5f9", color: !catalogMode ? "#145C2B" : "#638899",
+          border: !catalogMode ? "1px solid #A8D8E3" : "1px solid #DDD7C8",
         }}>Libre</button>
       </div>
 
@@ -255,11 +255,11 @@ function AddCompForm({ ficheId, catalog, onAdded }) {
       {catalogMode ? (
         <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", maxHeight: "120px", overflowY: "auto" }}>
           {filtered.length === 0
-            ? <span style={{ color: "var(--text-3)", fontSize: "12px" }}>Aucun item dans cette catégorie.</span>
+            ? <span style={{ color: "#aab4c3", fontSize: "12px" }}>Aucun item dans cette catégorie.</span>
             : filtered.map(item => (
               <button key={item._id} onClick={() => add(item.intitule)} disabled={adding} style={{
                 padding: "4px 10px", borderRadius: "999px", fontSize: "12px", fontWeight: 600,
-                background: "var(--surface)", color: "var(--success-text)", border: "1px solid var(--success-text)", cursor: "pointer",
+                background: "var(--surface)", color: "#145C2B", border: "1px solid #A8D8E3", cursor: "pointer",
               }}>+ {item.intitule}</button>
             ))
           }
@@ -273,7 +273,7 @@ function AddCompForm({ ficheId, catalog, onAdded }) {
             placeholder="Nom de la compétence…"
             style={{ flex: 1, ...inputStyle }}
           />
-          <button onClick={() => add()} disabled={adding} style={btnStyle("#059669")}>
+          <button onClick={() => add()} disabled={adding} style={btnStyle("#145C2B")}>
             {adding ? "…" : "+ Ajouter"}
           </button>
         </div>
@@ -328,9 +328,9 @@ function FicheCard({ item, catalog, onRefresh }) {
   return (
     <div style={{
       background: "var(--surface)", borderRadius: "14px",
-      border: `1px solid ${fiche.etat === "submitted" ? "var(--warn-text)" : "var(--border)"}`,
+      border: `1px solid ${fiche.etat === "submitted" ? "#fcd34d" : "#DDD7C8"}`,
       padding: "20px", marginBottom: "16px",
-      boxShadow: fiche.etat === "submitted" ? "0 4px 20px rgba(0,0,0,0.18)" : "0 2px 8px rgba(0,0,0,0.04)",
+      boxShadow: fiche.etat === "submitted" ? "0 4px 20px rgba(252,211,77,0.15)" : "0 2px 8px rgba(0,0,0,0.04)",
     }}>
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "14px" }}>
@@ -369,7 +369,7 @@ function FicheCard({ item, catalog, onRefresh }) {
                   {cat.icon} {cat.label} ({items.length})
                 </div>
                 {items.length === 0
-                  ? <span style={{ fontSize: "12px", color: "var(--text-3)" }}>—</span>
+                  ? <span style={{ fontSize: "12px", color: "#aab4c3" }}>—</span>
                   : items.map(comp => (
                     <CompRow key={comp._id} comp={comp} catalog={catalog} onSave={reload} />
                   ))
@@ -381,8 +381,8 @@ function FicheCard({ item, catalog, onRefresh }) {
           {/* Bouton ajouter */}
           <button onClick={() => setShowAdd(s => !s)} style={{
             padding: "7px 16px", borderRadius: "9px", fontSize: "13px", fontWeight: 700,
-            background: showAdd ? "var(--surface-2)" : "var(--success-bg)", color: showAdd ? "var(--text-2)" : "var(--success-text)",
-            border: "1px solid " + (showAdd ? "var(--border)" : "var(--success-text)"), cursor: "pointer", marginBottom: "4px",
+            background: showAdd ? "#f1f5f9" : "#E8F5ED", color: showAdd ? "#638899" : "#065f46",
+            border: "1px solid " + (showAdd ? "#DDD7C8" : "#A8D8E3"), cursor: "pointer", marginBottom: "4px",
           }}>{showAdd ? "✕ Fermer" : "➕ Ajouter une compétence"}</button>
 
           {showAdd && (
@@ -411,14 +411,14 @@ function FicheCard({ item, catalog, onRefresh }) {
               <div style={{ display: "flex", gap: "10px" }}>
                 <button onClick={validate} disabled={loading} style={{
                   flex: 1, padding: "10px", borderRadius: "9px",
-                  background: "linear-gradient(135deg,#10b981,#059669)",
+                  background: "linear-gradient(135deg,#145C2B,#145C2B)",
                   color: "#fff", border: "none", fontWeight: 700,
                   cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1,
                 }}>✅ Valider la fiche</button>
                 <button onClick={reject} disabled={loading} style={{
                   flex: 1, padding: "10px", borderRadius: "9px",
-                  background: "var(--danger-bg)", color: "var(--danger-text)",
-                  border: "1px solid var(--danger-text)", fontWeight: 700,
+                  background: "#FBE9E9", color: "#8B1A1A",
+                  border: "1px solid #fecaca", fontWeight: 700,
                   cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1,
                 }}>❌ Rejeter</button>
               </div>
@@ -487,8 +487,8 @@ export default function ManagerSkillApproval() {
           <button key={tab.val} onClick={() => setFilter(tab.val)} style={{
             padding: "7px 16px", borderRadius: "9px", cursor: "pointer",
             fontWeight: 600, fontSize: "13px", border: "none",
-            background: filter === tab.val ? "var(--accent)" : "var(--surface-2)",
-            color: filter === tab.val ? "#fff" : "var(--text-2)",
+            background: filter === tab.val ? "#1D7A91" : "#f1f5f9",
+            color: filter === tab.val ? "#fff" : "#638899",
           }}>{tab.label}</button>
         ))}
       </div>

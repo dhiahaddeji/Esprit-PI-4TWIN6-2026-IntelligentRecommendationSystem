@@ -16,7 +16,8 @@ export const CTX_LABEL: Record<string, string> = {
 };
 
 // Minimum similarity score to count a skill as matching
-const SIMILARITY_THRESHOLD = 0.72;
+// Kept at 0.62 to accommodate trigram fallback when OpenAI embeddings are unavailable
+const SIMILARITY_THRESHOLD = 0.62;
 
 @Injectable()
 export class MatchingService {

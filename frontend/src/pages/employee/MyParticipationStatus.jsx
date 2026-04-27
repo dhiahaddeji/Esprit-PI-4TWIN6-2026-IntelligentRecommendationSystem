@@ -60,15 +60,15 @@ export default function MyParticipationStatus() {
             </button>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}>
-            <span style={legendDot("var(--success-text)")} /> Accepte
+            <span style={legendDot("#22c55e")} /> Accepte
             <span style={{ width: 6 }} />
-            <span style={legendDot("var(--danger-text)")} /> Refuse
+            <span style={legendDot("#ef4444")} /> Refuse
           </div>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 8, marginTop: 14 }}>
           {weekdays().map((d) => (
-            <div key={d} style={{ fontSize: 11, letterSpacing: 0.6, textTransform: "uppercase", color: "var(--text-3)" }}>
+            <div key={d} style={{ fontSize: 11, letterSpacing: 0.6, textTransform: "uppercase", color: "#6b7280" }}>
               {d}
             </div>
           ))}
@@ -81,7 +81,7 @@ export default function MyParticipationStatus() {
                 key={key}
                 style={dayCell({ muted: !cell.inMonth, today: isToday })}
               >
-                <div style={{ fontSize: 12, fontWeight: 700, color: cell.inMonth ? "var(--text-1)" : "var(--text-3)" }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: cell.inMonth ? "#0f172a" : "#cbd5f5" }}>
                   {cell.date ? cell.date.getDate() : ""}
                 </div>
                 {events.slice(0, 2).map((ev, i) => (
@@ -90,7 +90,7 @@ export default function MyParticipationStatus() {
                   </div>
                 ))}
                 {events.length > 2 && (
-                  <div style={{ fontSize: 10, color: "var(--text-3)" }}>+{events.length - 2} autre(s)</div>
+                  <div style={{ fontSize: 10, color: "#64748b" }}>+{events.length - 2} autre(s)</div>
                 )}
               </div>
             );
@@ -120,7 +120,7 @@ export default function MyParticipationStatus() {
               </div>
 
               {p.status === "DECLINED" && (
-                <div style={{ marginTop: 10, color: "var(--danger-text)" }}>
+                <div style={{ marginTop: 10, color: "#8B1A1A" }}>
                   <b>Justification:</b> {p.justification || "—"}
                 </div>
               )}
@@ -133,15 +133,14 @@ export default function MyParticipationStatus() {
 }
 
 function card() {
-  return { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: 16 };
+  return { background: "var(--surface)", border: "1px solid #eef0f4", borderRadius: 16, padding: 16 };
 }
-
 function pill(status) {
   const map = {
-    ACCEPTED: { bg: "var(--success-bg)", bd: "var(--success-text)", tx: "var(--success-text)" },
-    DECLINED: { bg: "var(--danger-bg)", bd: "var(--danger-text)", tx: "var(--danger-text)" },
+    ACCEPTED: { bg: "#ecfdf3", bd: "#abefc6", tx: "#067647" },
+    DECLINED: { bg: "#FDF8EE", bd: "#F28080", tx: "#8B1A1A" },
   };
-  const s = map[status] || { bg: "var(--surface-2)", bd: "var(--border)", tx: "var(--text-2)" };
+  const s = map[status] || { bg: "#EEF7FA", bd: "#eef0f4", tx: "#344054" };
   return { fontSize: 12, padding: "4px 10px", borderRadius: 999, border: `1px solid ${s.bd}`, background: s.bg, fontWeight: 900, color: s.tx };
 }
 
@@ -150,18 +149,17 @@ function calendarWrap() {
     marginTop: 16,
     borderRadius: 18,
     padding: 18,
-    border: "1px solid var(--border)",
-    background: "linear-gradient(135deg, var(--surface-2), var(--surface))",
-    boxShadow: "var(--shadow-lg)",
+    border: "1px solid #dbeafe",
+    background: "linear-gradient(135deg, #eff6ff, #f8fafc)",
+    boxShadow: "0 8px 28px rgba(15, 23, 42, 0.08)",
     fontFamily: "Sora, 'Space Grotesk', 'Poppins', sans-serif",
   };
 }
 
 function navBtn() {
   return {
-    border: "1px solid var(--border)",
-    background: "var(--surface)",
-    color: "var(--text-1)",
+    border: "1px solid #dbeafe",
+    background: "#fff",
     borderRadius: 10,
     padding: "6px 10px",
     fontWeight: 800,
@@ -185,9 +183,9 @@ function dayCell({ muted, today }) {
     minHeight: 78,
     padding: 8,
     borderRadius: 12,
-    border: "1px solid var(--border)",
-    background: muted ? "var(--surface-2)" : "var(--surface)",
-    outline: today ? "2px solid var(--accent)" : "none",
+    border: "1px solid #e2e8f0",
+    background: muted ? "#f8fafc" : "#ffffff",
+    outline: today ? "2px solid #2563eb" : "none",
     animation: "calIn 0.45s ease",
     display: "grid",
     gap: 4,
@@ -196,10 +194,10 @@ function dayCell({ muted, today }) {
 
 function eventPill(status) {
   const map = {
-    ACCEPTED: { bg: "var(--success-bg)", tx: "var(--success-text)" },
-    DECLINED: { bg: "var(--danger-bg)", tx: "var(--danger-text)" },
+    ACCEPTED: { bg: "#dcfce7", tx: "#166534" },
+    DECLINED: { bg: "#fee2e2", tx: "#991b1b" },
   };
-  const s = map[status] || { bg: "var(--surface-2)", tx: "var(--text-2)" };
+  const s = map[status] || { bg: "#e2e8f0", tx: "#334155" };
   return {
     fontSize: 10,
     padding: "2px 6px",

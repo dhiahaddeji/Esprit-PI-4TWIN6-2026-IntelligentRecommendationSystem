@@ -16,7 +16,7 @@ export class MailService {
     });
 
     // Vérification de la connexion SMTP au démarrage
-    this.transporter.verify((err) => {
+    this.transporter.verify((err: any) => {
       if (err) {
         this.logger.error(`❌ SMTP non connecté: ${err.message}`);
         this.logger.error(`   EMAIL_USER=${process.env.EMAIL_USER} | EMAIL_PASS=${process.env.EMAIL_PASS ? 'SET' : 'MISSING'}`);
@@ -36,7 +36,7 @@ export class MailService {
         text: 'Si vous lisez ceci, la configuration email fonctionne correctement.',
       });
       return { success: true };
-    } catch (err) {
+    } catch (err: any) {
       return { success: false, error: err.message };
     }
   }
@@ -99,43 +99,50 @@ export class MailService {
         html,
       });
       this.logger.log(`Email envoyé à ${opts.to}`);
-    } catch (err) {
+    } catch (err: any) {
       this.logger.error(`Échec envoi email à ${opts.to}: ${err.message}`);
       // Ne pas faire planter la création de compte si l'email échoue
     }
   }
 
-  async sendPasswordResetEmail(opts: {
+  /**
+   * Envoie un email quand un utilisateur est suspendu par le SuperAdmin
+   */
+  async sendAccountSuspendedEmail(opts: {
     to: string;
     name: string;
-    resetUrl: string;
-    expiresInMinutes: number;
-  }) {
+    reason?: string;        // Optionnel : tu peux donner une raison
+  }): Promise<void> {
     const html = `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
-        <div style="background:#0b2b4b;padding:28px 32px;">
+        <div style="background:#b91c1c;padding:28px 32px;">
           <h1 style="color:#ffffff;margin:0;font-size:22px;">🛡️ AssurReco</h1>
-          <p style="color:#94a3b8;margin:4px 0 0;">Réinitialisation de mot de passe</p>
+          <p style="color:#fed7aa;margin:4px 0 0;">Compte suspendu</p>
         </div>
+        
         <div style="padding:32px;">
-          <h2 style="color:#0f172a;margin-top:0;">Bonjour ${opts.name || 'Utilisateur'},</h2>
+          <h2 style="color:#0f172a;margin-top:0;">Bonjour ${opts.name},</h2>
+          
+          <div style="background:#fee2e2;border:1px solid #fecaca;border-radius:8px;padding:20px;margin:24px 0;">
+            <p style="color:#b91c1c;font-size:18px;margin:0 0 12px;">
+              ⚠️ Votre compte a été suspendu
+            </p>
+            <p style="color:#334155;">
+              Votre accès à la plateforme AssurReco a été désactivé par un Super Administrateur.
+            </p>
+            ${opts.reason ? `
+            <p style="margin:16px 0 0;color:#334155;">
+              <strong>Raison :</strong> ${opts.reason}
+            </p>` : ''}
+          </div>
+
           <p style="color:#334155;">
-            Nous avons reçu une demande de réinitialisation de votre mot de passe.
+            Si vous pensez qu'il s'agit d'une erreur, veuillez contacter l'administrateur de la plateforme.
           </p>
 
-          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px;margin:24px 0;">
-            <p style="margin:0 0 8px;color:#64748b;font-size:13px;text-transform:uppercase;letter-spacing:.5px;">Lien de réinitialisation</p>
-            <a href="${opts.resetUrl}" style="color:#0b2b4b;font-weight:700;">Réinitialiser mon mot de passe</a>
-          </div>
-
-          <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:16px;margin-bottom:24px;">
-            <p style="margin:0;color:#92400e;">
-              ⏰ <strong>Ce lien expire dans ${opts.expiresInMinutes} minutes.</strong>
-            </p>
-          </div>
-
-          <p style="color:#94a3b8;font-size:12px;">
-            Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.
+          <p style="margin-top:32px;color:#94a3b8;font-size:12px;">
+            Cordialement,<br>
+            L'équipe AssurReco
           </p>
         </div>
       </div>
@@ -145,12 +152,13 @@ export class MailService {
       await this.transporter.sendMail({
         from: process.env.EMAIL_FROM || `"AssurReco" <${process.env.EMAIL_USER}>`,
         to: opts.to,
-        subject: '🔐 Réinitialiser votre mot de passe',
+        subject: '⚠️ Votre compte AssurReco a été suspendu',
         html,
       });
-      this.logger.log(`Email de réinitialisation envoyé à ${opts.to}`);
-    } catch (err) {
-      this.logger.error(`Échec envoi email reset à ${opts.to}: ${err.message}`);
+      this.logger.log(`Email de suspension envoyé à ${opts.to}`);
+    } catch (err: any) {
+      this.logger.error(`Échec envoi email suspension à ${opts.to}: ${err.message}`);
+      // On ne fait pas planter l'action si l'email échoue
     }
   }
 }

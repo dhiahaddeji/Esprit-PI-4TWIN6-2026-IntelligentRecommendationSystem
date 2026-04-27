@@ -12,7 +12,7 @@ export interface CompetenceRequise {
 
 @Schema({ timestamps: true, collection: 'activities' })
 export class Activity {
-  @Prop({ required: true }) title: string;
+  @Prop({ required: true }) title!: string;
   @Prop() description?: string;
   @Prop() date?: string;
   @Prop() startDate?: Date;
@@ -20,34 +20,36 @@ export class Activity {
   @Prop() location?: string;
   @Prop() duration?: string; // ex: "2 jours"
 
-  @Prop({ default: 0 }) seats: number;
+  @Prop({ default: 0 }) seats!: number;
 
   // Type d'activité
   @Prop({ default: 'formation', enum: ['formation', 'certification', 'projet', 'mission', 'audit'] })
-  type: string;
+  type!: string;
 
   // Contexte de priorisation IA
   @Prop({ default: 'expertise', enum: ['upskilling', 'consolidation', 'expertise'] })
-  prioritization: string;
+  prioritization!: string;
 
-  @Prop({ required: true }) managerId: string;
-  @Prop({ required: true }) createdBy: string;
+  @Prop({ required: true }) managerId!: string;
+  @Prop({ required: true }) createdBy!: string;
 
   @Prop({
     default: 'DRAFT',
-    enum: ['DRAFT', 'AI_SUGGESTED', 'HR_VALIDATED', 'SENT_TO_MANAGER', 'MANAGER_CONFIRMED', 'NOTIFIED'],
+    enum: ['DRAFT', 'AI_SUGGESTED', 'HR_VALIDATED', 'SENT_TO_MANAGER', 'MANAGER_CONFIRMED', 'NOTIFIED', 'MANAGER_REFUSED', 'HR_REGEN_NEEDED'],
   })
-  status: string;
+  status!: string;
+
+  @Prop() refusalReason?: string;
 
   @Prop({ type: [String], default: [] })
-  participants: string[];
+  participants!: string[];
 
   /**
    * Compétences requises pour cette activité — utilisées par l'IA pour le matching
    * Chaque item: { intitule, type, niveau_min (0-4) }
    */
   @Prop({ type: [Object], default: [] })
-  competences_requises: CompetenceRequise[];
+  competences_requises!: CompetenceRequise[];
 }
 
 export const ActivitySchema = SchemaFactory.createForClass(Activity);

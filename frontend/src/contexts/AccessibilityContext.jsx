@@ -13,6 +13,21 @@ export function AccessibilityProvider({ children }) {
     Number(localStorage.getItem("fontSize")) || 16
   );
 
+  // dyslexic font
+  const [dyslexicFont, setDyslexicFont] = useState(
+    localStorage.getItem("dyslexicFont") === "true"
+  );
+
+  // high contrast
+  const [highContrast, setHighContrast] = useState(
+    localStorage.getItem("highContrast") === "true"
+  );
+
+  // reduce motion
+  const [reduceMotion, setReduceMotion] = useState(
+    localStorage.getItem("reduceMotion") === "true"
+  );
+
   // appliquer le thème
   useEffect(() => {
     localStorage.setItem("theme", theme);
@@ -25,14 +40,49 @@ export function AccessibilityProvider({ children }) {
     document.documentElement.style.fontSize = `${fontSize}px`;
   }, [fontSize]);
 
+  // appliquer police dyslexique
+  useEffect(() => {
+    localStorage.setItem("dyslexicFont", dyslexicFont);
+    if (dyslexicFont) {
+      document.body.classList.add("font-dyslexic");
+    } else {
+      document.body.classList.remove("font-dyslexic");
+    }
+  }, [dyslexicFont]);
+
+  // appliquer contrast & animations (simples exemples: vous pouvez ajouter la logique CSS si souhaitée)
+  useEffect(() => {
+    localStorage.setItem("highContrast", highContrast);
+    if (highContrast) {
+      document.body.classList.add("high-contrast");
+    } else {
+      document.body.classList.remove("high-contrast");
+    }
+  }, [highContrast]);
+
+  useEffect(() => {
+    localStorage.setItem("reduceMotion", reduceMotion);
+    if (reduceMotion) {
+      document.body.classList.add("reduce-motion");
+    } else {
+      document.body.classList.remove("reduce-motion");
+    }
+  }, [reduceMotion]);
+
   const value = useMemo(() => {
     return {
       theme,
       setTheme,
       fontSize,
       setFontSize,
+      dyslexicFont,
+      setDyslexicFont,
+      highContrast,
+      setHighContrast,
+      reduceMotion,
+      setReduceMotion,
     };
-  }, [theme, fontSize]);
+  }, [theme, fontSize, dyslexicFont, highContrast, reduceMotion]);
 
   return (
     <AccessibilityContext.Provider value={value}>

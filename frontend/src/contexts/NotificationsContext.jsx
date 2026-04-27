@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
-import http from "../api/http";
 
 const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
@@ -8,16 +7,22 @@ const NotificationsContext = createContext(null);
 
 // ── Icon / color per notification type ───────────────────────────────────────
 export const NOTIF_META = {
-  skill_submitted:     { icon: "📋", color: "#3b6fd4", label: "Compétences" },
-  skill_validated:     { icon: "✅", color: "#16a34a", label: "Compétences" },
-  skill_rejected:      { icon: "⚠️", color: "#dc2626", label: "Compétences" },
-  cv_import:           { icon: "📄", color: "#f47c20", label: "CV" },
-  new_message:         { icon: "💬", color: "#7c3aed", label: "Message" },
-  activity_invitation: { icon: "🎯", color: "#0891b2", label: "Activité" },
-  activity_response:   { icon: "📩", color: "#059669", label: "Activité" },
+  skill_submitted:     { icon: "📋", color: "#1D7A91", label: "Compétences" },
+  skill_validated:     { icon: "✅", color: "#145C2B", label: "Compétences" },
+  skill_rejected:      { icon: "⚠️", color: "#8B1A1A", label: "Compétences" },
+  cv_import:           { icon: "📄", color: "#C9952A", label: "CV" },
+  new_message:         { icon: "💬", color: "#1D7A91", label: "Message" },
+  activity_invitation: { icon: "🎯", color: "#1D7A91", label: "Activité" },
+  activity_response:   { icon: "📩", color: "#145C2B", label: "Activité" },
+  activity_refused:    { icon: "🚫", color: "#8B1A1A", label: "Refus" },
+  list_refused:        { icon: "⚠️", color: "#7A4A00", label: "Regénération" },
 };
 
 function getToken() { return localStorage.getItem("access_token"); }
+function getHeaders() {
+  const t = getToken();
+  return t ? { Authorization: `Bearer ${t}` } : {};
+}
 
 export function NotificationsProvider({ children }) {
   const [notifications, setNotifications] = useState([]);
@@ -28,13 +33,21 @@ export function NotificationsProvider({ children }) {
 
   // ── Load notifications from REST ──────────────────────────────────────
   const loadNotifications = () => {
-    http
-      .get("/notifications")
-      .then((res) => {
-        const data = res?.data;
+    const token = getToken();
+    if (!token) return;               // no token → skip silently
+    fetch(`${API}/notifications`, { headers: getHeaders() })
+      .then((r) => {
+        if (r.status === 401) {
+          // Token expired / invalid — purge it so tick() cleans up
+          localStorage.removeItem("access_token");
+          return null;
+        }
+        return r.ok ? r.json() : null;
+      })
+      .then((data) => {
         if (!data) return;
         setNotifications(data.items || []);
-        setUnread(data.unread || 0);
+        setUnread(data.unread  || 0);
       })
       .catch(() => {});
   };
@@ -75,7 +88,10 @@ export function NotificationsProvider({ children }) {
 
   // ── Watch for auth changes every 2s and reconnect as needed ──────────
   useEffect(() => {
+    let mounted = true;
+
     const tick = () => {
+      if (!mounted) return;
       const token = getToken();
 
       // Token appeared (login)
@@ -103,9 +119,14 @@ export function NotificationsProvider({ children }) {
       }
     };
 
-    tick(); // Run immediately on mount
-    const id = setInterval(tick, 2000);
+    // Small delay so React StrictMode's cleanup/remount cycle doesn't
+    // abort a socket mid-handshake and log a WebSocket closed error.
+    const init = setTimeout(tick, 100);
+    const id   = setInterval(tick, 2000);
+
     return () => {
+      mounted = false;
+      clearTimeout(init);
       clearInterval(id);
       socketRef.current?.removeAllListeners();
       socketRef.current?.disconnect();
@@ -124,14 +145,14 @@ export function NotificationsProvider({ children }) {
 
   // ── Mark one read ─────────────────────────────────────────────────────
   const markRead = (notifId) => {
-    http.patch(`/notifications/${notifId}/read`).catch(() => {});
+    fetch(`${API}/notifications/${notifId}/read`, { method: "PATCH", headers: getHeaders() }).catch(() => {});
     setNotifications((prev) => prev.map((n) => (n._id === notifId ? { ...n, read: true } : n)));
     setUnread((u) => Math.max(0, u - 1));
   };
 
   // ── Mark all read ─────────────────────────────────────────────────────
   const markAllRead = () => {
-    http.patch("/notifications/read-all").catch(() => {});
+    fetch(`${API}/notifications/read-all`, { method: "PATCH", headers: getHeaders() }).catch(() => {});
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     setUnread(0);
   };
@@ -144,7 +165,7 @@ export function NotificationsProvider({ children }) {
       {toasts.length > 0 && (
         <div style={toastContainerStyle}>
           {toasts.map((t) => {
-            const meta = NOTIF_META[t.type] || { icon: "🔔", color: "#3b6fd4" };
+            const meta = NOTIF_META[t.type] || { icon: "🔔", color: "#1D7A91" };
             return (
               <div
                 key={t._toastId}
@@ -188,7 +209,7 @@ const toastContainerStyle = {
 const toastStyle = {
   display: "flex", alignItems: "flex-start", gap: "12px",
   background: "var(--surface, #fff)", border: "1px solid var(--border, #e5e7eb)",
-  borderLeft: "4px solid #3b6fd4", borderRadius: "12px",
+  borderLeft: "4px solid #1D7A91", borderRadius: "12px",
   padding: "14px 16px", boxShadow: "0 8px 24px rgba(0,0,0,0.14)",
   cursor: "pointer", animation: "toastIn 0.25s ease", pointerEvents: "auto",
 };

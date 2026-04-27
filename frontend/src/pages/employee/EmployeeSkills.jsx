@@ -3,24 +3,24 @@ import { useState, useEffect } from "react";
 import http from "../../api/http";
 
 const EVAL_LEVELS = [
-  { val: 0, label: "Pas de compétence", color: "var(--text-3)", bg: "var(--surface-2)" },
-  { val: 1, label: "Notions",           color: "#d97706", bg: "#fef3c7" },
-  { val: 2, label: "Pratique",          color: "#2563eb", bg: "#dbeafe" },
-  { val: 3, label: "Maîtrise",          color: "#7c3aed", bg: "#f5f3ff" },
-  { val: 4, label: "Expert",            color: "#059669", bg: "#d1fae5" },
+  { val: 0, label: "Pas de compétence", color: "var(--text-3)", bg: "#f1f5f9" },
+  { val: 1, label: "Notions",           color: "#C9952A", bg: "#FEF6E4" },
+  { val: 2, label: "Pratique",          color: "#155B6E", bg: "#D6EEF3" },
+  { val: 3, label: "Maîtrise",          color: "#1D7A91", bg: "#EEF7FA" },
+  { val: 4, label: "Expert",            color: "#145C2B", bg: "#E8F5ED" },
 ];
 
 const CATEGORIES = [
-  { key: "savoir",       label: "Savoir",       icon: "📚", color: "#3b6fd4", bg: "#eff6ff", desc: "Connaissances théoriques" },
-  { key: "savoir_faire", label: "Savoir-faire",  icon: "🛠️", color: "#0891b2", bg: "#ecfeff", desc: "Compétences pratiques" },
-  { key: "savoir_etre",  label: "Savoir-être",   icon: "🤝", color: "#7c3aed", bg: "#f5f3ff", desc: "Compétences comportementales" },
+  { key: "savoir",       label: "Savoir",       icon: "📚", color: "#1D7A91", bg: "#EEF7FA", desc: "Connaissances théoriques" },
+  { key: "savoir_faire", label: "Savoir-faire",  icon: "🛠️", color: "#1D7A91", bg: "#EEF7FA", desc: "Compétences pratiques" },
+  { key: "savoir_etre",  label: "Savoir-être",   icon: "🤝", color: "#1D7A91", bg: "#EEF7FA", desc: "Compétences comportementales" },
 ];
 
 const ETAT_STYLE = {
-  draft:     { bg: "var(--surface-2)", color: "var(--text-2)", label: "Brouillon" },
-  submitted: { bg: "var(--warn-bg)", color: "var(--warn-text)", label: "En attente de validation" },
-  validated: { bg: "var(--success-bg)", color: "var(--success-text)", label: "Validé ✅" },
-  rejected:  { bg: "var(--danger-bg)", color: "var(--danger-text)", label: "Rejeté ❌" },
+  draft:     { bg: "#f1f5f9", color: "var(--text-2)", label: "Brouillon" },
+  submitted: { bg: "#FEF6E4", color: "#92400e", label: "En attente de validation" },
+  validated: { bg: "#E8F5ED", color: "#065f46", label: "Validé ✅" },
+  rejected:  { bg: "#FBE9E9", color: "#8B1A1A", label: "Rejeté ❌" },
 };
 
 function EvalBadge({ val }) {
@@ -59,7 +59,7 @@ function CompRow({ comp, onUpdate }) {
     <div style={{
       display: "flex", alignItems: "center", gap: "8px",
       padding: "8px 12px", borderRadius: "10px",
-      background: "var(--surface-2)", border: "1px solid var(--border)", marginBottom: "6px",
+      background: "#EEF7FA", border: "1px solid var(--border)", marginBottom: "6px",
     }}>
       <span style={{
         fontSize: "11px", fontWeight: 700, padding: "1px 7px", borderRadius: "5px",
@@ -77,8 +77,8 @@ function CompRow({ comp, onUpdate }) {
             {EVAL_LEVELS.map(l => <option key={l.val} value={l.val}>{l.label}</option>)}
           </select>
           <button onClick={saveEval} disabled={saving} style={{
-            background: "var(--success-bg)", border: "none", borderRadius: "6px",
-            color: "var(--success-text)", cursor: "pointer", padding: "3px 8px", fontSize: "12px", fontWeight: 700,
+            background: "#E8F5ED", border: "none", borderRadius: "6px",
+            color: "#145C2B", cursor: "pointer", padding: "3px 8px", fontSize: "12px", fontWeight: 700,
           }}>{saving ? "…" : "✓"}</button>
           <button onClick={() => { setEditing(false); setAutoEval(comp.auto_eval); }} style={{
             background: "var(--bg)", border: "none", borderRadius: "6px",
@@ -96,7 +96,7 @@ function CompRow({ comp, onUpdate }) {
           </div>
           {managerEval !== null && (
             <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <span style={{ fontSize: "11px", color: "var(--success-text)" }}>✓ Manager :</span>
+              <span style={{ fontSize: "11px", color: "#145C2B" }}>✓ Manager :</span>
               <EvalBadge val={managerEval} />
             </div>
           )}
@@ -133,10 +133,10 @@ function AddCompForm({ catalog, onAdded, onCancel }) {
 
   return (
     <div style={{
-      padding: "16px 18px", background: "var(--success-bg)", borderRadius: "14px",
-      border: "1.5px dashed var(--success-text)", marginBottom: "20px",
+      padding: "16px 18px", background: "#E8F5ED", borderRadius: "14px",
+      border: "1.5px dashed #A8D8E3", marginBottom: "20px",
     }}>
-      <div style={{ fontWeight: 700, fontSize: "14px", color: "var(--success-text)", marginBottom: "12px" }}>
+      <div style={{ fontWeight: 700, fontSize: "14px", color: "#065f46", marginBottom: "12px" }}>
         ➕ Ajouter une nouvelle compétence
       </div>
 
@@ -145,9 +145,9 @@ function AddCompForm({ catalog, onAdded, onCancel }) {
         {[true, false].map(mode => (
           <button key={String(mode)} onClick={() => setCatalogMode(mode)} style={{
             padding: "4px 12px", borderRadius: "7px", fontSize: "12px", fontWeight: 600, cursor: "pointer",
-            background: catalogMode === mode ? "var(--success-bg)" : "var(--surface-2)",
-            color: catalogMode === mode ? "var(--success-text)" : "var(--text-2)",
-            border: catalogMode === mode ? "1px solid var(--success-text)" : "1px solid var(--border)",
+            background: catalogMode === mode ? "#E8F5ED" : "#f1f5f9",
+            color: catalogMode === mode ? "#145C2B" : "#638899",
+            border: catalogMode === mode ? "1px solid #A8D8E3" : "1px solid #DDD7C8",
           }}>{mode ? "Depuis le catalogue" : "Saisie libre"}</button>
         ))}
       </div>
@@ -164,11 +164,11 @@ function AddCompForm({ catalog, onAdded, onCancel }) {
       {catalogMode ? (
         <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", maxHeight: "150px", overflowY: "auto" }}>
           {filteredCatalog.length === 0
-            ? <span style={{ color: "var(--text-3)", fontSize: "13px" }}>Aucun item disponible.</span>
+            ? <span style={{ color: "#aab4c3", fontSize: "13px" }}>Aucun item disponible.</span>
             : filteredCatalog.map(item => (
               <button key={item._id} onClick={() => add(item.intitule)} disabled={adding} style={{
                 padding: "5px 12px", borderRadius: "999px", fontSize: "12px", fontWeight: 600,
-                background: "var(--surface)", color: "var(--success-text)", border: "1px solid var(--success-text)", cursor: "pointer",
+                background: "var(--surface)", color: "#145C2B", border: "1px solid #A8D8E3", cursor: "pointer",
               }}>+ {item.intitule}</button>
             ))
           }
@@ -183,7 +183,7 @@ function AddCompForm({ catalog, onAdded, onCancel }) {
             style={{ flex: 1, ...inputFieldStyle }}
           />
           <button onClick={() => add()} disabled={adding} style={{
-            padding: "8px 16px", background: "var(--success-text)", color: "#fff",
+            padding: "8px 16px", background: "#145C2B", color: "#fff",
             border: "none", borderRadius: "9px", cursor: "pointer", fontWeight: 700,
           }}>{adding ? "…" : "+ Ajouter"}</button>
         </div>
@@ -245,31 +245,31 @@ function CvImportBanner({ onImported }) {
     setData(null);
   };
 
-  const typeColors = { savoir: "#3b6fd4", savoir_faire: "#0891b2", savoir_etre: "#7c3aed" };
+  const typeColors = { savoir: "#1D7A91", savoir_faire: "#1D7A91", savoir_etre: "#1D7A91" };
   const typeLabels = { savoir: "📚 Savoir", savoir_faire: "🛠️ Savoir-faire", savoir_etre: "🤝 Savoir-être" };
 
   return (
     <div style={{
-      background: "linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%)",
-      border: "1.5px solid var(--border)", borderRadius: 16,
+      background: "linear-gradient(135deg, #EEF7FA 0%, #EEF7FA 100%)",
+      border: "1.5px solid #c4b5fd", borderRadius: 16,
       padding: "20px 24px", marginBottom: 24,
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
             <span style={{ fontSize: 20 }}>🤖</span>
-            <span style={{ fontWeight: 800, fontSize: 15, color: "var(--text-1)" }}>
+            <span style={{ fontWeight: 800, fontSize: 15, color: "#1D7A91" }}>
               Compétences extraites de votre CV
               {data.mode === "openai" ? " · OpenAI GPT-4o" : " · Analyse locale"}
             </span>
           </div>
-          <p style={{ margin: 0, fontSize: 12, color: "var(--text-2)", fontStyle: "italic" }}>
+          <p style={{ margin: 0, fontSize: 12, color: "#155B6E", fontStyle: "italic" }}>
             {data.summary}
           </p>
         </div>
         <button onClick={dismiss} style={{
           background: "none", border: "none", cursor: "pointer",
-          color: "var(--text-3)", fontSize: 18, lineHeight: 1, padding: "0 4px",
+          color: "#638899", fontSize: 18, lineHeight: 1, padding: "0 4px",
         }} title="Ignorer">×</button>
       </div>
 
@@ -280,15 +280,15 @@ function CvImportBanner({ onImported }) {
             <label key={i} style={{
               display: "flex", alignItems: "center", gap: 10, cursor: "pointer",
               padding: "7px 12px", borderRadius: 9,
-              background: checked ? "var(--info-bg)" : "var(--surface)",
-              border: `1px solid ${checked ? "var(--accent)" : "var(--border)"}`,
+              background: checked ? "rgba(124,58,237,0.08)" : "rgba(255,255,255,0.6)",
+              border: `1px solid ${checked ? "#A8D8E3" : "transparent"}`,
               transition: "all 0.15s",
             }}>
               <input
                 type="checkbox"
                 checked={checked}
                 onChange={() => toggleSkill(i)}
-                style={{ accentColor: "var(--accent)", width: 15, height: 15, cursor: "pointer" }}
+                style={{ accentColor: "#1D7A91", width: 15, height: 15, cursor: "pointer" }}
               />
               <span style={{
                 fontSize: 11, fontWeight: 700, padding: "1px 7px", borderRadius: 999,
@@ -307,7 +307,7 @@ function CvImportBanner({ onImported }) {
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
         <button onClick={importSelected} disabled={importing || selected.length === 0} style={{
           padding: "9px 20px", borderRadius: 10, border: "none",
-          background: selected.length === 0 ? "var(--border)" : "linear-gradient(135deg,#7c3aed,#6d28d9)",
+          background: selected.length === 0 ? "var(--border)" : "linear-gradient(135deg,#1D7A91,#155B6E)",
           color: "#fff", fontWeight: 700, fontSize: 13,
           cursor: (importing || selected.length === 0) ? "not-allowed" : "pointer",
           opacity: importing ? 0.7 : 1,
@@ -315,8 +315,8 @@ function CvImportBanner({ onImported }) {
           {importing ? "Import en cours…" : `⬇️ Importer ${selected.length} compétence(s)`}
         </button>
         <button onClick={() => setSelected(data.skills.map((_, i) => i))} style={{
-          padding: "7px 14px", borderRadius: 9, border: "1px solid var(--accent)",
-          background: "transparent", color: "var(--accent)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+          padding: "7px 14px", borderRadius: 9, border: "1px solid #A8D8E3",
+          background: "transparent", color: "#1D7A91", fontSize: 12, fontWeight: 600, cursor: "pointer",
         }}>Tout sélectionner</button>
         <button onClick={() => setSelected([])} style={{
           padding: "7px 14px", borderRadius: 9, border: "1px solid var(--border)",
@@ -427,8 +427,8 @@ export default function EmployeeSkills() {
       {msg && (
         <div style={{
           padding: "12px 16px", borderRadius: "10px", marginBottom: "20px",
-          background: msg.type === "success" ? "var(--success-bg)" : "var(--danger-bg)",
-          color: msg.type === "success" ? "var(--success-text)" : "var(--danger-text)",
+          background: msg.type === "success" ? "#E8F5ED" : "#FBE9E9",
+          color: msg.type === "success" ? "#065f46" : "#8B1A1A",
           fontWeight: 600, fontSize: "14px",
         }}>{msg.text}</div>
       )}
@@ -436,7 +436,7 @@ export default function EmployeeSkills() {
       {ficheEtat === "rejected" && fiche?.rejection_note && (
         <div style={{
           padding: "12px 16px", borderRadius: "10px", marginBottom: "20px",
-          background: "var(--danger-bg)", color: "var(--danger-text)", fontSize: "14px",
+          background: "#FBE9E9", color: "#8B1A1A", fontSize: "14px",
         }}>
           <strong>Note du manager :</strong> {fiche.rejection_note}
         </div>
@@ -471,19 +471,19 @@ export default function EmployeeSkills() {
             <div style={{ display: "flex", gap: "8px" }}>
               <button onClick={() => { setShowAdd(s => !s); }} style={{
                 padding: "7px 14px", borderRadius: "8px",
-                background: "var(--success-bg)", color: "var(--success-text)", border: "1px solid var(--success-text)",
+                background: "#E8F5ED", color: "#065f46", border: "1px solid #A8D8E3",
                 fontWeight: 700, fontSize: "13px", cursor: "pointer",
               }}>➕ Ajouter</button>
               <button onClick={startEdit} style={{
                 padding: "7px 14px", borderRadius: "8px",
-                background: "var(--info-bg)", color: "var(--accent)", border: "1px solid var(--border)",
+                background: "#EEF7FA", color: "#1D7A91", border: "1px solid #D6EEF3",
                 fontWeight: 700, fontSize: "13px", cursor: "pointer",
               }}>✏️ Modifier tout</button>
             </div>
           </div>
 
           {competences.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "30px", color: "var(--text-3)" }}>
+            <div style={{ textAlign: "center", padding: "30px", color: "#aab4c3" }}>
               Aucune compétence — cliquez sur "Ajouter" pour commencer.
             </div>
           ) : (
@@ -493,7 +493,7 @@ export default function EmployeeSkills() {
                   {cat.icon} {cat.label} ({cat.items.length})
                 </div>
                 {cat.items.length === 0
-                  ? <span style={{ color: "var(--text-3)", fontSize: "13px" }}>—</span>
+                  ? <span style={{ color: "#aab4c3", fontSize: "13px" }}>—</span>
                   : cat.items.map((c, i) => (
                     <CompRow key={c._id || i} comp={c} onUpdate={load} />
                   ))
@@ -507,7 +507,7 @@ export default function EmployeeSkills() {
             <div style={{ borderTop: "1px solid var(--border)", paddingTop: "16px", marginTop: "8px" }}>
               <button onClick={submit} disabled={submitting} style={{
                 padding: "10px 24px", borderRadius: "10px",
-                background: "linear-gradient(135deg,#10b981,#059669)",
+                background: "linear-gradient(135deg,#145C2B,#145C2B)",
                 color: "#fff", border: "none", fontWeight: 700, fontSize: "14px",
                 cursor: submitting ? "not-allowed" : "pointer",
                 opacity: submitting ? 0.6 : 1,
@@ -522,7 +522,7 @@ export default function EmployeeSkills() {
           {ficheEtat === "submitted" && (
             <div style={{
               padding: "12px 16px", borderRadius: "10px", marginTop: "12px",
-              background: "var(--warn-bg)", border: "1px solid var(--border)", color: "var(--warn-text)",
+              background: "#FEF6E4", border: "1px solid #fcd34d", color: "#92400e",
               display: "flex", alignItems: "center", gap: "10px",
             }}>
               <span>⏳</span>
@@ -533,7 +533,7 @@ export default function EmployeeSkills() {
           {ficheEtat === "validated" && (
             <div style={{
               padding: "12px 16px", borderRadius: "10px", marginTop: "12px",
-              background: "var(--success-bg)", border: "1px solid var(--success-text)", color: "var(--success-text)",
+              background: "#E8F5ED", border: "1px solid #A8D8E3", color: "#065f46",
               display: "flex", alignItems: "center", gap: "10px",
             }}>
               <span>✅</span>
@@ -546,7 +546,7 @@ export default function EmployeeSkills() {
       {/* ─── Mode édition globale ─── */}
       {editing && (
         <div style={{
-          background: "var(--surface)", borderRadius: "16px", border: "2px solid var(--accent)",
+          background: "var(--surface)", borderRadius: "16px", border: "2px solid #1D7A91",
           padding: "24px", boxShadow: "0 4px 20px rgba(59,111,212,0.12)", marginBottom: "24px",
         }}>
           <h2 style={{ margin: "0 0 4px 0", fontSize: "16px", fontWeight: 700, color: "var(--text-1)" }}>
@@ -562,11 +562,11 @@ export default function EmployeeSkills() {
                 {cat.icon} {cat.label}
               </div>
               {cat.items.length === 0
-                ? <span style={{ color: "var(--text-3)", fontSize: "13px" }}>—</span>
+                ? <span style={{ color: "#aab4c3", fontSize: "13px" }}>—</span>
                 : cat.items.map((c, i) => (
                   <div key={i} style={{
                     display: "flex", alignItems: "center", gap: "8px",
-                    padding: "7px 10px", background: "var(--surface-2)", borderRadius: "9px",
+                    padding: "7px 10px", background: "#EEF7FA", borderRadius: "9px",
                     border: "1px solid var(--border)", marginBottom: "5px",
                   }}>
                     <span style={{ flex: 1, fontWeight: 600, fontSize: "13px", color: "var(--text-1)" }}>{c.intitule}</span>
@@ -581,8 +581,8 @@ export default function EmployeeSkills() {
                       {EVAL_LEVELS.map(l => <option key={l.val} value={l.val}>{l.label}</option>)}
                     </select>
                     <button onClick={() => setDraft(d => d.filter((x, idx) => !(x.type === c.type && x.intitule === c.intitule)))} style={{
-                      background: "var(--danger-bg)", border: "none", borderRadius: "6px",
-                      color: "var(--danger-text)", cursor: "pointer", padding: "3px 8px",
+                      background: "#FBE9E9", border: "none", borderRadius: "6px",
+                      color: "#8B1A1A", cursor: "pointer", padding: "3px 8px",
                     }}>×</button>
                   </div>
                 ))
@@ -597,7 +597,7 @@ export default function EmployeeSkills() {
             }}>Annuler</button>
             <button onClick={saveAll} disabled={saving} style={{
               padding: "10px 24px", borderRadius: "10px",
-              background: "linear-gradient(135deg,#3b6fd4,#2d58b0)",
+              background: "linear-gradient(135deg,#1D7A91,#2d58b0)",
               color: "#fff", border: "none", fontWeight: 700,
               cursor: saving ? "not-allowed" : "pointer",
               opacity: saving ? 0.6 : 1,

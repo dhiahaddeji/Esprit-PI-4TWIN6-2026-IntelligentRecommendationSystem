@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Param, Patch, Post, UseGuards, NotFoundException, BadRequestException } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -7,6 +7,8 @@ import { ActivitiesService } from '../activity/activity.service';
 import { CompetencesService } from '../competences/competences.service';
 import { InvitationsService } from '../invitations/invitations.service';
 import { UsersService } from '../users/users.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { MlService } from './ml.service';
 
 // Context weights by prioritization strategy
 const CONTEXT_WEIGHTS: Record<string, Record<number, number>> = {
@@ -20,12 +22,16 @@ const EVAL_LABELS = ['Pas de compétence', 'Notions', 'Pratique', 'Maîtrise', '
 @Controller('recommendations')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class RecommendationsController {
+  private readonly logger = new Logger(RecommendationsController.name);
+
   constructor(
     private readonly recService: RecommendationsService,
     private readonly activitiesService: ActivitiesService,
     private readonly compSvc: CompetencesService,
     private readonly invService: InvitationsService,
     private readonly usersService: UsersService,
+    private readonly notifService: NotificationsService,
+    private readonly mlService: MlService,
   ) {}
 
   // ── GET recommendation for an activity ──────────────────────────────
@@ -35,36 +41,81 @@ export class RecommendationsController {
     return this.recService.getByActivity(activityId);
   }
 
-  // ── AI matching: multi-factor scoring ────────────────────────────────
+  // ── ML matching: calls Python service, falls back to heuristic ──────────
   @Roles('HR', 'SUPERADMIN')
   @Post(':activityId/run-ai')
   async runAI(@Param('activityId') activityId: string) {
     const activity = await this.activitiesService.findById(activityId);
     if (!activity) throw new NotFoundException('Activité introuvable');
 
-    const allEmployees = await this.compSvc.getAllEmployeesCompetences() as any[];
+    const existingRec  = await this.recService.getByActivity(activityId);
+    const refusedIds: string[] = (existingRec as any)?.refusedEmployees || [];
 
+    let allEmployees = await this.compSvc.getAllEmployeesCompetences() as any[];
+    if (refusedIds.length > 0) {
+      allEmployees = allEmployees.filter((e: any) => !refusedIds.includes(e.employee_id));
+    }
     if (allEmployees.length === 0) {
       throw new BadRequestException(
-        'Aucun employé avec des compétences validées. Les employés doivent soumettre et faire valider leurs compétences.',
+        'Aucun employé éligible avec des compétences validées (certains ont été exclus par le manager).',
       );
     }
 
     const availabilityMap = await this.buildAvailabilityMap(activity, allEmployees);
+    const seats: number   = (activity as any).seats || 5;
 
-    const reqs: any[]        = (activity as any).competences_requises || [];
-    const seats: number      = (activity as any).seats || 5;
-    const prioritization     = (activity as any).prioritization || 'expertise';
-    const ctxW               = CONTEXT_WEIGHTS[prioritization] || CONTEXT_WEIGHTS.expertise;
-    const totalReqs          = reqs.length;
+    // ── 1. Try Python ML service ──────────────────────────────────────────
+    let list: any[] | null = null;
+    const mlResults = await this.mlService.recommend(allEmployees, activity);
+
+    if (mlResults && mlResults.length > 0) {
+      this.logger.log(`ML service used for activity ${activityId} (${mlResults.length} results)`);
+      list = mlResults.map((r: any, idx: number) => ({
+        employeeId:       r.employee_id,
+        employeeName:     r.employee_name,
+        score:            r.score,
+        rank:             idx + 1,
+        status:           r.status,
+        availability:     availabilityMap.get(r.employee_id) ?? { status: 'AVAILABLE', reason: null, assignmentCount: 0, conflictActivityIds: [] },
+        details:          r.details ?? [],
+        matchedSkills:    r.matched_skills ?? [],
+        missingSkills:    r.missing_skills ?? [],
+        totalCompetences: r.total_competences ?? 0,
+        meetsAll:         r.meets_all        ?? false,
+        meetsCount:       r.meets_count      ?? 0,
+        explanation:      r.explanation      ?? '',
+      }));
+    } else {
+      // ── 2. Fallback: built-in heuristic ────────────────────────────────
+      this.logger.warn(`ML service unavailable — using heuristic for activity ${activityId}`);
+      list = this.runHeuristic(allEmployees, activity, availabilityMap, seats, refusedIds);
+    }
+
+    await this.activitiesService.update(activityId, { status: 'AI_SUGGESTED' });
+    return this.recService.upsert(activityId, list, false, refusedIds);
+  }
+
+  // ── Heuristic scoring (fallback when ML service is down) ─────────────────
+  private runHeuristic(
+    allEmployees: any[],
+    activity: any,
+    availabilityMap: Map<string, any>,
+    seats: number,
+    _refusedIds: string[],
+  ): any[] {
+    const reqs: any[]     = activity.competences_requises || [];
+    const prioritization  = activity.prioritization || 'expertise';
+    const activityType    = activity.type || 'formation';
+    const isCertification = activityType === 'certification';
+    const ctxW            = CONTEXT_WEIGHTS[prioritization] || CONTEXT_WEIGHTS.expertise;
+    const totalReqs       = reqs.length;
 
     const scored = allEmployees.map(emp => {
-      const details: any[]       = [];
+      const details: any[]          = [];
       const matchedSkills: string[] = [];
       const missingSkills: string[] = [];
-      let levelRatioSum    = 0;
-      let matchedCount     = 0;
-      let ctxScoreSum      = 0;
+      let levelRatioSum = 0;
+      let matchedCount  = 0;
 
       const availability = availabilityMap.get(emp.employee_id);
 
@@ -77,103 +128,70 @@ export class RecommendationsController {
         );
 
         if (match) {
-          const evalScore    = match.hierarchie_eval >= 0 ? match.hierarchie_eval : match.auto_eval;
-          const reqLevel     = req.niveau_min ?? 2;
-          const levelRatio   = reqLevel > 0 ? Math.min(1, evalScore / reqLevel) : (evalScore > 0 ? 1 : 0);
-          const ctxWeight    = ctxW[evalScore] ?? 1;
-
+          const evalScore  = match.hierarchie_eval >= 0 ? match.hierarchie_eval : match.auto_eval;
+          const reqLevel   = req.niveau_min ?? 2;
+          const levelRatio = reqLevel > 0 ? Math.min(1, evalScore / reqLevel) : (evalScore > 0 ? 1 : 0);
+          const ctxWeight  = ctxW[evalScore] ?? 1;
           levelRatioSum += levelRatio;
-          ctxScoreSum   += evalScore * ctxWeight;
           matchedCount++;
           matchedSkills.push(req.intitule);
-
           details.push({
-            intitule:       req.intitule,
-            employee_level: evalScore,
-            required_level: reqLevel,
-            meets_minimum:  evalScore >= reqLevel,
-            level_ratio:    Math.round(levelRatio * 100) / 100,
-            ctx_score:      Math.round(evalScore * ctxWeight * 10) / 10,
-            emp_label:      EVAL_LABELS[evalScore] ?? '—',
-            req_label:      EVAL_LABELS[reqLevel] ?? '—',
+            intitule: req.intitule, employee_level: evalScore, required_level: reqLevel,
+            meets_minimum: evalScore >= reqLevel, level_ratio: Math.round(levelRatio * 100) / 100,
+            ctx_score: Math.round(evalScore * ctxWeight * 10) / 10,
+            emp_label: EVAL_LABELS[evalScore] ?? '—', req_label: EVAL_LABELS[reqLevel] ?? '—',
           });
         } else {
           missingSkills.push(req.intitule);
           details.push({
-            intitule:       req.intitule,
-            employee_level: -1,
-            required_level: req.niveau_min ?? 2,
-            meets_minimum:  false,
-            level_ratio:    0,
-            ctx_score:      0,
-            emp_label:      'Non renseigné',
-            req_label:      EVAL_LABELS[req.niveau_min ?? 2] ?? '—',
+            intitule: req.intitule, employee_level: -1, required_level: req.niveau_min ?? 2,
+            meets_minimum: false, level_ratio: 0, ctx_score: 0,
+            emp_label: 'Non renseigné', req_label: EVAL_LABELS[req.niveau_min ?? 2] ?? '—',
           });
         }
       }
 
-      const meetsCount = details.filter(d => d.meets_minimum).length;
-      const meetsAll   = totalReqs > 0 && meetsCount === totalReqs;
+      const meetsCount    = details.filter(d => d.meets_minimum).length;
+      const meetsAll      = totalReqs > 0 && meetsCount === totalReqs;
+      const avgLevelRatio = matchedCount > 0 ? levelRatioSum / matchedCount : 0;
 
-      // ── Multi-factor score (0–100) ─────────────────────────────────
-      // skill_match  (50%): proportion of required skills covered
-      // level_match  (30%): average ratio of employee level / required level for matched skills
-      // exp_bonus    (10%): validated competence breadth (caps at 15)
-      // meets_bonus  (10%): proportion of skills where employee meets the minimum level
-      const skillMatchScore = totalReqs > 0 ? (matchedCount / totalReqs) * 50 : 50;
-      const levelMatchScore = matchedCount > 0 ? (levelRatioSum / matchedCount) * 30 : 0;
-      const expBonus        = Math.min(1, emp.competences.length / 15) * 10;
-      const meetsBonus      = totalReqs > 0 ? (meetsCount / totalReqs) * 10 : 10;
+      let rawScore: number;
+      if (isCertification) {
+        const skillGap  = totalReqs > 0 ? ((totalReqs - matchedCount) / totalReqs) * 55 : 0;
+        const levelGap  = matchedCount > 0 ? (1 - avgLevelRatio) * 35 : 35;
+        const activeEmp = Math.min(1, emp.competences.length / 10) * 10;
+        rawScore = skillGap + levelGap + activeEmp;
+      } else {
+        rawScore =
+          (totalReqs > 0 ? (matchedCount / totalReqs) * 50 : 50) +
+          (matchedCount > 0 ? avgLevelRatio * 30 : 0) +
+          Math.min(1, emp.competences.length / 15) * 10 +
+          (totalReqs > 0 ? (meetsCount / totalReqs) * 10 : 10);
+      }
 
-      const rawScore   = skillMatchScore + levelMatchScore + expBonus + meetsBonus;
-      const finalScore = Math.min(100, Math.round(rawScore));
-
-      // ── Human-readable explanation ────────────────────────────────
-      const explanation = this.buildExplanation(
-        reqs, matchedSkills, missingSkills, meetsCount, totalReqs, emp.competences.length,
-      );
+      const explanation = isCertification
+        ? this.buildCertExplanation(missingSkills, meetsCount, totalReqs, matchedCount, avgLevelRatio)
+        : this.buildExplanation([], matchedSkills, missingSkills, meetsCount, totalReqs, emp.competences.length);
 
       return {
-        employeeId:       emp.employee_id,
-        employeeName:     emp.employee_name,
-        score:            finalScore,
-        rank_score:       rawScore,
-        availability,
-        details,
-        matchedSkills,
-        missingSkills,
-        totalCompetences: emp.competences.length,
-        meetsAll,
-        meetsCount,
-        explanation,
+        employeeId: emp.employee_id, employeeName: emp.employee_name,
+        score: Math.min(100, Math.round(rawScore)), rank_score: rawScore,
+        availability, details, matchedSkills, missingSkills,
+        totalCompetences: emp.competences.length, meetsAll, meetsCount, explanation,
       };
     });
 
-    // Sort DESC by rank_score
     scored.sort((a, b) => b.rank_score - a.rank_score);
-
-    // Keep only top (seats + 2)
-    const limit   = Math.min(scored.length, seats + 2);
-    const limited = scored.slice(0, limit);
-
-    const list = limited.map((e, idx) => ({
-      employeeId:       e.employeeId,
-      employeeName:     e.employeeName,
-      score:            e.score,
-      rank:             idx + 1,
-      status:           idx < seats ? 'Selected' : 'Backup',
-      availability:     e.availability,
-      details:          e.details,
-      matchedSkills:    e.matchedSkills,
-      missingSkills:    e.missingSkills,
-      totalCompetences: e.totalCompetences,
-      meetsAll:         e.meetsAll,
-      meetsCount:       e.meetsCount,
-      explanation:      e.explanation,
+    const limit = Math.min(scored.length, seats + 2);
+    return scored.slice(0, limit).map((e, idx) => ({
+      employeeId: e.employeeId, employeeName: e.employeeName,
+      score: e.score, rank: idx + 1,
+      status: idx < seats ? 'Selected' : 'Backup',
+      availability: e.availability, details: e.details,
+      matchedSkills: e.matchedSkills, missingSkills: e.missingSkills,
+      totalCompetences: e.totalCompetences, meetsAll: e.meetsAll,
+      meetsCount: e.meetsCount, explanation: e.explanation,
     }));
-
-    await this.activitiesService.update(activityId, { status: 'AI_SUGGESTED' });
-    return this.recService.upsert(activityId, list, false);
   }
 
   // ── HR: update the selection (add/remove employees) ──────────────────
@@ -186,7 +204,7 @@ export class RecommendationsController {
     return this.recService.upsert(activityId, body.list || [], false);
   }
 
-  // ── HR: validate + send invitations to selected employees ────────────
+  // ── HR: validate list → send to manager for review (NOT to employees) ─
   @Roles('HR', 'SUPERADMIN')
   @Patch(':activityId/validate')
   async validate(@Param('activityId') activityId: string) {
@@ -218,16 +236,51 @@ export class RecommendationsController {
 
     const employeeIds = (rec.list as any[]).map((item: any) => item.employeeId);
 
-    await this.invService.bulkUpsert(activityId, employeeIds);
+    // Set participants list + send to manager for review
     await this.activitiesService.update(activityId, {
-      status: 'NOTIFIED',
+      status: 'SENT_TO_MANAGER',
       participants: employeeIds,
     });
 
-    return this.recService.upsert(activityId, rec.list, true);
+    // Notify the assigned manager
+    if ((activity as any).managerId) {
+      await this.notifService.create({
+        userId:  (activity as any).managerId,
+        type:    'activity_invitation',
+        title:   'Activité à valider',
+        message: `L'activité "${(activity as any).title}" vous a été envoyée pour validation.`,
+        link:    `/manager/activities/${activityId}`,
+        meta:    { activityId, activityTitle: (activity as any).title },
+      });
+    }
+
+    return this.recService.upsert(activityId, rec.list, true, (rec as any).refusedEmployees || []);
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────
+
+  /** Explains WHY an employee is recommended for a certification (gap-based) */
+  private buildCertExplanation(
+    missingSkills: string[],
+    meetsCount: number,
+    totalReqs: number,
+    matchedCount: number,
+    avgLevelRatio: number,
+  ): string {
+    if (totalReqs === 0) return 'Aucun critère spécifique — certification générale.';
+
+    if (missingSkills.length === totalReqs) {
+      const top = missingSkills.slice(0, 2).join(', ');
+      return `Profil prioritaire — ne possède aucune des ${totalReqs} compétences requises (${top}). Certification très recommandée.`;
+    }
+    if (meetsCount === totalReqs) {
+      return `Compétences déjà maîtrisées — employé moins prioritaire pour cette certification.`;
+    }
+    const gapCount = totalReqs - meetsCount;
+    const pct      = Math.round((1 - avgLevelRatio) * 100);
+    const top      = missingSkills.slice(0, 2).join(', ');
+    return `${gapCount}/${totalReqs} compétence${gapCount > 1 ? 's' : ''} en dessous du niveau requis (écart moyen : ${pct}%)${top ? ` — lacunes : ${top}` : ''}. Bénéficierait de cette certification.`;
+  }
 
   private buildExplanation(
     _reqs: any[],

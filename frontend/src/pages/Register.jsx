@@ -1,4 +1,5 @@
 import { useState } from "react";
+import MicButton from "../components/MicButton";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 
@@ -36,44 +37,32 @@ export default function Register() {
       <p style={{ marginTop: 0, color: "var(--text-2)" }}>Sign up and choose your role</p>
 
       <form onSubmit={onSubmit} style={{ display: "grid", gap: 10 }}>
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Full name"
-          required
-          style={{
-            padding: 12,
-            borderRadius: 10,
-            border: "1px solid var(--input-border)",
-            background: "var(--input-bg)",
-            color: "var(--input-text)",
-          }}
-        />
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
-          type="email"
-          required
-          style={{
-            padding: 12,
-            borderRadius: 10,
-            border: "1px solid var(--input-border)",
-            background: "var(--input-bg)",
-            color: "var(--input-text)",
-          }}
-        />
+        <div style={{ position: "relative" }}>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Full name"
+            required
+            style={{ padding: 12, paddingRight: 42, borderRadius: 10, border: "1px solid #e4e7ec", width: "100%", boxSizing: "border-box" }}
+          />
+          <MicButton onResult={(t) => setName(t)} />
+        </div>
+        <div style={{ position: "relative" }}>
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            type="email"
+            required
+            style={{ padding: 12, paddingRight: 42, borderRadius: 10, border: "1px solid #e4e7ec", width: "100%", boxSizing: "border-box" }}
+          />
+          <MicButton onResult={(t) => setEmail(t)} />
+        </div>
 
         <select
           value={role}
           onChange={(e) => setRole(e.target.value)}
-          style={{
-            padding: 12,
-            borderRadius: 10,
-            border: "1px solid var(--input-border)",
-            background: "var(--input-bg)",
-            color: "var(--input-text)",
-          }}
+          style={{ padding: 12, borderRadius: 10, border: "1px solid #e4e7ec" }}
         >
           <option value="EMPLOYEE">EMPLOYEE</option>
           <option value="HR">HR</option>
@@ -86,23 +75,11 @@ export default function Register() {
           placeholder="Password"
           type="password"
           required
-          style={{
-            padding: 12,
-            borderRadius: 10,
-            border: "1px solid var(--input-border)",
-            background: "var(--input-bg)",
-            color: "var(--input-text)",
-          }}
+          style={{ padding: 12, borderRadius: 10, border: "1px solid #e4e7ec" }}
         />
 
         {error && (
-          <div style={{
-            color: "var(--danger-text)",
-            background: "var(--danger-bg)",
-            border: "1px solid var(--danger-text)",
-            padding: 10,
-            borderRadius: 10,
-          }}>
+          <div style={{ color: "#8B1A1A", background: "#FDF8EE", border: "1px solid #F28080", padding: 10, borderRadius: 10 }}>
             {error}
           </div>
         )}
@@ -113,7 +90,7 @@ export default function Register() {
             padding: 12,
             borderRadius: 10,
             border: "none",
-            background: "var(--accent)",
+            background: "#0B2D38",
             color: "white",
             fontWeight: 800,
             cursor: "pointer",
@@ -124,7 +101,7 @@ export default function Register() {
       </form>
 
       <p style={{ marginTop: 12 }}>
-        Already have an account? <Link to="/login" style={{ color: "var(--accent)" }}>Login</Link>
+        Already have an account? <Link to="/login">Login</Link>
       </p>
     </div>
   );

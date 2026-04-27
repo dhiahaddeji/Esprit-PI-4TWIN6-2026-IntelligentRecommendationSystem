@@ -14,44 +14,44 @@ export enum UserRole {
 export class User {
   // ── Identité ──────────────────────────────────────────────────────────
   @Prop({ required: true })
-  name: string;
+  name!: string;
 
   @Prop()
-  firstName: string;
+  firstName?: string;
 
   @Prop()
-  lastName: string;
+  lastName?: string;
 
   @Prop({ required: true, unique: true })
-  matricule: string;
+  matricule!: string;
 
   @Prop()
-  telephone: string;
+  telephone?: string;
 
   // ── Auth ──────────────────────────────────────────────────────────────
   @Prop({ required: true, unique: true })
-  email: string;
+  email!: string;
 
   @Prop({ required: true })
-  password: string;
+  password!: string;
 
   @Prop({ default: false })
-  mustChangePassword: boolean;
+  mustChangePassword!: boolean;
 
   @Prop()
-  passwordExpiresAt: Date;
+  passwordExpiresAt?: Date;
 
   @Prop({ default: false })
-  isProfileComplete: boolean;
+  isProfileComplete!: boolean;
 
   @Prop()
-  githubId: string;
+  githubId?: string;
 
   @Prop()
-  refreshTokenHash: string;
+  refreshTokenHash?: string;
 
   @Prop()
-  refreshTokenExpiresAt: Date;
+  refreshTokenExpiresAt?: Date;
 
   @Prop()
   resetPasswordTokenHash: string;
@@ -61,47 +61,51 @@ export class User {
 
   // ── Rôle & statut ─────────────────────────────────────────────────────
   @Prop({ required: true, enum: UserRole })
-  role: UserRole;
+  role!: UserRole;
 
   @Prop({ default: 'ACTIVE' })
-  status: string; // ACTIVE | INACTIVE | SUSPENDED
+  status!: string; // ACTIVE | INACTIVE | SUSPENDED
 
   @Prop({ default: false })
-  en_ligne: boolean;
+  en_ligne!: boolean;
 
   // ── Infos professionnelles ─────────────────────────────────────────────
   @Prop()
-  date_embauche: Date;
+  date_embauche?: Date;
 
   @Prop()
-  poste: string;
+  poste?: string;
 
   @Prop({ default: 0 })
-  yearsExperience: number;
+  yearsExperience!: number;
 
   // ── Relations ─────────────────────────────────────────────────────────
   @Prop()
-  departement_id: string; // ref → Department._id
+  departement_id?: string; // ref → Department._id
 
   @Prop()
-  manager_id: string; // ref → User._id (manager)
+  manager_id?: string; // ref → User._id (manager)
 
   // ── Médias ────────────────────────────────────────────────────────────
   @Prop()
-  photoUrl: string;
+  photoUrl?: string;
 
   @Prop()
-  cvUrl: string;
+  cvUrl?: string;
 
   // ── Disponibilité & capacité ─────────────────────────────────────────
   @Prop({ type: [Object], default: [] })
-  leavePeriods: { startDate: Date; endDate: Date; reason?: string }[];
+  leavePeriods!: { startDate: Date; endDate: Date; reason?: string }[];
 
   @Prop({ type: [String], default: [] })
-  currentAssignments: string[];
+  currentAssignments!: string[];
 
   @Prop({ default: 2 })
-  maxCapacity: number;
+  maxCapacity!: number;
+
+  // ── Face Recognition ──────────────────────────────────────────────────
+  @Prop({ type: [Number], default: [] })
+  faceDescriptor!: number[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
