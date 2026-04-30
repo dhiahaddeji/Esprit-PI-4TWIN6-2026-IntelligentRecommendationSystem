@@ -22,6 +22,8 @@ function initials(name = "") {
   return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
 }
 
+const QUICK_EMOJIS = ["😀", "😂", "😊", "😍", "👍", "🙏", "🎉", "🔥", "💡", "💬", "❤️", "✅"];
+
 function timeAgo(dateStr) {
   if (!dateStr) return "";
   const d   = new Date(dateStr);
@@ -42,6 +44,78 @@ function Avatar({ name, size = 36, role }) {
       display: "flex", alignItems: "center", justifyContent: "center",
       fontWeight: 700, fontSize: size * 0.36,
     }}>{initials(name)}</div>
+  );
+}
+
+function EmojiPickerButton({ onPick, disabled = false, title = "Ajouter un emoji" }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div style={{ position: "relative", flexShrink: 0 }}>
+      <button
+        type="button"
+        title={title}
+        aria-label={title}
+        disabled={disabled}
+        onClick={() => setOpen((prev) => !prev)}
+        style={{
+          width: 42,
+          height: 42,
+          borderRadius: "50%",
+          border: "1.5px solid var(--input-border)",
+          background: "var(--surface)",
+          cursor: disabled ? "not-allowed" : "pointer",
+          fontSize: 18,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          opacity: disabled ? 0.55 : 1,
+        }}
+      >
+        😊
+      </button>
+
+      {open && !disabled && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: 50,
+            right: 0,
+            width: 220,
+            padding: 10,
+            borderRadius: 14,
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            boxShadow: "0 10px 28px rgba(0,0,0,0.14)",
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: 8,
+            zIndex: 20,
+          }}
+        >
+          {QUICK_EMOJIS.map((emoji) => (
+            <button
+              key={emoji}
+              type="button"
+              onClick={() => {
+                onPick(emoji);
+                setOpen(false);
+              }}
+              style={{
+                height: 40,
+                borderRadius: 10,
+                border: "1px solid #e5e7eb",
+                background: "#fff",
+                cursor: "pointer",
+                fontSize: 20,
+              }}
+            >
+              {emoji}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -421,6 +495,7 @@ function AnnouncementView({ conv, me, onNewMessage }) {
   const [sending,  setSending]  = useState(false);
   const [loading,  setLoading]  = useState(true);
   const pollRef = useRef(null);
+  const inputRef = useRef(null);
 
   const myId     = me?.id || me?.userId;
   const canWrite = (conv.allowedSenders || []).includes(myId);
@@ -458,6 +533,25 @@ function AnnouncementView({ conv, me, onNewMessage }) {
     } finally {
       setSending(false);
     }
+  };
+
+  const insertEmoji = (emoji) => {
+    const el = inputRef.current;
+    if (!el) {
+      setInput((prev) => `${prev}${emoji}`);
+      return;
+    }
+
+    const start = el.selectionStart ?? input.length;
+    const end = el.selectionEnd ?? input.length;
+    const next = input.slice(0, start) + emoji + input.slice(end);
+    setInput(next);
+
+    requestAnimationFrame(() => {
+      el.focus();
+      const pos = start + emoji.length;
+      el.setSelectionRange(pos, pos);
+    });
   };
 
   const title         = conv.name || "Annonce";
@@ -523,6 +617,7 @@ function AnnouncementView({ conv, me, onNewMessage }) {
           </div>
           <div style={{ padding: "12px 16px" }}>
             <textarea
+              ref={inputRef}
               value={input}
               onChange={e => setInput(e.target.value)}
               placeholder="Rédigez votre annonce ici… Elle sera visible par tous les destinataires."
@@ -536,7 +631,12 @@ function AnnouncementView({ conv, me, onNewMessage }) {
                 fontFamily: "inherit",
               }}
             />
-            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8 }}>
+              <EmojiPickerButton
+                onPick={insertEmoji}
+                disabled={sending}
+                title="Ajouter un emoji a l'annonce"
+              />
               <button
                 onClick={publish}
                 disabled={sending || !input.trim()}
@@ -652,6 +752,7 @@ function ChatThread({ conv, me, onNewMessage }) {
   const [loading,   setLoading]   = useState(true);
   const bottomRef = useRef(null);
   const pollRef   = useRef(null);
+  const inputRef  = useRef(null);
 
   const loadMessages = useCallback(async () => {
     try {
@@ -693,6 +794,25 @@ function ChatThread({ conv, me, onNewMessage }) {
     } finally {
       setSending(false);
     }
+  };
+
+  const insertEmoji = (emoji) => {
+    const el = inputRef.current;
+    if (!el) {
+      setInput((prev) => `${prev}${emoji}`);
+      return;
+    }
+
+    const start = el.selectionStart ?? input.length;
+    const end = el.selectionEnd ?? input.length;
+    const next = input.slice(0, start) + emoji + input.slice(end);
+    setInput(next);
+
+    requestAnimationFrame(() => {
+      el.focus();
+      const pos = start + emoji.length;
+      el.setSelectionRange(pos, pos);
+    });
   };
 
   const convName    = conv.name || CONV_LABELS[conv.type] || "Conversation";
@@ -759,7 +879,13 @@ function ChatThread({ conv, me, onNewMessage }) {
         borderTop: "1px solid var(--border)", flexShrink: 0,
         display: "flex", gap: 10, alignItems: "flex-end",
       }}>
+        <EmojiPickerButton
+          onPick={insertEmoji}
+          disabled={sending}
+          title="Ajouter un emoji au message"
+        />
         <textarea
+          ref={inputRef}
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => {

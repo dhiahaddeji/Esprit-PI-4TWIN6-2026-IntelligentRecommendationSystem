@@ -136,10 +136,9 @@ export default function Login() {
                   <label className="authCheck">
                     <input type="checkbox" /> Se souvenir de moi
                   </label>
-                  <button className="authLinkBtn" type="button"
-                    onClick={() => alert("Fonctionnalité en développement")}>
+                  <Link to="/forgot-password" className="authLinkBtn">
                     Mot de passe oublié ?
-                  </button>
+                  </Link>
                 </div>
 
                 <button className="primaryBtn" type="submit" disabled={loading}>

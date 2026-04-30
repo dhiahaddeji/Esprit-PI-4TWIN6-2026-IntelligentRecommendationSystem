@@ -105,6 +105,64 @@ export class MailService {
     }
   }
 
+  async sendPasswordResetEmail(opts: {
+    to: string;
+    name: string;
+    resetUrl: string;
+    expiresInMinutes: number;
+  }): Promise<void> {
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+        <div style="background:#0b2b4b;padding:28px 32px;">
+          <h1 style="color:#ffffff;margin:0;font-size:22px;">AssurReco</h1>
+          <p style="color:#cbd5e1;margin:4px 0 0;">Reinitialisation du mot de passe</p>
+        </div>
+
+        <div style="padding:32px;">
+          <h2 style="color:#0f172a;margin-top:0;">Bonjour ${opts.name},</h2>
+          <p style="color:#334155;">
+            Nous avons recu une demande de reinitialisation de votre mot de passe.
+          </p>
+
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:24px 0;">
+            <p style="margin:0;color:#475569;">
+              Ce lien expirera dans <strong>${opts.expiresInMinutes} minute(s)</strong>.
+            </p>
+          </div>
+
+          <a href="${opts.resetUrl}"
+             style="display:inline-block;background:#0b2b4b;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold;">
+            Reinitialiser mon mot de passe
+          </a>
+
+          <p style="margin-top:24px;color:#475569;">
+            Si le bouton ne fonctionne pas, copiez puis collez ce lien dans votre navigateur :
+          </p>
+          <p style="word-break:break-all;color:#0b2b4b;">${opts.resetUrl}</p>
+
+          <p style="margin-top:32px;color:#94a3b8;font-size:12px;">
+            Si vous n'etes pas a l'origine de cette demande, vous pouvez ignorer cet email.
+          </p>
+        </div>
+      </div>
+    `;
+
+    try {
+      await this.transporter.sendMail({
+        from: process.env.EMAIL_FROM || `"AssurReco" <${process.env.EMAIL_USER}>`,
+        to: opts.to,
+        subject: 'Reinitialisation de votre mot de passe AssurReco',
+        html,
+      });
+      this.logger.log(`Email de reinitialisation envoye a ${opts.to}`);
+    } catch (err: any) {
+      this.logger.error(
+        `Echec envoi email de reinitialisation a ${opts.to}: ${err.message}`,
+      );
+      // On ne fait pas planter la demande si l'email echoue
+    }
+  }
+
   /**
    * Envoie un email quand un utilisateur est suspendu par le SuperAdmin
    */

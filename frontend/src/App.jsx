@@ -14,6 +14,8 @@ const NotAuthorized       = lazy(() => import("./pages/NotAuthorized"));
 const GitHubCallback      = lazy(() => import("./pages/GitHubCallback"));
 const ChangePassword      = lazy(() => import("./pages/ChangePassword"));
 const CompleteProfile     = lazy(() => import("./pages/CompleteProfile"));
+const ForgotPassword      = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword       = lazy(() => import("./pages/ResetPassword"));
 
 // Common pages
 const Inbox               = lazy(() => import("./pages/Inbox"));
@@ -75,6 +77,8 @@ export default function App() {
         <Route path="/auth/callback" element={<GitHubCallback />} />
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/complete-profile" element={<CompleteProfile />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* ---------------- PROTECTED ROUTES ---------------- */}
         <Route
