@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchMyParticipations } from "../../services/participationService";
- 
+
+const QUICK_WEEKDAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+
 export default function MyParticipationStatus() {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -8,6 +10,7 @@ export default function MyParticipationStatus() {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
   });
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
 
   useEffect(() => {
     (async () => {
@@ -29,6 +32,9 @@ export default function MyParticipationStatus() {
     year: "numeric",
   });
   const calendarCells = buildCalendarCells(viewDate);
+  const selectedEvents = eventsByDate.get(toKey(selectedDate)) || [];
+  const acceptedCount = selectedEvents.filter((ev) => ev.status === "ACCEPTED").length;
+  const declinedCount = selectedEvents.filter((ev) => ev.status === "DECLINED").length;
 
   if (loading) return <div style={{ padding: 18 }}>Chargement...</div>;
 
@@ -48,53 +54,132 @@ export default function MyParticipationStatus() {
         </span>
       </div>
 
-      <div style={{ ...calendarWrap() }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <button onClick={() => setViewDate(prev => addMonths(prev, -1))} style={navBtn()}>
+      <div style={calendarWrap()}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <button onClick={() => setViewDate((prev) => addMonths(prev, -1))} style={navBtn()}>
               ←
             </button>
             <div style={{ fontWeight: 900, fontSize: 16, textTransform: "capitalize" }}>{monthLabel}</div>
-            <button onClick={() => setViewDate(prev => addMonths(prev, 1))} style={navBtn()}>
+            <button onClick={() => setViewDate((prev) => addMonths(prev, 1))} style={navBtn()}>
               →
             </button>
+            <button
+              onClick={() => {
+                const now = new Date();
+                setViewDate(new Date(now.getFullYear(), now.getMonth(), 1));
+                setSelectedDate(now);
+              }}
+              style={todayBtn()}
+            >
+              Aujourd'hui
+            </button>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, flexWrap: "wrap" }}>
             <span style={legendDot("#22c55e")} /> Accepte
             <span style={{ width: 6 }} />
             <span style={legendDot("#ef4444")} /> Refuse
+            <span style={{ width: 6 }} />
+            <span style={legendDot("#2563eb")} /> Selection
           </div>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 8, marginTop: 14 }}>
-          {weekdays().map((d) => (
+          {QUICK_WEEKDAYS.map((d) => (
             <div key={d} style={{ fontSize: 11, letterSpacing: 0.6, textTransform: "uppercase", color: "#6b7280" }}>
               {d}
             </div>
           ))}
+
           {calendarCells.map((cell, idx) => {
-            const key = cell.date ? toKey(cell.date) : `empty-${idx}`;
-            const events = cell.date ? eventsByDate.get(key) || [] : [];
-            const isToday = cell.date && isSameDay(cell.date, new Date());
+            const key = `${toKey(cell.date)}-${idx}`;
+            const events = eventsByDate.get(toKey(cell.date)) || [];
+            const accepted = events.filter((ev) => ev.status === "ACCEPTED").length;
+            const declined = events.filter((ev) => ev.status === "DECLINED").length;
+            const isToday = isSameDay(cell.date, new Date());
+            const isSelected = isSameDay(cell.date, selectedDate);
+
             return (
-              <div
+              <button
                 key={key}
-                style={dayCell({ muted: !cell.inMonth, today: isToday })}
+                type="button"
+                onClick={() => {
+                  setSelectedDate(cell.date);
+                  setViewDate(new Date(cell.date.getFullYear(), cell.date.getMonth(), 1));
+                }}
+                style={dayCell({
+                  muted: !cell.inMonth,
+                  today: isToday,
+                  selected: isSelected,
+                  hasEvents: events.length > 0,
+                })}
               >
-                <div style={{ fontSize: 12, fontWeight: 700, color: cell.inMonth ? "#0f172a" : "#cbd5f5" }}>
-                  {cell.date ? cell.date.getDate() : ""}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: cell.inMonth ? "#0f172a" : "#94a3b8" }}>
+                    {cell.date.getDate()}
+                  </div>
+                  {events.length > 0 && <div style={dayCountBadge(events.length)}>{events.length}</div>}
                 </div>
+
                 {events.slice(0, 2).map((ev, i) => (
                   <div key={`${ev.id}-${i}`} style={eventPill(ev.status)} title={ev.title}>
                     {ev.title}
                   </div>
                 ))}
+
                 {events.length > 2 && (
                   <div style={{ fontSize: 10, color: "#64748b" }}>+{events.length - 2} autre(s)</div>
                 )}
-              </div>
+
+                {events.length > 0 && (
+                  <div style={{ display: "flex", gap: 6, marginTop: "auto" }}>
+                    {accepted > 0 && <span style={miniStat("#22c55e")}>{accepted}A</span>}
+                    {declined > 0 && <span style={miniStat("#ef4444")}>{declined}R</span>}
+                  </div>
+                )}
+              </button>
             );
           })}
+        </div>
+      </div>
+
+      <div style={{ ...detailCard(), marginTop: 14 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+          <div>
+            <div style={{ fontSize: 12, letterSpacing: 0.5, textTransform: "uppercase", color: "#64748b", fontWeight: 800 }}>
+              Jour selectionne
+            </div>
+            <div style={{ marginTop: 4, fontSize: 18, fontWeight: 900, color: "#0f172a", textTransform: "capitalize" }}>
+              {selectedDate.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <span style={summaryPill("#dcfce7", "#166534")}>{acceptedCount} accepte(s)</span>
+            <span style={summaryPill("#fee2e2", "#991b1b")}>{declinedCount} refuse(s)</span>
+            <span style={summaryPill("#eff6ff", "#1d4ed8")}>{selectedEvents.length} activite(s)</span>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 14, display: "grid", gap: 10 }}>
+          {selectedEvents.length === 0 ? (
+            <div style={{ color: "#64748b", fontSize: 14 }}>
+              Aucune participation pour cette date.
+            </div>
+          ) : (
+            selectedEvents.map((ev) => (
+              <div key={`${ev.id}-${ev.status}-${ev.title}`} style={selectedEventRow()}>
+                <div>
+                  <div style={{ fontWeight: 800, color: "#0f172a" }}>{ev.title}</div>
+                  <div style={{ marginTop: 4, fontSize: 12, color: "#64748b" }}>
+                    {ev.rangeLabel}
+                    {ev.location ? ` • ${ev.location}` : ""}
+                  </div>
+                </div>
+                <span style={pill(ev.status)}>{ev.status}</span>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -104,7 +189,7 @@ export default function MyParticipationStatus() {
         ) : (
           list.map((p) => (
             <div key={p._id || p.id} style={card()}>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
                 <div>
                   <div style={{ fontWeight: 900 }}>
                     {p.activity?.title || `Activite ${p.activityId}`}
@@ -135,13 +220,22 @@ export default function MyParticipationStatus() {
 function card() {
   return { background: "var(--surface)", border: "1px solid #eef0f4", borderRadius: 16, padding: 16 };
 }
+
 function pill(status) {
   const map = {
     ACCEPTED: { bg: "#ecfdf3", bd: "#abefc6", tx: "#067647" },
     DECLINED: { bg: "#FDF8EE", bd: "#F28080", tx: "#8B1A1A" },
   };
   const s = map[status] || { bg: "#EEF7FA", bd: "#eef0f4", tx: "#344054" };
-  return { fontSize: 12, padding: "4px 10px", borderRadius: 999, border: `1px solid ${s.bd}`, background: s.bg, fontWeight: 900, color: s.tx };
+  return {
+    fontSize: 12,
+    padding: "4px 10px",
+    borderRadius: 999,
+    border: `1px solid ${s.bd}`,
+    background: s.bg,
+    fontWeight: 900,
+    color: s.tx,
+  };
 }
 
 function calendarWrap() {
@@ -167,6 +261,18 @@ function navBtn() {
   };
 }
 
+function todayBtn() {
+  return {
+    border: "1px solid #bfdbfe",
+    background: "#eff6ff",
+    color: "#1d4ed8",
+    borderRadius: 999,
+    padding: "7px 12px",
+    fontWeight: 800,
+    cursor: "pointer",
+  };
+}
+
 function legendDot(color) {
   return {
     width: 10,
@@ -178,17 +284,20 @@ function legendDot(color) {
   };
 }
 
-function dayCell({ muted, today }) {
+function dayCell({ muted, today, selected, hasEvents }) {
   return {
-    minHeight: 78,
+    minHeight: 92,
     padding: 8,
     borderRadius: 12,
-    border: "1px solid #e2e8f0",
-    background: muted ? "#f8fafc" : "#ffffff",
-    outline: today ? "2px solid #2563eb" : "none",
+    border: selected ? "1px solid #2563eb" : "1px solid #e2e8f0",
+    background: muted ? "#f8fafc" : hasEvents ? "#fcfdff" : "#ffffff",
+    outline: today ? "2px solid #93c5fd" : "none",
     animation: "calIn 0.45s ease",
     display: "grid",
     gap: 4,
+    textAlign: "left",
+    cursor: "pointer",
+    boxShadow: selected ? "0 10px 24px rgba(37, 99, 235, 0.14)" : "none",
   };
 }
 
@@ -211,10 +320,6 @@ function eventPill(status) {
   };
 }
 
-function weekdays() {
-  return ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
-}
-
 function buildCalendarCells(viewDate) {
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
@@ -224,19 +329,21 @@ function buildCalendarCells(viewDate) {
   const totalDays = last.getDate();
   const totalCells = Math.ceil((startOffset + totalDays) / 7) * 7;
   const cells = [];
+
   for (let i = 0; i < totalCells; i++) {
     const dayIndex = i - startOffset + 1;
-    if (dayIndex < 1 || dayIndex > totalDays) {
-      cells.push({ date: null, inMonth: false });
-    } else {
-      cells.push({ date: new Date(year, month, dayIndex), inMonth: true });
-    }
+    cells.push({
+      date: new Date(year, month, dayIndex),
+      inMonth: dayIndex >= 1 && dayIndex <= totalDays,
+    });
   }
+
   return cells;
 }
 
 function buildEventsByDate(list) {
   const map = new Map();
+
   for (const p of list || []) {
     const activity = p.activity || {};
     const start = toDate(activity.startDate || activity.date);
@@ -248,6 +355,7 @@ function buildEventsByDate(list) {
     const maxDays = 120;
     let cursor = new Date(start.getFullYear(), start.getMonth(), start.getDate());
     let days = 0;
+
     while (cursor <= safeEnd && days < maxDays) {
       const key = toKey(cursor);
       if (!map.has(key)) map.set(key, []);
@@ -255,11 +363,14 @@ function buildEventsByDate(list) {
         id: p._id || p.id || `${p.activityId}-${p.status}`,
         title,
         status: p.status,
+        location: activity.location || "",
+        rangeLabel: formatRange(activity),
       });
       cursor.setDate(cursor.getDate() + 1);
       days++;
     }
   }
+
   return map;
 }
 
@@ -297,4 +408,70 @@ function formatRange(activity) {
   if (!end) return startLabel;
   const endLabel = end.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
   return endLabel !== startLabel ? `${startLabel} - ${endLabel}` : startLabel;
+}
+
+function detailCard() {
+  return {
+    background: "linear-gradient(135deg, #ffffff, #f8fbff)",
+    border: "1px solid #dbeafe",
+    borderRadius: 18,
+    padding: 18,
+    boxShadow: "0 8px 28px rgba(15, 23, 42, 0.06)",
+  };
+}
+
+function selectedEventRow() {
+  return {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 12,
+    alignItems: "center",
+    padding: "12px 14px",
+    borderRadius: 14,
+    border: "1px solid #e5eefc",
+    background: "#fff",
+  };
+}
+
+function summaryPill(bg, color) {
+  return {
+    background: bg,
+    color,
+    borderRadius: 999,
+    padding: "6px 10px",
+    fontSize: 12,
+    fontWeight: 800,
+  };
+}
+
+function dayCountBadge(count) {
+  return {
+    minWidth: 20,
+    height: 20,
+    padding: "0 6px",
+    borderRadius: 999,
+    background: "#dbeafe",
+    color: "#1d4ed8",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 10,
+    fontWeight: 900,
+  };
+}
+
+function miniStat(color) {
+  return {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 28,
+    height: 18,
+    borderRadius: 999,
+    background: `${color}18`,
+    color,
+    fontSize: 10,
+    fontWeight: 900,
+    padding: "0 6px",
+  };
 }
