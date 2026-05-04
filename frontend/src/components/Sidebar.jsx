@@ -15,7 +15,7 @@ function useUnreadCount() {
       try {
         const token = getStoredToken();
         if (!token) return;
-        const res = await fetch("http://localhost:3000/messaging/unread", {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:3000"}/messaging/unread`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.status === 401) {

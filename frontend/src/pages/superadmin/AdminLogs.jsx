@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { io } from "socket.io-client";
 import { getStoredToken } from "../../auth/authService";
 
-const API = "http://localhost:3000";
+const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
 const ACTION_META = {
   USER_LOGIN:              { label: "Connexion",            color: "#1D7A91", icon: "🔐" },
