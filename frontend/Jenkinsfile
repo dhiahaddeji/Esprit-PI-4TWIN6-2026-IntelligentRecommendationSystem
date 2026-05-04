@@ -18,22 +18,23 @@ pipeline {
         // ── 1. Clone ────────────────────────────────────────────────────────
         stage('Clone') {
             steps {
-                git branch: 'master',
-                    url: 'https://github.com/dhiahaddeji/PI-FRONT.git'
+                git branch: 'main',
+                    url: 'https://github.com/abir-mosrati2/Esprit-PI-4TWIN6-2026-IntelligentRecommendationSystem.git'
             }
         }
 
         // ── 2. Install ──────────────────────────────────────────────────────
         stage('Install') {
             steps {
-                sh 'npm ci'                               // reproductible vs npm install
+                sh 'npm ci --include=dev'
             }
         }
 
         // ── 3. Tests ────────────────────────────────────────────────────────
         stage('Test') {
             steps {
-                sh 'npm run test -- --coverage --reporter=junit --outputFile=reports/junit.xml || true'
+                sh 'mkdir -p reports'
+                sh 'npm run test -- --coverage || true'
             }
             post {
                 always {

@@ -1,0 +1,49 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "dhiahaddeji/pi-back"
+    }
+
+    stages {
+
+        stage('Pull Image') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-credentials',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh """
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    docker pull ${DOCKER_IMAGE}:latest
+                    """
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh """
+                docker stop pi-back || true
+                docker rm   pi-back || true
+                docker run -d \
+                  --name pi-back \
+                  --restart unless-stopped \
+                  -p 3000:3000 \
+                  --env-file /etc/pi-back.env \
+                  ${DOCKER_IMAGE}:latest
+                """
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Backend CD SUCCESS — déployé sur :3000"
+        }
+        failure {
+            echo "❌ Backend CD FAILED"
+        }
+    }
+}

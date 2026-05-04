@@ -18,8 +18,8 @@ pipeline {
         // ── 1. Clone ────────────────────────────────────────────────────────
         stage('Clone') {
             steps {
-                git branch: 'master',
-                    url: 'https://github.com/dhiahaddeji/PI-BACK.git'
+                git branch: 'main',
+                    url: 'https://github.com/abir-mosrati2/Esprit-PI-4TWIN6-2026-IntelligentRecommendationSystem.git'
             }
         }
 

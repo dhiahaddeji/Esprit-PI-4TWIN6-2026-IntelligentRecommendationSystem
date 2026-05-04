@@ -1,0 +1,150 @@
+pipeline {
+    agent any
+
+    tools {
+        nodejs "nodejs"
+    }
+
+    environment {
+        SONARQUBE_ENV    = "sonarqube"
+        SONAR_TOKEN      = credentials("sonar-token")
+        SONAR_HOST       = "http://localhost:9000"
+        DOCKER_IMAGE     = "dhiahaddeji/pi-front"
+        DOCKER_TAG       = "${BUILD_NUMBER}"
+        FRONTEND_CHANGED = "false"
+    }
+
+    stages {
+
+        stage('Clone') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/abir-mosrati2/Esprit-PI-4TWIN6-2026-IntelligentRecommendationSystem.git'
+            }
+        }
+
+        // Vérifie si des fichiers frontend/ ont changé dans ce commit
+        stage('Detect Changes') {
+            steps {
+                script {
+                    def changedFiles = sh(
+                        script: "git diff --name-only HEAD~1 HEAD 2>/dev/null || git diff --name-only HEAD",
+                        returnStdout: true
+                    ).trim()
+                    echo "Changed files:\n${changedFiles}"
+                    if (changedFiles.split('\n').any { it.startsWith('frontend/') }) {
+                        env.FRONTEND_CHANGED = "true"
+                        echo "✅ Frontend changes detected — pipeline continues"
+                    } else {
+                        echo "⏭️  No frontend changes — pipeline skipped"
+                    }
+                }
+            }
+        }
+
+        stage('Install') {
+            when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+            steps {
+                dir('frontend') {
+                    sh 'npm ci --include=dev'
+                }
+            }
+        }
+
+        stage('Test') {
+            when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+            steps {
+                dir('frontend') {
+                    sh 'mkdir -p reports'
+                    sh 'npm run test -- --coverage || true'
+                }
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'frontend/reports/junit.xml'
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+            steps {
+                dir('frontend') {
+                    withSonarQubeEnv("${SONARQUBE_ENV}") {
+                        sh """
+                        npx sonar-scanner \
+                          -Dsonar.projectKey=frontend \
+                          -Dsonar.projectName="PI Frontend" \
+                          -Dsonar.sources=src \
+                          -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/reports/**,**/*.test.*,**/*.spec.* \
+                          -Dsonar.javascript.lcov.reportPaths=reports/coverage/lcov.info \
+                          -Dsonar.host.url=${SONAR_HOST} \
+                          -Dsonar.token=${SONAR_TOKEN}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+            steps {
+                timeout(time: 2, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Build') {
+            when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+            steps {
+                dir('frontend') {
+                    sh 'npm run build'
+                }
+            }
+        }
+
+        stage('Docker Build') {
+            when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+            steps {
+                dir('frontend') {
+                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} -t ${DOCKER_IMAGE}:latest ."
+                }
+            }
+        }
+
+        stage('Docker Push') {
+            when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-credentials',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh """
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
+                    docker push ${DOCKER_IMAGE}:latest
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            script {
+                if (env.FRONTEND_CHANGED == 'true') {
+                    echo "✅ Frontend CI SUCCESS — build #${BUILD_NUMBER}"
+                    build job: 'frontend-CD', wait: false
+                }
+            }
+        }
+        failure {
+            echo "❌ Frontend CI FAILED — build #${BUILD_NUMBER}"
+        }
+        always {
+            cleanWs()
+        }
+    }
+}

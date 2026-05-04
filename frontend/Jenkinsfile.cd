@@ -1,0 +1,49 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "dhiahaddeji/pi-front"
+        FRONTEND_PORT = "5173"
+    }
+
+    stages {
+
+        stage('Pull Image') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-credentials',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh """
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    docker pull ${DOCKER_IMAGE}:latest
+                    """
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh """
+                docker stop pi-front || true
+                docker rm   pi-front || true
+                docker run -d \
+                  --name pi-front \
+                  --restart unless-stopped \
+                  -p 5173:80 \
+                  ${DOCKER_IMAGE}:latest
+                """
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Frontend CD SUCCESS — déployé sur :5173"
+        }
+        failure {
+            echo "❌ Frontend CD FAILED"
+        }
+    }
+}
