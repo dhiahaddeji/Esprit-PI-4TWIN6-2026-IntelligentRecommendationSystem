@@ -5,6 +5,10 @@ pipeline {
         nodejs "nodejs"
     }
 
+    triggers {
+        pollSCM('H/5 * * * *')
+    }
+
     environment {
         SONARQUBE_ENV    = "sonarqube"
         SONAR_TOKEN      = credentials("sonar-token1")
