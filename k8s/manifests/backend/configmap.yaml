@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: assurreco
+data:
+  NODE_ENV: "production"
+  PORT: "3000"
+  # L'IP du master node (ou un LoadBalancer) — à adapter
+  FRONTEND_URL: "http://172.16.1.211:30080"
+  GITHUB_CALLBACK_URL: "http://172.16.1.211:30300/auth/github/callback"
+  ML_SERVICE_URL: "http://ml-service-svc:5000"

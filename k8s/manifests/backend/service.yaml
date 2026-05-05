@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-svc
+  namespace: assurreco
+spec:
+  selector:
+    app: backend
+  type: NodePort
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 30300   # Accessible via <NodeIP>:30300
