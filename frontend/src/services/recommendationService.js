@@ -1,6 +1,6 @@
 // services/recommendationService.js
 
-import API from "../api"; // utilise ton instance existante
+import API from "../api/http"; // utilise ton instance existante
 
 // 🔹 Lancer recommandation IA
 export const runRecommendation = async (activityId) => {
