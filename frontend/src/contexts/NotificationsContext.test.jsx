@@ -2,17 +2,20 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, act, fireEvent } from "@testing-library/react";
 import { NotificationsProvider, useNotifications, NOTIF_META } from "./NotificationsContext";
 
-// Mock socket.io-client
+// Capture socket callbacks so tests can trigger them
+const socketCallbacks = {};
+const mockSocket = {
+  on: vi.fn((event, cb) => { socketCallbacks[event] = cb; }),
+  off: vi.fn(),
+  emit: vi.fn(),
+  disconnect: vi.fn(),
+  removeAllListeners: vi.fn(),
+  connected: false,
+  active: false,
+};
+
 vi.mock("socket.io-client", () => ({
-  io: vi.fn(() => ({
-    on: vi.fn(),
-    off: vi.fn(),
-    emit: vi.fn(),
-    disconnect: vi.fn(),
-    removeAllListeners: vi.fn(),
-    connected: false,
-    active: false,
-  })),
+  io: vi.fn(() => mockSocket),
 }));
 
 // Mock fetch
@@ -105,6 +108,74 @@ describe("NotificationsContext", () => {
     });
 
     expect(screen.getByTestId("unread").textContent).toBe("0");
+  });
+
+  it("socket notification adds a toast", async () => {
+    localStorage.setItem("access_token", "test-token");
+
+    await act(async () => {
+      render(
+        <NotificationsProvider>
+          <NotifConsumer />
+        </NotificationsProvider>
+      );
+    });
+
+    // Wait for the 100ms init timeout to fire and open the socket
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 200));
+    });
+
+    // Trigger a notification via the mocked socket
+    await act(async () => {
+      if (socketCallbacks["notification"]) {
+        socketCallbacks["notification"]({
+          _id: "n1",
+          type: "new_message",
+          title: "Test",
+          message: "Hello",
+        });
+      }
+    });
+
+    expect(screen.getByTestId("toasts").textContent).toBe("1");
+    expect(screen.getByTestId("unread").textContent).toBe("1");
+  });
+
+  it("loadNotifications handles 401 response by clearing token", async () => {
+    localStorage.setItem("access_token", "expired-token");
+    mockFetch.mockResolvedValue({ ok: false, status: 401, json: vi.fn() });
+
+    await act(async () => {
+      render(
+        <NotificationsProvider>
+          <NotifConsumer />
+        </NotificationsProvider>
+      );
+    });
+
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 200));
+    });
+
+    expect(localStorage.getItem("access_token")).toBeNull();
+  });
+
+  it("loadNotifications skips when no token", async () => {
+    // No token set — fetch should not be called
+    await act(async () => {
+      render(
+        <NotificationsProvider>
+          <NotifConsumer />
+        </NotificationsProvider>
+      );
+    });
+
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 200));
+    });
+
+    expect(mockFetch).not.toHaveBeenCalled();
   });
 });
 
