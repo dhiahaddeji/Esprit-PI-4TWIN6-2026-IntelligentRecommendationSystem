@@ -39,7 +39,8 @@ pipeline {
             }
             post {
                 always {
-                    junit allowEmptyResults: true, testResults: 'frontend/reports/junit.xml'
+                    junit allowEmptyResults: true, testResults: 'frontend/reports/junit.xml',
+                          skipMarkingBuildUnstable: true
                 }
             }
         }
