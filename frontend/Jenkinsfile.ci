@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    tools {
-        nodejs "nodejs"
-    }
-
     triggers {
         pollSCM('H/5 * * * *')
     }
@@ -15,6 +11,7 @@ pipeline {
         SONAR_HOST    = "http://localhost:9000"
         DOCKER_IMAGE  = "dhiahaddeji/pi-front"
         DOCKER_TAG    = "${BUILD_NUMBER}"
+        PATH          = "C:\\Program Files\\nodejs;${env.PATH}"
     }
 
     stages {
