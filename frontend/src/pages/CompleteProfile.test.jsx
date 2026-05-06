@@ -49,8 +49,9 @@ describe('CompleteProfile', () => {
       </BrowserRouter>
     );
 
+    // fireEvent.submit bypasses native HTML5 required-field validation in jsdom
     const submitButton = screen.getByRole('button', { name: /Accéder à la plateforme/ });
-    fireEvent.click(submitButton);
+    fireEvent.submit(submitButton.closest('form'));
 
     await waitFor(() => {
       expect(screen.getByText('Le prénom et le nom sont obligatoires.')).toBeInTheDocument();
