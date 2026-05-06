@@ -47,7 +47,7 @@ pipeline {
         }
 
         stage('Install') {
-            when { environment name: 'BACKEND_CHANGED', value: 'true' }
+            when { expression { env.BACKEND_CHANGED == 'true' } }
             steps {
                 dir('backend') {
                     sh 'npm ci'
@@ -56,7 +56,7 @@ pipeline {
         }
 
         stage('Test') {
-            when { environment name: 'BACKEND_CHANGED', value: 'true' }
+            when { expression { env.BACKEND_CHANGED == 'true' } }
             steps {
                 dir('backend') {
                     sh 'npm run test -- --coverage --forceExit || true'
@@ -70,7 +70,7 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            when { environment name: 'BACKEND_CHANGED', value: 'true' }
+            when { expression { env.BACKEND_CHANGED == 'true' } }
             steps {
                 dir('backend') {
                     withSonarQubeEnv("${SONARQUBE_ENV}") {
@@ -90,7 +90,7 @@ pipeline {
         }
 
         stage('Quality Gate') {
-            when { environment name: 'BACKEND_CHANGED', value: 'true' }
+            when { expression { env.BACKEND_CHANGED == 'true' } }
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
@@ -99,7 +99,7 @@ pipeline {
         }
 
         stage('Build') {
-            when { environment name: 'BACKEND_CHANGED', value: 'true' }
+            when { expression { env.BACKEND_CHANGED == 'true' } }
             steps {
                 dir('backend') {
                     sh 'npm run build'
@@ -108,7 +108,7 @@ pipeline {
         }
 
         stage('Docker Build') {
-            when { environment name: 'BACKEND_CHANGED', value: 'true' }
+            when { expression { env.BACKEND_CHANGED == 'true' } }
             steps {
                 dir('backend') {
                     sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} -t ${DOCKER_IMAGE}:latest ."
@@ -117,7 +117,7 @@ pipeline {
         }
 
         stage('Docker Push') {
-            when { environment name: 'BACKEND_CHANGED', value: 'true' }
+            when { expression { env.BACKEND_CHANGED == 'true' } }
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-credentials',
