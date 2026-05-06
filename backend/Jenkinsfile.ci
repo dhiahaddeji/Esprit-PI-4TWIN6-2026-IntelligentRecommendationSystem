@@ -27,16 +27,16 @@ pipeline {
             }
         }
 
-        // Vérifie si des fichiers backend/ ont changé dans ce commit
+        // Vérifie si des fichiers backend/ ont changé dans le dernier commit
         stage('Detect Changes') {
             steps {
                 script {
                     def changedFiles = sh(
-                        script: "git diff --name-only HEAD~1 HEAD 2>/dev/null || git diff --name-only HEAD",
+                        script: "git diff-tree --no-commit-id -r --name-only HEAD",
                         returnStdout: true
                     ).trim()
                     echo "Changed files:\n${changedFiles}"
-                    if (changedFiles.split('\n').any { it.startsWith('backend/') }) {
+                    if (changedFiles == '' || changedFiles.split('\n').any { it.startsWith('backend/') }) {
                         env.BACKEND_CHANGED = "true"
                         echo "✅ Backend changes detected — pipeline continues"
                     } else {
