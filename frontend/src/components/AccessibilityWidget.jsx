@@ -474,10 +474,8 @@ export default function AccessibilityWidget() {
         aria-label="Accessibility settings"
         title="Accessibility settings"
       >
-        <svg viewBox="0 0 24 24" fill="currentColor" width="26" height="26" aria-hidden="true">
-          <circle cx="12" cy="4.5" r="2.2"/>
-          <path d="M16.5 9.5H13L11.5 7.5H8.5L7 9.5v1H9l1 6.5h1L12.5 13h2L16 16.5l1.5-.5L16.5 9.5z"/>
-          <path d="M11 17.5c0 2.2-1.8 4-4 4s-4-1.8-4-4 1.8-4 4-4c.4 0 .8.1 1.2.2L9 11.5c-.6-.1-1.3-.2-2-.2C3.1 11.3 1 13.2 1 17.5S3.1 23.5 7 23.5c2.7 0 5-1.6 6.1-4H11v-2z"/>
+        <svg xmlns="http://www.w3.org/2000/svg" height="26px" viewBox="0 -960 960 960" width="26px" fill="currentColor" aria-hidden="true">
+          <path d="M423.5-743.5Q400-767 400-800t23.5-56.5Q447-880 480-880t56.5 23.5Q560-833 560-800t-23.5 56.5Q513-720 480-720t-56.5-23.5ZM360-80v-520H120v-80h720v80H600v520h-80v-240h-80v240h-80Z"/>
         </svg>
       </button>
 

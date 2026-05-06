@@ -200,19 +200,6 @@ export default function Topbar() {
             🖐️
           </button>
 
-          {/* ACCESSIBILITÉ */}
-          <button
-            className="iconBtn"
-            type="button"
-            onClick={() => window.dispatchEvent(new Event("toggle-a11y-widget"))}
-            aria-label="Accessibilité"
-            title="Accessibilité"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 -960 960 960" width="22px" fill="currentColor" aria-hidden="true">
-              <path d="M423.5-743.5Q400-767 400-800t23.5-56.5Q447-880 480-880t56.5 23.5Q560-833 560-800t-23.5 56.5Q513-720 480-720t-56.5-23.5ZM360-80v-520H120v-80h720v80H600v520h-80v-240h-80v240h-80Z"/>
-            </svg>
-          </button>
-
           {/* ── NOTIFICATIONS ─────────────────────────────────────────── */}
           <div className="notifWrap">
             <button
