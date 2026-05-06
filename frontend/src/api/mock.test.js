@@ -11,13 +11,13 @@ describe('mock', () => {
       expect(mockApiFn).toHaveBeenCalled();
     });
 
-    it('returns fallback data in correct shape', async () => {
-      const mockApiFn = vi.fn();
+    it('returns api result when not in mock mode', async () => {
+      const mockApiFn = vi.fn().mockResolvedValue({ data: { test: 'data' } });
       const fallback = { test: 'data' };
-      
+
       const result = await safeCall(mockApiFn, fallback);
-      
-      expect(result).toHaveProperty('data');
+
+      expect(result).toEqual({ data: { test: 'data' } });
     });
   });
 

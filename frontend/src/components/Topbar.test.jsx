@@ -12,6 +12,12 @@ vi.mock('../contexts/NotificationsContext', () => ({
     markRead: vi.fn(),
   }),
 }));
+vi.mock('../contexts/ThemeContext', () => ({
+  useTheme: () => ({ isDark: false, toggle: vi.fn() }),
+}));
+vi.mock('../contexts/TranslationContext', () => ({
+  useTranslation: () => ({ t: (k) => k, language: 'fr', setLanguage: vi.fn() }),
+}));
 
 describe('Topbar', () => {
   it('renders topbar', () => {
