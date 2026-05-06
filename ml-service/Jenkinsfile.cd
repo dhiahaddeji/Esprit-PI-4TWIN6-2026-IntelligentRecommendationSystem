@@ -1,0 +1,317 @@
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_REGISTRY = credentials('docker-registry-url')
+        DOCKER_CREDENTIALS = credentials('docker-credentials')
+        RENDER_API_KEY = credentials('render-api-key')
+        RENDER_SERVICE_ID = credentials('render-service-id')
+        IMAGE_NAME = "ml-service"
+        IMAGE_TAG = "${env.BUILD_NUMBER}"
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out ML service code...'
+                checkout scm
+            }
+        }
+        
+        stage('Wait for CI') {
+            steps {
+                script {
+                    echo 'Waiting for CI pipeline to complete...'
+                    // This assumes CI pipeline runs first
+                    // You can add logic to check CI job status if needed
+                    sleep(time: 5, unit: 'SECONDS')
+                }
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                dir('ml-service') {
+                    script {
+                        echo "Building Docker image: ${IMAGE_NAME}:${IMAGE_TAG}"
+                        
+                        if (isUnix()) {
+                            sh """
+                                docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:latest .
+                            """
+                        } else {
+                            bat """
+                                docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:latest .
+                            """
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Push to Docker Registry') {
+            steps {
+                script {
+                    echo 'Pushing Docker image to registry...'
+                    
+                    if (isUnix()) {
+                        sh """
+                            echo ${DOCKER_CREDENTIALS_PSW} | docker login -u ${DOCKER_CREDENTIALS_USR} --password-stdin ${DOCKER_REGISTRY}
+                            docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+                            docker tag ${IMAGE_NAME}:latest ${DOCKER_REGISTRY}/${IMAGE_NAME}:latest
+                            docker push ${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+                            docker push ${DOCKER_REGISTRY}/${IMAGE_NAME}:latest
+                        """
+                    } else {
+                        bat """
+                            echo %DOCKER_CREDENTIALS_PSW% | docker login -u %DOCKER_CREDENTIALS_USR% --password-stdin %DOCKER_REGISTRY%
+                            docker tag ${IMAGE_NAME}:${IMAGE_TAG} %DOCKER_REGISTRY%/${IMAGE_NAME}:${IMAGE_TAG}
+                            docker tag ${IMAGE_NAME}:latest %DOCKER_REGISTRY%/${IMAGE_NAME}:latest
+                            docker push %DOCKER_REGISTRY%/${IMAGE_NAME}:${IMAGE_TAG}
+                            docker push %DOCKER_REGISTRY%/${IMAGE_NAME}:latest
+                        """
+                    }
+                }
+            }
+        }
+        
+        stage('Deploy to Render') {
+            steps {
+                script {
+                    echo 'Triggering deployment on Render...'
+                    
+                    def deployResponse
+                    if (isUnix()) {
+                        deployResponse = sh(
+                            script: """
+                                curl -X POST "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys" \
+                                -H "Authorization: Bearer ${RENDER_API_KEY}" \
+                                -H "Content-Type: application/json" \
+                                -d '{"clearCache": false}'
+                            """,
+                            returnStdout: true
+                        ).trim()
+                    } else {
+                        deployResponse = bat(
+                            script: """
+                                curl -X POST "https://api.render.com/v1/services/%RENDER_SERVICE_ID%/deploys" ^
+                                -H "Authorization: Bearer %RENDER_API_KEY%" ^
+                                -H "Content-Type: application/json" ^
+                                -d "{\\"clearCache\\": false}"
+                            """,
+                            returnStdout: true
+                        ).trim()
+                    }
+                    
+                    echo "Deployment response: ${deployResponse}"
+                    
+                    // Extract deploy ID from response
+                    def deployId = deployResponse =~ /"id":"([^"]+)"/
+                    if (deployId) {
+                        env.DEPLOY_ID = deployId[0][1]
+                        echo "Deployment triggered with ID: ${env.DEPLOY_ID}"
+                    } else {
+                        error "Failed to trigger deployment on Render"
+                    }
+                }
+            }
+        }
+        
+        stage('Monitor Deployment') {
+            steps {
+                script {
+                    echo 'Monitoring deployment status...'
+                    
+                    def maxWait = 600 // 10 minutes
+                    def elapsed = 0
+                    def interval = 15
+                    def status = ''
+                    
+                    while (elapsed < maxWait) {
+                        if (isUnix()) {
+                            status = sh(
+                                script: """
+                                    curl -s "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys/${env.DEPLOY_ID}" \
+                                    -H "Authorization: Bearer ${RENDER_API_KEY}" | grep -o '"status":"[^"]*"' | cut -d'"' -f4
+                                """,
+                                returnStdout: true
+                            ).trim()
+                        } else {
+                            def response = bat(
+                                script: """
+                                    curl -s "https://api.render.com/v1/services/%RENDER_SERVICE_ID%/deploys/%DEPLOY_ID%" ^
+                                    -H "Authorization: Bearer %RENDER_API_KEY%"
+                                """,
+                                returnStdout: true
+                            ).trim()
+                            
+                            def statusMatch = response =~ /"status":"([^"]+)"/
+                            status = statusMatch ? statusMatch[0][1] : ''
+                        }
+                        
+                        echo "Deployment status: ${status} (${elapsed}s elapsed)"
+                        
+                        if (status == 'live') {
+                            echo '✓ Deployment successful!'
+                            break
+                        } else if (status == 'build_failed' || status == 'deploy_failed') {
+                            error "✗ Deployment failed with status: ${status}"
+                        }
+                        
+                        sleep(time: interval, unit: 'SECONDS')
+                        elapsed += interval
+                    }
+                    
+                    if (elapsed >= maxWait && status != 'live') {
+                        error "✗ Deployment timed out after ${maxWait}s"
+                    }
+                }
+            }
+        }
+        
+        stage('Health Check') {
+            steps {
+                script {
+                    echo 'Running health check on deployed service...'
+                    
+                    def serviceUrl = "https://ml-service.onrender.com"
+                    def maxAttempts = 10
+                    def attempt = 0
+                    def healthCheckPassed = false
+                    
+                    while (attempt < maxAttempts) {
+                        attempt++
+                        echo "Health check attempt ${attempt}/${maxAttempts}..."
+                        
+                        try {
+                            def httpCode
+                            if (isUnix()) {
+                                httpCode = sh(
+                                    script: "curl -s -o /dev/null -w '%{http_code}' ${serviceUrl}/health",
+                                    returnStdout: true
+                                ).trim()
+                            } else {
+                                httpCode = bat(
+                                    script: "curl -s -o nul -w \"%%{http_code}\" ${serviceUrl}/health",
+                                    returnStdout: true
+                                ).trim()
+                            }
+                            
+                            if (httpCode == '200') {
+                                echo '✓ Health check passed!'
+                                
+                                def healthResponse
+                                if (isUnix()) {
+                                    healthResponse = sh(
+                                        script: "curl -s ${serviceUrl}/health",
+                                        returnStdout: true
+                                    ).trim()
+                                } else {
+                                    healthResponse = bat(
+                                        script: "curl -s ${serviceUrl}/health",
+                                        returnStdout: true
+                                    ).trim()
+                                }
+                                
+                                echo "Health response: ${healthResponse}"
+                                healthCheckPassed = true
+                                break
+                            }
+                            
+                            echo "Health check returned: ${httpCode}"
+                        } catch (Exception e) {
+                            echo "Health check failed: ${e.message}"
+                        }
+                        
+                        if (attempt < maxAttempts) {
+                            echo 'Waiting 10s before retry...'
+                            sleep(time: 10, unit: 'SECONDS')
+                        }
+                    }
+                    
+                    if (!healthCheckPassed) {
+                        error "✗ Health check failed after ${maxAttempts} attempts"
+                    }
+                }
+            }
+        }
+        
+        stage('Cleanup Docker Images') {
+            steps {
+                script {
+                    echo 'Cleaning up old Docker images...'
+                    
+                    if (isUnix()) {
+                        sh """
+                            docker image prune -f
+                            docker rmi ${IMAGE_NAME}:${IMAGE_TAG} || true
+                        """
+                    } else {
+                        bat """
+                            docker image prune -f
+                            docker rmi ${IMAGE_NAME}:${IMAGE_TAG} || exit 0
+                        """
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo '✓ ML Service CD Pipeline completed successfully!'
+            echo "Deployed version: ${IMAGE_TAG}"
+            echo "Service URL: https://ml-service.onrender.com"
+            
+            script {
+                // Send notification (optional)
+                emailext(
+                    subject: "ML Service Deployment Successful - Build #${env.BUILD_NUMBER}",
+                    body: """
+                        ML Service has been successfully deployed!
+                        
+                        Build Number: ${env.BUILD_NUMBER}
+                        Image Tag: ${IMAGE_TAG}
+                        Deploy ID: ${env.DEPLOY_ID}
+                        Service URL: https://ml-service.onrender.com
+                        
+                        Jenkins Job: ${env.BUILD_URL}
+                    """,
+                    to: '${DEFAULT_RECIPIENTS}',
+                    mimeType: 'text/plain'
+                )
+            }
+        }
+        
+        failure {
+            echo '✗ ML Service CD Pipeline failed!'
+            
+            script {
+                // Send failure notification (optional)
+                emailext(
+                    subject: "ML Service Deployment Failed - Build #${env.BUILD_NUMBER}",
+                    body: """
+                        ML Service deployment has failed!
+                        
+                        Build Number: ${env.BUILD_NUMBER}
+                        Image Tag: ${IMAGE_TAG}
+                        
+                        Please check the Jenkins logs for details:
+                        ${env.BUILD_URL}
+                        
+                        Action Required:
+                        1. Review the deployment logs
+                        2. Check Render dashboard for service status
+                        3. Verify if rollback is needed
+                    """,
+                    to: '${DEFAULT_RECIPIENTS}',
+                    mimeType: 'text/plain'
+                )
+            }
+        }
+        
+        always {
+            echo 'Deployment process completed.'
+        }
+    }
+}

@@ -1,0 +1,314 @@
+pipeline {
+    agent any
+    
+    environment {
+        PYTHON_VERSION = '3.11'
+        VENV_DIR = 'venv'
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out ML service code...'
+                checkout scm
+            }
+        }
+        
+        stage('Setup Python Environment') {
+            steps {
+                dir('ml-service') {
+                    script {
+                        if (isUnix()) {
+                            sh '''
+                                python3 --version
+                                python3 -m venv ${VENV_DIR}
+                                . ${VENV_DIR}/bin/activate
+                                pip install --upgrade pip
+                                pip install -r requirements.txt
+                            '''
+                        } else {
+                            bat '''
+                                python --version
+                                python -m venv %VENV_DIR%
+                                call %VENV_DIR%\\Scripts\\activate.bat
+                                pip install --upgrade pip
+                                pip install -r requirements.txt
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Code Linting') {
+            parallel {
+                stage('Black - Code Formatting') {
+                    steps {
+                        dir('ml-service') {
+                            script {
+                                echo 'Running Black code formatter check...'
+                                if (isUnix()) {
+                                    sh '''
+                                        . ${VENV_DIR}/bin/activate
+                                        pip install black
+                                        black --check --diff . || true
+                                    '''
+                                } else {
+                                    bat '''
+                                        call %VENV_DIR%\\Scripts\\activate.bat
+                                        pip install black
+                                        black --check --diff . || exit 0
+                                    '''
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                stage('isort - Import Sorting') {
+                    steps {
+                        dir('ml-service') {
+                            script {
+                                echo 'Running isort import sorting check...'
+                                if (isUnix()) {
+                                    sh '''
+                                        . ${VENV_DIR}/bin/activate
+                                        pip install isort
+                                        isort --check-only --diff . || true
+                                    '''
+                                } else {
+                                    bat '''
+                                        call %VENV_DIR%\\Scripts\\activate.bat
+                                        pip install isort
+                                        isort --check-only --diff . || exit 0
+                                    '''
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                stage('Flake8 - Style Guide') {
+                    steps {
+                        dir('ml-service') {
+                            script {
+                                echo 'Running Flake8 style guide enforcement...'
+                                if (isUnix()) {
+                                    sh '''
+                                        . ${VENV_DIR}/bin/activate
+                                        pip install flake8
+                                        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+                                        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+                                    '''
+                                } else {
+                                    bat '''
+                                        call %VENV_DIR%\\Scripts\\activate.bat
+                                        pip install flake8
+                                        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+                                        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+                                    '''
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Run Tests') {
+            steps {
+                dir('ml-service') {
+                    script {
+                        echo 'Running unit tests...'
+                        if (isUnix()) {
+                            sh '''
+                                . ${VENV_DIR}/bin/activate
+                                pytest tests/ -v --tb=short
+                            '''
+                        } else {
+                            bat '''
+                                call %VENV_DIR%\\Scripts\\activate.bat
+                                pytest tests/ -v --tb=short
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Code Coverage') {
+            steps {
+                dir('ml-service') {
+                    script {
+                        echo 'Generating code coverage report...'
+                        if (isUnix()) {
+                            sh '''
+                                . ${VENV_DIR}/bin/activate
+                                pytest tests/ -v --cov=. --cov-report=xml --cov-report=html --cov-report=term
+                                coverage report --fail-under=80
+                            '''
+                        } else {
+                            bat '''
+                                call %VENV_DIR%\\Scripts\\activate.bat
+                                pytest tests/ -v --cov=. --cov-report=xml --cov-report=html --cov-report=term
+                                coverage report --fail-under=80
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Security Scanning') {
+            parallel {
+                stage('Safety - Dependency Vulnerabilities') {
+                    steps {
+                        dir('ml-service') {
+                            script {
+                                echo 'Scanning dependencies for vulnerabilities...'
+                                if (isUnix()) {
+                                    sh '''
+                                        . ${VENV_DIR}/bin/activate
+                                        pip install safety
+                                        safety check --file requirements.txt --json > safety-report.json || true
+                                        safety check --file requirements.txt || true
+                                    '''
+                                } else {
+                                    bat '''
+                                        call %VENV_DIR%\\Scripts\\activate.bat
+                                        pip install safety
+                                        safety check --file requirements.txt --json > safety-report.json || exit 0
+                                        safety check --file requirements.txt || exit 0
+                                    '''
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                stage('Bandit - Code Security') {
+                    steps {
+                        dir('ml-service') {
+                            script {
+                                echo 'Scanning code for security issues...'
+                                if (isUnix()) {
+                                    sh '''
+                                        . ${VENV_DIR}/bin/activate
+                                        pip install bandit
+                                        bandit -r . -f json -o bandit-report.json -ll || true
+                                        bandit -r . -ll || true
+                                    '''
+                                } else {
+                                    bat '''
+                                        call %VENV_DIR%\\Scripts\\activate.bat
+                                        pip install bandit
+                                        bandit -r . -f json -o bandit-report.json -ll || exit 0
+                                        bandit -r . -ll || exit 0
+                                    '''
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                dir('ml-service') {
+                    script {
+                        echo 'Building Docker image...'
+                        def imageName = "ml-service:${env.BUILD_NUMBER}"
+                        def imageLatest = "ml-service:latest"
+                        
+                        if (isUnix()) {
+                            sh """
+                                docker build -t ${imageName} -t ${imageLatest} .
+                            """
+                        } else {
+                            bat """
+                                docker build -t ${imageName} -t ${imageLatest} .
+                            """
+                        }
+                        
+                        env.ML_IMAGE_NAME = imageName
+                    }
+                }
+            }
+        }
+        
+        stage('Test Docker Image') {
+            steps {
+                script {
+                    echo 'Testing Docker image...'
+                    def containerName = "ml-test-${env.BUILD_NUMBER}"
+                    
+                    try {
+                        if (isUnix()) {
+                            sh """
+                                docker run -d -p 8000:8000 --name ${containerName} ${env.ML_IMAGE_NAME}
+                                sleep 15
+                                curl -f http://localhost:8000/health || exit 1
+                            """
+                        } else {
+                            bat """
+                                docker run -d -p 8000:8000 --name ${containerName} ${env.ML_IMAGE_NAME}
+                                timeout /t 15 /nobreak
+                                curl -f http://localhost:8000/health || exit 1
+                            """
+                        }
+                    } finally {
+                        if (isUnix()) {
+                            sh """
+                                docker stop ${containerName} || true
+                                docker rm ${containerName} || true
+                            """
+                        } else {
+                            bat """
+                                docker stop ${containerName} || exit 0
+                                docker rm ${containerName} || exit 0
+                            """
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Archive Artifacts') {
+            steps {
+                dir('ml-service') {
+                    script {
+                        echo 'Archiving test reports and coverage...'
+                        archiveArtifacts artifacts: 'htmlcov/**/*', allowEmptyArchive: true
+                        archiveArtifacts artifacts: 'coverage.xml', allowEmptyArchive: true
+                        archiveArtifacts artifacts: '*-report.json', allowEmptyArchive: true
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            dir('ml-service') {
+                script {
+                    echo 'Cleaning up...'
+                    if (isUnix()) {
+                        sh 'rm -rf ${VENV_DIR} || true'
+                    } else {
+                        bat 'rmdir /s /q %VENV_DIR% || exit 0'
+                    }
+                }
+            }
+        }
+        
+        success {
+            echo '✓ ML Service CI Pipeline completed successfully!'
+            echo "Docker image built: ${env.ML_IMAGE_NAME}"
+        }
+        
+        failure {
+            echo '✗ ML Service CI Pipeline failed!'
+        }
+    }
+}
