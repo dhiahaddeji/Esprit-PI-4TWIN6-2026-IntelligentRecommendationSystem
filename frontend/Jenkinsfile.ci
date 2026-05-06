@@ -34,7 +34,7 @@ pipeline {
             steps {
                 dir('frontend') {
                     bat 'if not exist reports mkdir reports'
-                    bat 'npm run test -- --coverage || exit 0'
+                    bat 'npm run test -- --coverage --pool=forks --reporter=verbose || exit 0'
                 }
             }
             post {
