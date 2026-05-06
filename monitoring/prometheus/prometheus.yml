@@ -1,8 +1,9 @@
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
+  scrape_timeout: 10s
   external_labels:
-    monitor: 'nestjs-monitoring'
+    monitor: assurreco-monitoring
 
 alerting:
   alertmanagers:
@@ -11,33 +12,39 @@ alerting:
             - alertmanager:9093
 
 rule_files:
-  - '/etc/prometheus/alerts.yml'
+  - /etc/prometheus/alert-rules.yml
 
 scrape_configs:
-  - job_name: 'prometheus'
+  # ── Prometheus self-monitoring ─────────────────────────────────────────
+  - job_name: prometheus
     static_configs:
-      - targets: ['localhost:9090']
+      - targets: ["localhost:9090"]
 
-  - job_name: 'nestjs-backend'
+  # ── AssurReco Backend ─────────────────────────────────────────────────
+  - job_name: assurreco-backend
     scrape_interval: 10s
+    metrics_path: /metrics
     static_configs:
-      - targets: ['host.docker.internal:3000']
-    metrics_path: '/metrics'
+      - targets:
+          - host.docker.internal:3000
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: "assurreco-backend"
 
-  - job_name: 'react-frontend'
-    scrape_interval: 10s
+  # ── Node Exporter (host metrics) ──────────────────────────────────────
+  - job_name: node-exporter
     static_configs:
-      - targets: ['host.docker.internal:5173']
-    metrics_path: '/metrics'
+      - targets: ["node-exporter:9100"]
 
-  - job_name: 'node-exporter'
-    static_configs:
-      - targets: ['node-exporter:9100']
+  # ── MongoDB Exporter ──────────────────────────────────────────────────
+  # - job_name: mongodb-exporter
+  #   static_configs:
+  #     - targets: ["mongodb-exporter:9216"]
 
-  - job_name: 'mongodb-exporter'
-    static_configs:
-      - targets: ['mongodb-exporter:9216']
-
-  - job_name: 'grafana'
-    static_configs:
-      - targets: ['grafana:3000']
+  # ── Python ML Service ─────────────────────────────────────────────────
+  # (add prometheus-fastapi-instrumentator to ml-service to enable)
+  # - job_name: assurreco-ml
+  #   metrics_path: /metrics
+  #   static_configs:
+  #     - targets: ["host.docker.internal:8000"]

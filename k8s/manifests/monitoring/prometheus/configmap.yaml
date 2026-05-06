@@ -1,0 +1,119 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: assurreco
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      scrape_timeout: 10s
+
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets:
+                - alertmanager:9093
+
+    rule_files:
+      - /etc/prometheus/alert-rules.yml
+
+    scrape_configs:
+      - job_name: prometheus
+        static_configs:
+          - targets: ["localhost:9090"]
+
+      - job_name: assurreco-backend
+        scrape_interval: 10s
+        metrics_path: /metrics
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names: [assurreco]
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: "true"
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+
+  alert-rules.yml: |
+    groups:
+      - name: availability
+        rules:
+          - alert: BackendDown
+            expr: up{job="assurreco-backend"} == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "AssurReco backend is DOWN"
+              description: "Backend pod unreachable for more than 1 minute."
+
+      - name: http_errors
+        rules:
+          - alert: HighErrorRate
+            expr: |
+              (
+                rate(assurreco_http_requests_total{status_code=~"5.."}[5m])
+                /
+                rate(assurreco_http_requests_total[5m])
+              ) > 0.05
+            for: 2m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High HTTP 5xx error rate ({{ $value | humanizePercentage }})"
+              description: "More than 5% of requests returning 5xx."
+
+          - alert: CriticalErrorRate
+            expr: |
+              (
+                rate(assurreco_http_requests_total{status_code=~"5.."}[5m])
+                /
+                rate(assurreco_http_requests_total[5m])
+              ) > 0.20
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Critical HTTP 5xx error rate ({{ $value | humanizePercentage }})"
+              description: "More than 20% of requests returning 5xx."
+
+      - name: latency
+        rules:
+          - alert: HighResponseLatency
+            expr: |
+              histogram_quantile(0.95,
+                rate(assurreco_http_request_duration_seconds_bucket[5m])
+              ) > 1
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High P95 latency ({{ $value | humanizeDuration }})"
+              description: "95th percentile response time > 1s for 5 minutes."
+
+      - name: memory
+        rules:
+          - alert: HighMemoryUsage
+            expr: |
+              (assurreco_process_resident_memory_bytes / (512 * 1024 * 1024)) > 0.85
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Backend memory usage above 85% of limit"
+              description: "RSS: {{ $value | humanize1024 }}B"

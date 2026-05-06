@@ -1,0 +1,98 @@
+groups:
+  # ── Service Availability ─────────────────────────────────────────────────
+  - name: availability
+    rules:
+      - alert: BackendDown
+        expr: up{job="assurreco-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "AssurReco backend is DOWN"
+          description: "The NestJS backend has been unreachable for more than 1 minute."
+
+  # ── HTTP Errors ──────────────────────────────────────────────────────────
+  - name: http_errors
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          (
+            rate(assurreco_http_requests_total{status_code=~"5.."}[5m])
+            /
+            rate(assurreco_http_requests_total[5m])
+          ) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High HTTP 5xx error rate ({{ $value | humanizePercentage }})"
+          description: "More than 5% of requests are returning 5xx errors over the last 5 minutes."
+
+      - alert: CriticalErrorRate
+        expr: |
+          (
+            rate(assurreco_http_requests_total{status_code=~"5.."}[5m])
+            /
+            rate(assurreco_http_requests_total[5m])
+          ) > 0.20
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical HTTP 5xx error rate ({{ $value | humanizePercentage }})"
+          description: "More than 20% of requests are returning 5xx errors."
+
+  # ── Latency ──────────────────────────────────────────────────────────────
+  - name: latency
+    rules:
+      - alert: HighResponseLatency
+        expr: |
+          histogram_quantile(0.95,
+            rate(assurreco_http_request_duration_seconds_bucket[5m])
+          ) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High P95 response latency ({{ $value | humanizeDuration }})"
+          description: "95th percentile response time exceeds 1 second for 5 minutes."
+
+      - alert: VeryHighResponseLatency
+        expr: |
+          histogram_quantile(0.99,
+            rate(assurreco_http_request_duration_seconds_bucket[5m])
+          ) > 3
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "P99 latency > 3s ({{ $value | humanizeDuration }})"
+          description: "99th percentile response time exceeds 3 seconds."
+
+  # ── Memory ───────────────────────────────────────────────────────────────
+  - name: memory
+    rules:
+      - alert: HighMemoryUsage
+        expr: |
+          (
+            assurreco_process_resident_memory_bytes
+            / (512 * 1024 * 1024)
+          ) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Backend memory usage above 85% of 512 Mi limit"
+          description: "RSS memory: {{ $value | humanize1024 }}B — approaching container limit."
+
+  # ── Request Volume ───────────────────────────────────────────────────────
+  - name: traffic
+    rules:
+      - alert: NoTraffic
+        expr: rate(assurreco_http_requests_total[10m]) == 0
+        for: 10m
+        labels:
+          severity: info
+        annotations:
+          summary: "No incoming HTTP traffic for 10 minutes"
+          description: "Zero requests received in the last 10 minutes — may indicate an outage or misconfiguration."
