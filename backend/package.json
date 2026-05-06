@@ -39,6 +39,7 @@
     "@types/nodemailer": "^7.0.11",
     "@types/passport-github2": "^1.2.9",
     "@vladmandic/face-api": "^1.7.15",
+    "@willsoto/nestjs-prometheus": "^6.1.0",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "class-transformer": "^0.5.1",
@@ -53,6 +54,7 @@
     "passport-github2": "^0.1.12",
     "passport-jwt": "^4.0.1",
     "pdf-parse": "^2.4.5",
+    "prom-client": "^15.1.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "socket.io": "^4.8.3"
