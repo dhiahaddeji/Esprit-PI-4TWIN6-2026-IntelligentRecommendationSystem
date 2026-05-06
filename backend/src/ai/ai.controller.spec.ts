@@ -49,7 +49,7 @@ describe('AiController', () => {
   describe('extractSkills', () => {
     it('calls aiService.extractSkillsFromDescription', async () => {
       const skills = { skills: ['Python', 'React'] };
-      aiService.extractSkillsFromDescription.mockResolvedValue(skills as any);
+      aiService.extractSkillsFromDescription.mockReturnValue(skills as any);
 
       const result = await controller.extractSkills({ description: 'I need a dev' } as any);
 
