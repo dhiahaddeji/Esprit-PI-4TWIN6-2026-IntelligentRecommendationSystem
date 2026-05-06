@@ -13,7 +13,7 @@ This platform enables organizations to manage the full lifecycle of employee ski
 - **HR teams** create training/certification activities and launch ML-powered recommendations
 - **SuperAdmins** manage users, departments, and monitor the entire platform
 
-The core innovation is a **local Python ML microservice** that ranks employees for each activity based on skill scores and compatibility — with zero dependency on external AI APIs. Scores update automatically after activity completion using an exponential smoothing formula.
+The core innovation is a **Python ML service** that ranks employees for each activity based on skill scores and compatibility — with zero dependency on external AI APIs. Scores update automatically after activity completion using an exponential smoothing formula.
 
 ---
 
@@ -50,7 +50,7 @@ The core innovation is a **local Python ML microservice** that ranks employees f
 - Platform-wide statistics
 
 ### Accessibility
-- Floating EqualWeb-style accessibility widget (screen reader, contrast, font size, virtual keyboard, reading guide, and more)
+- Floating accessibility widget (screen reader, contrast, font size, virtual keyboard, reading guide, and more)
 - Skip-to-content link for keyboard users
 - All features fully operable without a mouse
 
@@ -62,7 +62,7 @@ The core innovation is a **local Python ML microservice** that ranks employees f
 
 | Technology | Role |
 |---|---|
-| React 18 + Vite | SPA framework and dev server |
+| React 19 + Vite | SPA framework and dev server |
 | React Router | Client-side routing with role-based guards |
 | Axios | API communication |
 | CSS Modules / custom CSS | Scoped component styles |
@@ -87,7 +87,7 @@ The core innovation is a **local Python ML microservice** that ranks employees f
 
 | Technology | Role |
 |---|---|
-| FastAPI | REST microservice framework |
+| FastAPI | REST API framework |
 | scikit-learn | TF-IDF vectorizer, GradientBoostingClassifier, cosine similarity |
 | pandas / numpy | Data processing |
 | scipy | Statistical utilities |
@@ -99,8 +99,10 @@ The core innovation is a **local Python ML microservice** that ranks employees f
 | Technology | Role |
 |---|---|
 | Docker | Containerization |
-| Jenkins | CI/CD pipelines (frontend + backend) |
+| Jenkins | CI/CD pipelines (frontend + backend + ML) |
 | SonarQube | Code quality gate |
+| Render | Cloud deployment |
+| Kind | Local Kubernetes cluster |
 
 ---
 
@@ -181,7 +183,7 @@ npm run start:dev
 ```bash
 cd ml-service
 pip install -r requirements.txt
-python -m uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+uvicorn app:app --host 0.0.0.0 --port 8000 --reload
 # → http://localhost:8000
 ```
 
@@ -225,25 +227,27 @@ GITHUB_CALLBACK_URL=http://localhost:3000/auth/github/callback
 
 | Name | Role |
 |---|---|
-| Dhia Haddeji | Full-stack integration lead, ML service, CI/CD |
-| Team 4TWIN6 | Feature development across all modules |
+| Dhia Haddeji | Full-stack integration lead, ML service, CI/CD, DevOps |
+| Haroun Ben Salem | Backend development & API design |
+| Haider Adolfo Schenato | Frontend development & UI/UX |
+| Abir Mosrati | Full-stack development & database design |
 
 ---
 
 ## Academic Context
 
-**Institution:** Esprit School of Engineering, Tunis  
-**Program:** Engineering — 4th year, major TWIN (Technologies Web et Internet)  
-**Project type:** Projet d'Intégration (PI) — final-year capstone  
-**Academic year:** 2025–2026  
-**Branch:** `integration-final`
+**Institution:** Esprit School of Engineering, Tunis
+**Program:** Engineering — 4th year, major TWIN (Technologies Web et Internet)
+**Project type:** Projet d'Intégration (PI) — final-year capstone
+**Academic year:** 2025–2026
+**Class:** 4TWIN6
 
-This project was developed as the final integration deliverable for the TWIN6 class, combining all modules studied throughout the year: web development, software architecture, DevOps, machine learning, and human-computer interaction.
+This project was developed as the final integration deliverable for the 4TWIN6 class, combining all modules studied throughout the year: web development, software architecture, DevOps, machine learning, and human-computer interaction.
 
 ---
 
 ## Acknowledgment
 
-We thank the faculty and supervisors at **Esprit School of Engineering** for their guidance throughout this project.
+We would like to express our sincere gratitude to our project supervisor **Safe Saoud** for their invaluable guidance, continuous support, and constructive feedback throughout this project.
 
-Special thanks to FATMA LOUHICHI and the open-source communities behind NestJS, React, FastAPI, and scikit-learn — this project would not be possible without their work.
+We also thank the open-source communities behind NestJS, React, FastAPI, and scikit-learn — this project would not be possible without their work.
