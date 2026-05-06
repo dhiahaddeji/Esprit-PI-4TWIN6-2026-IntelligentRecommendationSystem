@@ -103,6 +103,9 @@ The core innovation is a **Python ML service** that ranks employees for each act
 | SonarQube | Code quality gate |
 | Render | Cloud deployment |
 | Kind | Local Kubernetes cluster |
+| Prometheus | Metrics collection and alerting |
+| Grafana | Monitoring dashboards |
+| AlertManager | Alert routing and email notifications |
 
 ---
 
@@ -156,6 +159,57 @@ Manager approves → invitations sent to employees
         ▼
 After activity completes → skill scores updated via
   exponential smoothing: Δ = α × max(0, target − current)
+```
+
+---
+
+---
+
+## Monitoring
+
+The platform includes a full observability stack: Prometheus scrapes metrics from the backend, Grafana visualizes them, and AlertManager routes alerts by email.
+
+### Metrics exposed by the backend (`GET /metrics`)
+
+| Metric | Type | Description |
+|---|---|---|
+| `assurreco_http_requests_total` | Counter | Total HTTP requests labelled by method, route, status code |
+| `assurreco_http_request_duration_seconds` | Histogram | Request duration (P50 / P95 / P99) |
+| `assurreco_http_requests_in_flight` | Gauge | Requests currently being processed |
+| `assurreco_process_*` | Default | Memory, CPU, event loop (prom-client defaults) |
+
+### Alert rules
+
+| Alert | Condition | Severity |
+|---|---|---|
+| BackendDown | Service unreachable > 1 min | critical |
+| HighErrorRate | 5xx rate > 5% over 5 min | warning |
+| CriticalErrorRate | 5xx rate > 20% over 1 min | critical |
+| HighResponseLatency | P95 > 1 s for 5 min | warning |
+| HighMemoryUsage | RSS > 85% of 512 Mi limit | warning |
+
+Critical and warning alerts are sent by email to `dhia.haddeji@esprit.tn` via Gmail SMTP.
+
+### Run locally (Docker)
+
+```bash
+cd monitoring
+docker compose up -d
+```
+
+| Service | URL | Credentials |
+|---|---|---|
+| Prometheus | http://localhost:9090 | — |
+| AlertManager | http://localhost:9093 | — |
+| Grafana | http://localhost:3001 | admin / assurreco2026 |
+
+### Deploy on Kubernetes
+
+```bash
+bash k8s/scripts/deploy-monitoring.sh
+# Prometheus  → <NodeIP>:30090
+# AlertManager→ <NodeIP>:30093
+# Grafana     → <NodeIP>:30031
 ```
 
 ---
