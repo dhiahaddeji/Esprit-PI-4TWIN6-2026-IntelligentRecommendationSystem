@@ -8,7 +8,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setupTests.js',
     coverage: {
-      provider: 'v8',
+      provider: 'istanbul',
       reporter: ['text', 'text-summary', 'lcov'],
       reportsDirectory: 'reports/coverage',
       include: ['src/**/*.{js,jsx}'],
