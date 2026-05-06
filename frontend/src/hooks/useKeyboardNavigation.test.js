@@ -69,9 +69,12 @@ describe('useKeyboardNavigation', () => {
   });
 
   it('handles Alt+m shortcut to focus main content', () => {
-    document.body.innerHTML = '<main id="mainContent" tabindex="-1">Content</main>';
-    
+    document.body.innerHTML = '<button id="trigger">Trigger</button><main id="mainContent" tabindex="-1">Content</main>';
+
     renderHook(() => useKeyboardNavigation());
+
+    // Give focus to a non-body element so the hook's early-return guard is bypassed
+    document.getElementById('trigger').focus();
 
     const focusSpy = vi.spyOn(document.getElementById('mainContent'), 'focus');
     const event = new KeyboardEvent('keydown', { key: 'm', altKey: true });
