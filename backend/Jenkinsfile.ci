@@ -11,7 +11,6 @@ pipeline {
         SONAR_HOST    = "http://localhost:9000"
         DOCKER_IMAGE  = "dhiahaddeji/pi-back"
         DOCKER_TAG    = "${BUILD_NUMBER}"
-        PATH          = "C:\\Program Files\\nodejs;${env.PATH}"
     }
 
     stages {
@@ -26,7 +25,7 @@ pipeline {
         stage('Install') {
             steps {
                 dir('backend') {
-                    sh 'npm ci'
+                    bat 'npm ci'
                 }
             }
         }
@@ -34,7 +33,7 @@ pipeline {
         stage('Test') {
             steps {
                 dir('backend') {
-                    sh 'npm run test -- --coverage --forceExit || true'
+                    bat 'npm run test -- --coverage --forceExit || exit 0'
                 }
             }
             post {
@@ -48,16 +47,7 @@ pipeline {
             steps {
                 dir('backend') {
                     withSonarQubeEnv("${SONARQUBE_ENV}") {
-                        sh """
-                        npx sonar-scanner \
-                          -Dsonar.projectKey=Backend \
-                          -Dsonar.projectName="PI Backend" \
-                          -Dsonar.sources=src \
-                          -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/*.spec.ts,**/test/** \
-                          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
-                          -Dsonar.host.url=${SONAR_HOST} \
-                          -Dsonar.token=${SONAR_TOKEN}
-                        """
+                        bat "npx sonar-scanner -Dsonar.projectKey=Backend -Dsonar.projectName=\"PI Backend\" -Dsonar.sources=src -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/*.spec.ts,**/test/** -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info -Dsonar.host.url=${SONAR_HOST} -Dsonar.token=${SONAR_TOKEN}"
                     }
                 }
             }
@@ -74,7 +64,7 @@ pipeline {
         stage('Build') {
             steps {
                 dir('backend') {
-                    sh 'npm run build'
+                    bat 'npm run build'
                 }
             }
         }
@@ -82,7 +72,7 @@ pipeline {
         stage('Docker Build') {
             steps {
                 dir('backend') {
-                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} -t ${DOCKER_IMAGE}:latest ."
+                    bat "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} -t ${DOCKER_IMAGE}:latest ."
                 }
             }
         }
@@ -94,11 +84,7 @@ pipeline {
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    sh """
-                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                    docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
-                    docker push ${DOCKER_IMAGE}:latest
-                    """
+                    bat "echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin && docker push ${DOCKER_IMAGE}:${DOCKER_TAG} && docker push ${DOCKER_IMAGE}:latest"
                 }
             }
         }
